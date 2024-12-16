@@ -2,20 +2,20 @@
 Arbeidsrepo for utforskning av den norske delen av usenet 
 
 ## Installasjon osv av python-kode  
-Med pdm: 
+Med pdm:  
 `pdm install`
 
-Med pip (med et venv e.l): 
+Med pip (med et venv e.l):   
 `pip install .`
 
 ### Kjør moduler: 
 Med pdm:  
-`pdm run python -m usenet_no.scrape`
-`pdm run python -m usenet_no.parse`
+`pdm run python -m usenet_no.scrape`  
+`pdm run python -m usenet_no.parse`  
 
-Eller uten (i venv e.l):
-`python -m usenet_no.scrape`
-`python -m usenet_no.parse`
+Eller uten (i venv e.l):  
+`python -m usenet_no.scrape`  
+`python -m usenet_no.parse`  
 
 
 ## Kjør opp epadd 
