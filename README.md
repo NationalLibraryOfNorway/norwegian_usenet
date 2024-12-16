@@ -19,6 +19,7 @@ Eller uten (i venv e.l):
 
 
 ## Kjør opp epadd 
-Last ned .jar-fil fra https://github.com/ePADD/epadd/releases/  (filnavn: epadd-standalone.jar) og flytt hit
-Du må ha java installert
+Last ned .jar-fil fra https://github.com/ePADD/epadd/releases/   
+(filnavn: epadd-standalone.jar) og flytt hit  
+Du må ha java installert  
 `java -jar epadd-standalone.jar`
