@@ -61,7 +61,7 @@ def save_dates_to_file(dates, output_file):
         print(f"Error writing to file {output_file}: {e}")
 
 if __name__ == "__main__":
-    directory = "../../unzipped_data/"
+    directory = "unzipped_data/"
     output_file = "sorted_dates.txt"
 
     # Extract and sort dates
