@@ -64,7 +64,7 @@ def export_user_post_counts_to_csv(user_post_counts, output_file):
         print(f"Error writing to file {output_file}: {e}")
 
 if __name__ == "__main__":
-    directory = "../../unzipped_data/"
+    directory = "unzipped_data/"
     output_file = "count-messages_per_user.csv"
 
     # Count posts per user
