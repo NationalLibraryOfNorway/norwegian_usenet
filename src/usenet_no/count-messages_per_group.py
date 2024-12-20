@@ -48,7 +48,7 @@ def export_channel_message_counts_to_csv(channel_message_counts, output_file):
         print(f"Error writing to file {output_file}: {e}")
 
 if __name__ == "__main__":
-    directory = "../../unzipped_data/"
+    directory = "unzipped_data/"
     output_file = "count-messages_per_group.csv"
 
     # Count messages in each channel
