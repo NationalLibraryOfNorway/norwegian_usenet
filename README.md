@@ -9,7 +9,7 @@ Med [uv](https://docs.astral.sh/uv/#installation):
 Med pip og venv (med et venv e.l):   
 ```
 python3 -m venv .venv
-source .venv
+source .venv/bin/activate
 pip install .
 ```
 
@@ -28,3 +28,10 @@ Last ned .jar-fil fra https://github.com/ePADD/epadd/releases/
 (filnavn: epadd-standalone.jar) og flytt hit  
 Du må ha java installert  
 `java -jar epadd-standalone.jar`
+
+## For utviklere
+Installér pre-commit (første gang):
+`uv run pre-commit install` 
+
+Da kjøres pre-commit hooks fra .pre-commit-config.yaml hver gang du gjør en commit 
+
