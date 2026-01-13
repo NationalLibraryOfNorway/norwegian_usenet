@@ -4,6 +4,8 @@ from collections import Counter
 from pathlib import Path
 import csv
 import argparse
+from email import policy
+from email.parser import BytesParser
 
 
 def extract_email(from_field: str) -> str | None:
@@ -14,6 +16,11 @@ def extract_email(from_field: str) -> str | None:
     return match.group(0) if match else None
 
 
+def message_factory(fp: mailbox._PartialFile) -> mailbox.mboxMessage:
+    utf8_message_parser = BytesParser(policy=policy.default.clone(utf8=True))
+    return mailbox.mboxMessage(utf8_message_parser.parse(fp))
+
+
 def count_posts_per_user_in_mbox_file(
     mbox_file: Path, user_post_counts: Counter[str]
 ) -> None:
@@ -21,8 +28,7 @@ def count_posts_per_user_in_mbox_file(
     Counts the number of posts per user (email) in an MBOX file.
     """
     try:
-        mbox = mailbox.mbox(str(mbox_file))
-
+        mbox = mailbox.mbox(str(mbox_file), factory=message_factory)
         unique_users = set()
         for message in mbox:
             from_field = message["From"]
@@ -38,18 +44,6 @@ def count_posts_per_user_in_mbox_file(
 
     except Exception as e:
         print(f"Error processing {mbox_file}: {e}")
-
-
-def count_posts_per_user_in_directory(directory: Path) -> Counter[str]:
-    """
-    Counts the total number of posts per user across all MBOX files in a given directory.
-    """
-    total_post_counts: Counter[str] = Counter()
-
-    for mbox_file in directory.glob("*.mbox"):
-        count_posts_per_user_in_mbox_file(mbox_file, user_post_counts=total_post_counts)
-
-    return total_post_counts
 
 
 def export_user_post_counts_to_csv(
@@ -72,7 +66,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--directory",
         type=Path,
-        default=Path("data/unzipped_data"),
+        default=Path("data/utf_8_data"),
         help="Directory containing .mbox files",
     )
     parser.add_argument(
@@ -81,15 +75,17 @@ if __name__ == "__main__":
         default=Path("data/count_messages_per_user.csv"),
         help="Path to CSV output file",
     )
+
     args = parser.parse_args()
 
     directory = args.directory
     output_file = args.output_file
 
-    # Count posts per user
-    user_post_counts = count_posts_per_user_in_directory(directory)
+    user_post_counts = Counter()
 
-    # Print total unique users and their counts
+    for mbox_file in directory.glob("*.mbox"):
+        count_posts_per_user_in_mbox_file(mbox_file, user_post_counts=user_post_counts)
+
     print(f"Total unique users: {len(user_post_counts)}")
 
     # Export to CSV
