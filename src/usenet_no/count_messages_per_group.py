@@ -2,6 +2,9 @@ import mailbox
 import csv
 from pathlib import Path
 import argparse
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def count_messages_in_mbox_file(mbox_file: Path) -> int:
@@ -12,7 +15,7 @@ def count_messages_in_mbox_file(mbox_file: Path) -> int:
         mbox = mailbox.mbox(str(mbox_file))
         return len(mbox)
     except Exception as e:
-        print(f"Error processing {mbox_file}: {e}")
+        logger.warning("Error processing %s: %s %s", mbox_file, type(e), e)
         return 0
 
 
@@ -24,7 +27,7 @@ def count_messages_in_directory(directory: Path) -> dict[str, int]:
     for mbox_file in directory.glob("*.mbox"):
         message_count = count_messages_in_mbox_file(mbox_file)
         channel_message_counts[mbox_file.name] = message_count
-        print(f"Processed {mbox_file.name}: {message_count} messages.")
+        logger.debug("Processed %s: %s messages", mbox_file.name, message_count)
 
     return channel_message_counts
 
@@ -46,7 +49,7 @@ def export_channel_message_counts_to_csv(
 
         # Add a total row
         writer.writerow(["Total", total_messages])
-    print(f"Exported results to {output_file}")
+    logger.info("Exported results to %s", output_file)
 
 
 if __name__ == "__main__":
@@ -72,7 +75,7 @@ if __name__ == "__main__":
 
     # Print total number of messages
     total_messages = sum(channel_message_counts.values())
-    print(f"Total messages across all channels: {total_messages}")
+    logger.info("Total messages across all channels: %d", total_messages)
 
     # Export to CSV
     export_channel_message_counts_to_csv(channel_message_counts, args.output_file)

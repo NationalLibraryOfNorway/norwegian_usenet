@@ -7,6 +7,10 @@ import argparse
 from email import policy
 from email.parser import BytesParser
 from tqdm import tqdm
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 def extract_email(from_field: str) -> str | None:
@@ -34,18 +38,18 @@ def count_posts_per_user_in_mbox_file(
         for message in mbox:
             message_from = message["From"] or message.get_from()
             if not message_from:
-                print(f"Message has no from\n{message}")
-                print(dir(message))
+                logger.debug("Message has no from: %s", dir(message))
                 message_from = "unknown"
             user_post_counts[message_from] += 1
             unique_users.add(message_from)
 
-        print(
-            f"Processed {mbox_file.name}: {len(unique_users)} unique users in this file."
+        logger.debug(
+            "Processed %s: %d unique users in this file.",
+            (mbox_file.name, len(unique_users)),
         )
 
     except Exception as e:
-        print(f"Error processing {mbox_file}: {e}")
+        logger.warning("Error processing file %s \t %s \t %s", (mbox_file, type(e)), e)
 
 
 def export_user_post_counts_to_csv(
@@ -62,7 +66,6 @@ def export_user_post_counts_to_csv(
             email = extract_email(user)
             email_str = email if email else ""
             writer.writerow([user, email_str, count])
-    print(f"Exported results to {output_file}")
 
 
 if __name__ == "__main__":
@@ -107,7 +110,8 @@ if __name__ == "__main__":
             break
         count_posts_per_user_in_mbox_file(mbox_file, user_post_counts=user_post_counts)
 
-    print(f"Total unique users: {len(user_post_counts)}")
+    logger.info("Total unique users: %d", len(user_post_counts))
 
     # Export to CSV
     export_user_post_counts_to_csv(user_post_counts, output_file)
+    logger.info("Exported results to %s", output_file)
