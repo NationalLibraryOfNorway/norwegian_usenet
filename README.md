@@ -2,16 +2,21 @@
 Arbeidsrepo for utforskning av den norske delen av usenet 
 
 ## Installasjon osv av python-kode  
-Med pdm:  
-`pdm install`
 
-Med pip (med et venv e.l):   
-`pip install .`
+Med [uv](https://docs.astral.sh/uv/#installation):  
+`uv sync`
+
+Med pip og venv (med et venv e.l):   
+```
+python3 -m venv .venv
+source .venv
+pip install .
+```
 
 ### Kjør moduler: 
-Med pdm:  
-`pdm run python -m usenet_no.scrape`  
-`pdm run python -m usenet_no.parse`  
+Med uv:  
+`uv run -m usenet_no.scrape`  
+`uv run -m usenet_no.parse`  
 
 Eller uten (i venv e.l):  
 `python -m usenet_no.scrape`  

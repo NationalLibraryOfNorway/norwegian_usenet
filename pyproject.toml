@@ -1,19 +1,28 @@
 [project]
-name = "usenet_no"
+name = "usenet-no"
 version = "0.1.0"
 description = "Explore norwegian usenet data from internet archive"
 authors = [
     {name = "Tita", email = "tita.enstad@nb.no"},
+    {name = "Jon", email = "jon.tonnessen@nb.no"},
 ]
-dependencies = ["ipykernel>=6.29.5", "requests>=2.32.3", "beautifulsoup4>=4.12.3", "tqdm>=4.67.0"]
-requires-python = ">=3.12"
 readme = "README.md"
-license = {text = "MIT"}
+requires-python = ">=3.12"
+dependencies = [
+    "beautifulsoup4>=4.14.3",
+    "faust-cchardet>=2.1.19",
+    "requests>=2.32.5",
+    "tqdm>=4.67.1",
+]
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.5.1",
+]
+
+[project.scripts]
+usenet-no = "usenet_no:main"
 
 [build-system]
-requires = ["setuptools>=61", "wheel"]
-build-backend = "setuptools.build_meta"
-
-
-[tool.pdm]
-distribution = true
+requires = ["hatchling"]
+build-backend = "hatchling.build"

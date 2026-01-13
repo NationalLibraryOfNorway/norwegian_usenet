@@ -1,3 +1,5 @@
+import argparse
+
 import requests
 from bs4 import BeautifulSoup
 from pathlib import Path
@@ -39,22 +41,44 @@ def download_zip(url: str, local_filename: Path):
 
 
 if __name__ == "__main__":
-    page_data = Path("page_data.txt")
-    base_url = "https://archive.org/download/usenet-no"
-    data_dir = Path("data")
+    parser = argparse.ArgumentParser(description="Download Usenet archives")
+    parser.add_argument(
+        "--page-data",
+        type=Path,
+        default=Path("data/page_data.txt"),
+        help="Location of cached page HTML",
+    )
+    parser.add_argument(
+        "--base-url",
+        default="https://archive.org/download/usenet-no",
+        help="Usenet archive base URL",
+    )
+    parser.add_argument(
+        "--data-dir",
+        type=Path,
+        default=Path("data/zipped_data/"),
+        help="Directory where zip files are stored",
+    )
+    parser.add_argument(
+        "--download-again",
+        action="store_true",
+        help="Force re-download of page metadata",
+    )
+    args = parser.parse_args()
 
-    if not data_dir.exists():
-        data_dir.mkdir()
+    args.data_dir.mkdir(exist_ok=True)
 
     page_data = get_page_data(
-        page_url=base_url, page_data_file=page_data, download_again=False
+        page_url=args.base_url,
+        page_data_file=args.page_data,
+        download_again=args.download_again,
     )
     urls = get_urls(page_data)
 
     for url in tqdm(urls):
         if url.endswith("/"):
             url = url[:-1]
-        zip_url = base_url + "/" + url
-        local_file = data_dir / url
+        zip_url = args.base_url + "/" + url
+        local_file = args.data_dir / url
         if not local_file.exists():
             download_zip(zip_url, local_filename=local_file)
