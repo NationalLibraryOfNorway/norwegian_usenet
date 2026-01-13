@@ -34,19 +34,12 @@ def count_posts_per_user_in_mbox_file(
     """
     try:
         mbox = mailbox.mbox(str(mbox_file), factory=message_factory)
-        unique_users = set()
         for message in mbox:
             message_from = message["From"] or message.get_from()
             if not message_from:
                 logger.debug("Message has no from: %s", dir(message))
                 message_from = "unknown"
             user_post_counts[message_from] += 1
-            unique_users.add(message_from)
-
-        logger.debug(
-            "Processed %s: %d unique users in this file.",
-            (mbox_file.name, len(unique_users)),
-        )
 
     except Exception as e:
         logger.warning("Error processing file %s \t %s \t %s", (mbox_file, type(e)), e)
@@ -83,6 +76,11 @@ if __name__ == "__main__":
         help="Path to CSV output file",
     )
     parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="If flagged, will overwrite existing files instead of skipping",
+    )
+    parser.add_argument(
         "--limit",
         type=int,
         metavar="N",
@@ -91,13 +89,18 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
+    logger.info("Args: %s", args)
 
-    directory = args.directory
-    output_file = args.output_file
+    if args.output_file.exists() and not args.overwrite:
+        logger.info(
+            "Total unique users: %d. See counts per user in %s",
+            len(args.output_file.read_text().splitlines()),
+            args.output_file,
+        )
+        exit(0)
 
     user_post_counts = Counter()
-
-    mbox_files = list(directory.glob("*.mbox"))
+    mbox_files = list(args.directory.glob("*.mbox"))
 
     for i, mbox_file in enumerate(
         tqdm(
@@ -110,8 +113,11 @@ if __name__ == "__main__":
             break
         count_posts_per_user_in_mbox_file(mbox_file, user_post_counts=user_post_counts)
 
-    logger.info("Total unique users: %d", len(user_post_counts))
-
     # Export to CSV
-    export_user_post_counts_to_csv(user_post_counts, output_file)
-    logger.info("Exported results to %s", output_file)
+    export_user_post_counts_to_csv(user_post_counts, args.output_file)
+
+    logger.info(
+        "Total unique users: %d. See counts per user in %s",
+        len(user_post_counts),
+        args.output_file,
+    )
