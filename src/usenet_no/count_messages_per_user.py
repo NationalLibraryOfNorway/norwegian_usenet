@@ -6,6 +6,7 @@ import csv
 import argparse
 from email import policy
 from email.parser import BytesParser
+from tqdm import tqdm
 
 
 def extract_email(from_field: str) -> str | None:
@@ -25,18 +26,19 @@ def count_posts_per_user_in_mbox_file(
     mbox_file: Path, user_post_counts: Counter[str]
 ) -> None:
     """
-    Counts the number of posts per user (email) in an MBOX file.
+    Reads messages in mbox_file and add the number of posts per user to user_post_counts
     """
     try:
         mbox = mailbox.mbox(str(mbox_file), factory=message_factory)
         unique_users = set()
         for message in mbox:
-            from_field = message["From"]
-            if from_field:
-                email = extract_email(str(from_field))
-                if email:
-                    user_post_counts[email] += 1
-                    unique_users.add(email)
+            message_from = message["From"] or message.get_from()
+            if not message_from:
+                print(f"Message has no from\n{message}")
+                print(dir(message))
+                message_from = "unknown"
+            user_post_counts[message_from] += 1
+            unique_users.add(message_from)
 
         print(
             f"Processed {mbox_file.name}: {len(unique_users)} unique users in this file."
@@ -55,9 +57,11 @@ def export_user_post_counts_to_csv(
 
     with output_file.open(mode="w", newline="", encoding="utf-8") as file:
         writer = csv.writer(file)
-        writer.writerow(["email", "post_count"])
-        for email, count in user_post_counts.items():
-            writer.writerow([email, count])
+        writer.writerow(["user", "email", "post_count"])
+        for user, count in user_post_counts.items():
+            email = extract_email(user)
+            email_str = email if email else ""
+            writer.writerow([user, email_str, count])
     print(f"Exported results to {output_file}")
 
 
@@ -75,6 +79,13 @@ if __name__ == "__main__":
         default=Path("data/count_messages_per_user.csv"),
         help="Path to CSV output file",
     )
+    parser.add_argument(
+        "--limit",
+        type=int,
+        metavar="N",
+        default=None,
+        help="If passed, will only count messages for the first N mbox files",
+    )
 
     args = parser.parse_args()
 
@@ -83,7 +94,17 @@ if __name__ == "__main__":
 
     user_post_counts = Counter()
 
-    for mbox_file in directory.glob("*.mbox"):
+    mbox_files = list(directory.glob("*.mbox"))
+
+    for i, mbox_file in enumerate(
+        tqdm(
+            mbox_files,
+            total=args.limit or len(mbox_files),
+            desc="Add user message counts from all mbox files",
+        )
+    ):
+        if args.limit and i == args.limit:
+            break
         count_posts_per_user_in_mbox_file(mbox_file, user_post_counts=user_post_counts)
 
     print(f"Total unique users: {len(user_post_counts)}")
