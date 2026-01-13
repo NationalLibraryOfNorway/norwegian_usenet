@@ -1,7 +1,7 @@
 # Usenet no
 Arbeidsrepo for utforskning av den norske delen av usenet 
 
-## Installasjon osv av python-kode  
+## Installasjon  
 
 Med [uv](https://docs.astral.sh/uv/#installation):  
 `uv sync`
@@ -26,8 +26,14 @@ Eller uten (i venv e.l):
 ## Kjør opp epadd 
 Last ned .jar-fil fra https://github.com/ePADD/epadd/releases/   
 (filnavn: epadd-standalone.jar) og flytt hit  
+
 Du må ha java installert  
 `java -jar epadd-standalone.jar`
+
+### NB-epadd 
+Les om NB-epadd her https://github.com/NationalLibraryOfNorway/epadd-nb 
+(Krever uthenting av entiteter utenfor epadd, les mer i README i repoet)
+
 
 ## For utviklere
 Installér pre-commit (første gang):
