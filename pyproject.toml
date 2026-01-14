@@ -11,6 +11,7 @@ requires-python = ">=3.12"
 dependencies = [
     "beautifulsoup4>=4.14.3",
     "faust-cchardet>=2.1.19",
+    "pandas>=2.3.3",
     "requests>=2.32.5",
     "tqdm>=4.67.1",
 ]
