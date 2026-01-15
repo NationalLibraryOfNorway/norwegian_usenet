@@ -6,8 +6,9 @@ import argparse
 
 from tqdm import tqdm
 import logging
-from usenet_no.mbox_utils import message_factory, extract_email
+from usenet_no.mbox_utils import message_factory
 
+from email.utils import parseaddr
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +22,7 @@ def count_posts_per_user_in_mbox_file(
     try:
         mbox = mailbox.mbox(str(mbox_file), factory=message_factory)
         for message in mbox:
-            message_from = message["From"] or message.get_from()
+            message_from = message.get("From", None) or message.get_from()
             if not message_from:
                 logger.warning("Message has no from: %s", dir(message))
                 message_from = "unknown"
@@ -40,11 +41,10 @@ def export_user_post_counts_to_csv(
 
     with output_file.open(mode="w", newline="", encoding="utf-8") as file:
         writer = csv.writer(file)
-        writer.writerow(["user", "email", "post_count"])
-        for user, count in user_post_counts.items():
-            email = extract_email(user)
-            email_str = email if email else ""
-            writer.writerow([user, email_str, count])
+        writer.writerow(["from", "name", "email", "post_count"])
+        for message_from, count in user_post_counts.items():
+            name, email = parseaddr(message_from)
+            writer.writerow([message_from, name, email, count])
 
 
 if __name__ == "__main__":
