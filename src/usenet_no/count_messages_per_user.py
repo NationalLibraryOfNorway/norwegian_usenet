@@ -1,4 +1,3 @@
-import mailbox
 from collections import Counter
 from pathlib import Path
 import csv
@@ -6,7 +5,7 @@ import argparse
 
 from tqdm import tqdm
 import logging
-from usenet_no.mbox_utils import message_factory
+from usenet_no.mbox_utils import get_messages_from_field
 
 from email.utils import parseaddr
 
@@ -19,17 +18,10 @@ def count_posts_per_user_in_mbox_file(
     """
     Reads messages in mbox_file and add the number of posts per user to user_post_counts
     """
-    try:
-        mbox = mailbox.mbox(str(mbox_file), factory=message_factory)
-        for message in mbox:
-            message_from = message.get("From", None) or message.get_from()
-            if not message_from:
-                logger.warning("Message has no from: %s", dir(message))
-                message_from = "unknown"
-            user_post_counts[message_from] += 1
-
-    except Exception as e:
-        logger.warning("Error processing file %s \t %s \t %s", (mbox_file, type(e)), e)
+    for message_from in get_messages_from_field(mbox_file=mbox_file):
+        if not message_from:
+            message_from = "unknown"
+        user_post_counts[message_from] += 1
 
 
 def export_user_post_counts_to_csv(
