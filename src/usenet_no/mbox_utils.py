@@ -15,15 +15,12 @@ def message_factory(fp: mailbox._PartialFile) -> mailbox.mboxMessage:
     return mailbox.mboxMessage(utf8_message_parser.parse(fp))
 
 
-def get_messages(mbox_file: Path) -> Iterator[mailbox.mboxMessage]:
-    mbox = mailbox.mbox(str(mbox_file), factory=message_factory)
-    for message in mbox:
-        yield message
-
-
 def get_messages_from_field(mbox_file: Path) -> Iterator[str]:
     """Iterates over every message in mbox file and yields the value in the From field of every message"""
-    for message in get_messages(mbox_file=mbox_file):
+    mbox = mailbox.mbox(str(mbox_file), factory=message_factory)
+    for message in tqdm(
+        mbox, desc=f"Getting From field from each message in {mbox_file}"
+    ):
         try:
             message_from = message["From"] or message.get_from()
             yield message_from
