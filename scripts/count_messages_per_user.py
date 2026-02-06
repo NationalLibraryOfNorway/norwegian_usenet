@@ -1,19 +1,19 @@
+import argparse
+import logging
 from collections import Counter
 from pathlib import Path
-import csv
-import argparse
 
-from tqdm import tqdm
-import logging
-from usenet_no.mbox_utils import get_messages_from_field
-
+import pandas as pd
 from email.utils import parseaddr
+from tqdm import tqdm
+
+from usenet_no.mbox_utils import get_messages_from_field
 
 logger = logging.getLogger(__name__)
 
 
 def count_posts_per_user_in_mbox_file(
-    mbox_file: Path, user_post_counts: Counter[str]
+    mbox_file: Path, user_post_counts: Counter[tuple[str, str, str]]
 ) -> None:
     """
     Reads messages in mbox_file and add the number of posts per user to user_post_counts
@@ -21,22 +21,8 @@ def count_posts_per_user_in_mbox_file(
     for message_from in get_messages_from_field(mbox_file=mbox_file):
         if not message_from:
             message_from = "unknown"
-        user_post_counts[message_from] += 1
-
-
-def export_user_post_counts_to_csv(
-    user_post_counts: Counter[str], output_file: Path
-) -> None:
-    """
-    Exports the user post counts to a CSV file.
-    """
-
-    with output_file.open(mode="w", newline="", encoding="utf-8") as file:
-        writer = csv.writer(file)
-        writer.writerow(["from", "name", "email", "post_count"])
-        for message_from, count in user_post_counts.items():
-            name, email = parseaddr(message_from)
-            writer.writerow([message_from, name, email, count])
+        name, email = parseaddr(message_from)
+        user_post_counts[(message_from, name, email)] += 1
 
 
 if __name__ == "__main__":
@@ -77,22 +63,28 @@ if __name__ == "__main__":
         )
         exit(0)
 
-    user_post_counts = Counter()
-    mbox_files = list(args.directory.glob("*.mbox"))
+    user_post_counts: Counter[tuple[str, str, str]] = Counter()
+    mbox_files = sorted(args.directory.glob("*.mbox"))
 
-    for i, mbox_file in enumerate(
-        tqdm(
-            mbox_files,
-            total=args.limit or len(mbox_files),
-            desc="Add user message counts from all mbox files",
-        )
+    for index, mbox_file in enumerate(
+        tqdm(mbox_files, total=args.limit or len(mbox_files))
     ):
-        if args.limit and i == args.limit:
+        if index == args.limit:
             break
         count_posts_per_user_in_mbox_file(mbox_file, user_post_counts=user_post_counts)
-
-    # Export to CSV
-    export_user_post_counts_to_csv(user_post_counts, args.output_file)
+        logger.debug("Processed %s", mbox_file.name)
+        df = pd.DataFrame(
+            [
+                {
+                    "from": message_from,
+                    "name": name,
+                    "email": email,
+                    "post_count": count,
+                }
+                for (message_from, name, email), count in user_post_counts.items()
+            ]
+        )
+        df.to_csv(args.output_file, index=False)
 
     logger.info(
         "Total unique users: %d. See counts per user in %s",
