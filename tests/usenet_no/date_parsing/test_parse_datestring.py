@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from usenet_no.count_dates import parse_datestring
+from usenet_no.date_parsing import parse_datestring
 
 example_dates = [
     "Tue, 04 Dec 2001 21:45:43 +0100",

@@ -1,4 +1,4 @@
-from usenet_no.count_dates import parse_and_normalize_date_field
+from usenet_no.date_parsing import parse_and_normalize_date_field
 
 example_date_fields = [
     "",
