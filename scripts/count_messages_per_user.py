@@ -13,16 +13,14 @@ logger = logging.getLogger(__name__)
 
 
 def count_posts_per_user_in_mbox_file(
-    mbox_file: Path, user_post_counts: Counter[tuple[str, str, str]]
+    mbox_file: Path, user_post_counts: Counter[tuple[str, str]]
 ) -> None:
     """
     Reads messages in mbox_file and add the number of posts per user to user_post_counts
     """
     for message_from in get_messages_from_field(mbox_file=mbox_file):
-        if not message_from:
-            message_from = "unknown"
-        name, email = parseaddr(message_from)
-        user_post_counts[(message_from, name, email)] += 1
+        name, email = parseaddr(message_from or "")
+        user_post_counts[(name, email)] += 1
 
 
 if __name__ == "__main__":
@@ -36,8 +34,14 @@ if __name__ == "__main__":
     parser.add_argument(
         "--output-file",
         type=Path,
-        default=Path("data/count_messages_per_user.csv"),
+        default=Path("data/messages_per_user.csv"),
         help="Path to CSV output file",
+    )
+    parser.add_argument(
+        "--mappings-directory",
+        type=Path,
+        default=Path("data/hidden"),
+        help="Directory containing email_to_hash.csv and name_to_hash.csv",
     )
     parser.add_argument(
         "--overwrite",
@@ -63,11 +67,27 @@ if __name__ == "__main__":
         )
         exit(0)
 
-    user_post_counts: Counter[tuple[str, str, str]] = Counter()
+    # Load hash mappings
+    email_to_hash = dict(
+        pd.read_csv(args.mappings_directory / "email_to_hash.csv").itertuples(
+            index=False, name=None
+        )
+    )
+    name_to_hash = dict(
+        pd.read_csv(args.mappings_directory / "name_to_hash.csv").itertuples(
+            index=False, name=None
+        )
+    )
+
+    user_post_counts: Counter[tuple[str, str]] = Counter()
     mbox_files = sorted(args.directory.glob("*.mbox"))
 
     for index, mbox_file in enumerate(
-        tqdm(mbox_files, total=args.limit or len(mbox_files))
+        tqdm(
+            mbox_files,
+            total=args.limit or len(mbox_files),
+            desc="Counting posts per user in mbox files",
+        )
     ):
         if index == args.limit:
             break
@@ -76,12 +96,11 @@ if __name__ == "__main__":
         df = pd.DataFrame(
             [
                 {
-                    "from": message_from,
-                    "name": name,
-                    "email": email,
+                    "hashed_name": name_to_hash.get(name, ""),
+                    "hashed_email": email_to_hash.get(email, ""),
                     "post_count": count,
                 }
-                for (message_from, name, email), count in user_post_counts.items()
+                for (name, email), count in user_post_counts.items()
             ]
         )
         df.to_csv(args.output_file, index=False)
