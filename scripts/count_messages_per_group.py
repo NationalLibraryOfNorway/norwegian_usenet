@@ -65,7 +65,7 @@ if __name__ == "__main__":
         "--output-file",
         "-o",
         type=Path,
-        default=Path("data/count_messages_per_group.csv"),
+        default=Path("data/messages_per_group.csv"),
         help="Path to CSV output file",
     )
     args = parser.parse_args()
