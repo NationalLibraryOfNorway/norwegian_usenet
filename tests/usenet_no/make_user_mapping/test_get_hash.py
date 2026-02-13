@@ -6,7 +6,3 @@ def test_creates_same_hash_for_same_string():
     first_hash = get_hash(test_str)
     second_hash = get_hash(test_str)
     assert first_hash == second_hash
-
-
-# def test_empty_string_gives_empty_hash():
-#     assert get_hash("") == ""
