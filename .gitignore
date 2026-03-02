@@ -163,7 +163,9 @@ cython_debug/
 
 zipped_data
 unzipped_data
+utf_8_data
 epadd-standalone.jar
+hidden
 
 # vscode settings
 .vscode
