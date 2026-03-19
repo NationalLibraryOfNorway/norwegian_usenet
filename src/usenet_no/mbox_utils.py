@@ -100,6 +100,7 @@ def get_threads(mbox_file: Path) -> list[list[mailbox.mboxMessage]]:
     mbox = mailbox.mbox(str(mbox_file), factory=message_factory)
     messages = list(mbox)
 
+    # First, extract all message ids and correspoinding message objects
     id_to_msg: dict[str, mailbox.mboxMessage] = {}
     num_messages_without_ids = 0
     for msg in messages:
