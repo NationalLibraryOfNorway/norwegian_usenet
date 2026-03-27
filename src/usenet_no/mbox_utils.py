@@ -4,6 +4,7 @@ from tqdm import tqdm
 
 import mailbox
 import logging
+import re
 from pathlib import Path
 from typing import Iterator
 
@@ -15,6 +16,18 @@ def message_factory(fp: mailbox._PartialFile) -> mailbox.mboxMessage:
     return mailbox.mboxMessage(utf8_message_parser.parse(fp))
 
 
+def ensure_mbox_envelope(text: str) -> str:
+    if not text.startswith("From "):
+        match = re.search(r"^From:[ \t]*(.*)", text, re.MULTILINE)
+        sender = match.group(1).strip() if match else ""
+        return f"From {sender}\n" + text
+    return text
+
+
+def get_from_field(message: mailbox.mboxMessage) -> str:
+    return message["From"] or message.get_from()
+
+
 def get_messages_from_field(mbox_file: Path) -> Iterator[str]:
     """Iterates over every message in mbox file and yields the value in the From field of every message"""
     mbox = mailbox.mbox(str(mbox_file), factory=message_factory)
@@ -22,7 +35,7 @@ def get_messages_from_field(mbox_file: Path) -> Iterator[str]:
         mbox, desc=f"Getting From field from each message in {mbox_file}"
     ):
         try:
-            message_from = message["From"] or message.get_from()
+            message_from = get_from_field(message)
             yield message_from
         except IndexError:
             logger.debug(
