@@ -34,7 +34,7 @@ if __name__ == "__main__":
         "--output-file",
         "-o",
         type=Path,
-        default=Path("data/date_count.csv"),
+        default=Path("data/date_count_ia.csv"),
         help="Path to CSV output file",
     )
     parser.add_argument(
