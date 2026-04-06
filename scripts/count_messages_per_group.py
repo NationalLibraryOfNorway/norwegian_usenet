@@ -3,6 +3,7 @@ import csv
 from pathlib import Path
 import argparse
 import logging
+from tqdm import tqdm
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +25,8 @@ def count_messages_in_directory(directory: Path) -> dict[str, int]:
     Counts the total number of messages in all MBOX files in a given directory.
     """
     channel_message_counts = {}
-    for mbox_file in directory.glob("*.mbox"):
+    mbox_files = list(directory.glob("*.mbox"))
+    for mbox_file in tqdm(mbox_files, desc="Counting messages per group"):
         message_count = count_messages_in_mbox_file(mbox_file)
         channel_message_counts[mbox_file.name] = message_count
         logger.debug("Processed %s: %s messages", mbox_file.name, message_count)
@@ -58,14 +60,14 @@ if __name__ == "__main__":
         "--directory",
         "-d",
         type=Path,
-        default=Path("data/unzipped_data/"),
+        default=Path("data/utf_8_data/"),
         help="Directory containing .mbox files",
     )
     parser.add_argument(
         "--output-file",
         "-o",
         type=Path,
-        default=Path("data/messages_per_group.csv"),
+        default=Path("data/messages_per_group_ia.csv"),
         help="Path to CSV output file",
     )
     args = parser.parse_args()
