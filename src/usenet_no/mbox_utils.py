@@ -28,11 +28,15 @@ def get_from_field(message: mailbox.mboxMessage) -> str:
     return message["From"] or message.get_from()
 
 
-def get_messages_from_field(mbox_file: Path) -> Iterator[str]:
+def get_messages_from_field(
+    mbox_file: Path, show_progress: bool = True
+) -> Iterator[str]:
     """Iterates over every message in mbox file and yields the value in the From field of every message"""
     mbox = mailbox.mbox(str(mbox_file), factory=message_factory)
     for message in tqdm(
-        mbox, desc=f"Getting From field from each message in {mbox_file}"
+        mbox,
+        desc=f"Getting From field from each message in {mbox_file}",
+        disable=not show_progress,
     ):
         try:
             message_from = get_from_field(message)
