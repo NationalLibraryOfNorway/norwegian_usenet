@@ -56,6 +56,40 @@ def get_messages_from_field(
             yield ""
 
 
+def get_message_body(message: mailbox.mboxMessage) -> str:
+    if message.is_multipart():
+        parts = []
+        for part in message.walk():
+            if part.get_content_type() == "text/plain":
+                payload = part.get_payload(decode=True)
+                if payload:
+                    parts.append(payload.decode("utf-8", errors="replace"))
+        body = "\n".join(parts)
+    else:
+        payload = message.get_payload(decode=True)
+        body = payload.decode("utf-8", errors="replace") if payload else ""
+    return body
+
+
+def get_message_bodies(mbox_file: Path) -> set[str]:
+    """Returns the set of unique message bodies in an mbox file, excluding headers.
+
+    Assumes all message payloads are UTF-8 encoded on disk, regardless of the
+    charset declared in Content-Type headers. This holds for both data sources:
+    - NWA (data/temp): scripts/nwa_to_mbox.py decodes each file with chardet and writes
+      as UTF-8 via Python's default text encoding.
+    - IA (data/utf_8_data): src/usenet_no/parse.py detects encoding with chardet and explicitly
+      re-encodes to UTF-8, or copies the file as-is if it already parses cleanly.
+    """
+    mbox = mailbox.mbox(str(mbox_file), factory=message_factory)
+    bodies = set()
+    for message in mbox:
+        body = get_message_body(message=message)
+        if body:
+            bodies.add(body)
+    return bodies
+
+
 def get_messages_date_field(mbox_file: Path) -> Iterator[str | None]:
     mbox = mailbox.mbox(str(mbox_file), factory=message_factory)
     for message in tqdm(mbox, desc=f"Getting dates from each message in {mbox_file}"):
