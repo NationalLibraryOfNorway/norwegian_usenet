@@ -18,13 +18,13 @@ if __name__ == "__main__":
     parser.add_argument(
         "--ia-directory",
         type=Path,
-        default=Path("data/utf_8_data"),
+        default=Path("data/internet_archive/utf_8_data"),
         help="Directory containing IA mbox files",
     )
     parser.add_argument(
         "--nwa-directory",
         type=Path,
-        default=Path("data/temp"),
+        default=Path("data/nwa_90s/utf_8_data"),
         help="Directory containing NWA mbox files",
     )
     parser.add_argument(

@@ -27,7 +27,7 @@ if __name__ == "__main__":
         "--directory",
         "-d",
         type=Path,
-        default=Path("data/utf_8_data"),
+        default=Path("data/internet_archive/utf_8_data"),
         help="Directory containing .mbox files",
     )
     parser.add_argument(

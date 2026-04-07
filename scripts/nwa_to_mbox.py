@@ -7,22 +7,10 @@ from usenet_no.mbox_utils import ensure_mbox_envelope
 logger = logging.getLogger(__name__)
 
 
-def extract_tarfiles(nwa_path: Path, overwrite: bool):
-    for compressed_dir in nwa_path.glob("*.tar"):
+def extract_tarfiles(zipped_dir: Path, unzipped_dir: Path):
+    for compressed_dir in zipped_dir.glob("*.tar"):
         logger.info("Unpacking %s", compressed_dir)
-        out_dir = compressed_dir.with_suffix("")
-        if (
-            not overwrite
-            and out_dir.exists()
-            and out_dir.is_dir()
-            and len(list(out_dir.iterdir()))
-        ):
-            logger.info(
-                "%s is already extracted (%s exists and is a non-empty directory)",
-                compressed_dir,
-                out_dir,
-            )
-            continue
+        out_dir = unzipped_dir / compressed_dir.stem
         out_dir.mkdir(parents=True, exist_ok=True)
 
         logger.info("Extracting %s to %s", compressed_dir, out_dir)
@@ -82,15 +70,15 @@ def concat_textfiles(newsgroup_dir: Path, outfile: Path) -> None:
 
 
 if __name__ == "__main__":
-    nwa_path = Path("data/nwa_90s")
-    output_directory = Path("data/temp")
-    overwrite = False
+    zipped_dir = Path("data/nwa_90s/zipped_data")
+    unzipped_dir = Path("data/nwa_90s/unzipped_data")
+    output_directory = Path("data/nwa_90s/utf_8_data")
 
-    extract_tarfiles(nwa_path, overwrite)
+    extract_tarfiles(zipped_dir, unzipped_dir)
 
     output_directory.mkdir(exist_ok=True, parents=True)
 
-    for directory in nwa_path.iterdir():
+    for directory in unzipped_dir.iterdir():
         if not directory.is_dir():
             continue
         logger.info("Finding usenet data in %s", directory)

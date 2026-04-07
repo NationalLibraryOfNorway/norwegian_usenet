@@ -56,7 +56,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--data-dir",
         type=Path,
-        default=Path("data/zipped_data/"),
+        default=Path("data/internet_archive/zipped_data"),
         help="Directory where zip files are stored",
     )
     parser.add_argument(
