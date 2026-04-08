@@ -27,14 +27,14 @@ if __name__ == "__main__":
         "--directory",
         "-d",
         type=Path,
-        default=Path("data/utf_8_data"),
+        default=Path("data/internet_archive/utf_8_data"),
         help="Directory containing .mbox files",
     )
     parser.add_argument(
         "--output-file",
         "-o",
         type=Path,
-        default=Path("data/date_count.csv"),
+        default=Path("data/date_count_ia.csv"),
         help="Path to CSV output file",
     )
     parser.add_argument(
