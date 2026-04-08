@@ -182,6 +182,8 @@ docs/orig_conf.py
 ehthumbs.db
 Thumbs.db
 
+zipped_data
+unzipped_data
+utf_8_data
 
-nwa_90s
-temp
+embeddings

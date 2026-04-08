@@ -45,7 +45,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--encodings-file",
         type=Path,
-        default=Path("data/encodings.json"),
+        default=Path("data/internet_archive/encodings.json"),
         help="Path to JSON file storing detected encodings",
     )
     parser.add_argument(
