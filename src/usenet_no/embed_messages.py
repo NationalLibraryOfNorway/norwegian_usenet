@@ -1,8 +1,8 @@
-import argparse
 import logging
 import mailbox
-from collections import Counter
 from pathlib import Path
+
+import pandas as pd
 
 import numpy as np
 from sentence_transformers import SentenceTransformer
@@ -13,15 +13,40 @@ from usenet_no.mbox_utils import message_factory, get_message_body
 logger = logging.getLogger(__name__)
 
 
-def get_top_n_files(directory: Path, n: int) -> list[Path]:
+def get_mbox_counts(
+    directory: Path, counts_file: Path | None = None
+) -> dict[Path, int]:
+    """Get a dict wihere key is mbox file and value is number of messages in mbox file"""
+    if counts_file is not None and counts_file.exists():
+        logger.info("Loading mbox counts from %s", counts_file)
+        df = pd.read_csv(counts_file)
+        df = df[df["channel"] != "Total"]
+        return dict(
+            zip(df["channel"].map(lambda name: directory / name), df["message_count"])
+        )
+
     mbox_files = list(directory.glob("*.mbox"))
-    counts = Counter(
-        {
-            f: len(mailbox.mbox(str(f)))
-            for f in tqdm(mbox_files, desc=f"Counting messages in {directory}")
-        }
-    )
-    return [f for f, _ in counts.most_common(n)]
+    return {
+        f: len(mailbox.mbox(str(f)))
+        for f in tqdm(mbox_files, desc=f"Counting messages in {directory}")
+    }
+
+
+def get_top_n_files(
+    directory: Path, n: int, counts_file: Path | None = None
+) -> list[Path]:
+    counts = get_mbox_counts(directory, counts_file)
+    return sorted(counts, key=lambda f: counts[f], reverse=True)[:n]
+
+
+def get_median_n_files(
+    directory: Path, n: int, counts_file: Path | None = None
+) -> list[Path]:
+    counts = get_mbox_counts(directory, counts_file)
+    sorted_files = sorted(counts, key=lambda f: counts[f])
+    mid = len(sorted_files) // 2
+    start = max(0, mid - n // 2)
+    return sorted_files[start : start + n]
 
 
 def embed_mbox_file(
@@ -68,83 +93,4 @@ def embed_mbox_file(
             index_path,
             len(bodies),
             total,
-        )
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Embed messages from the top N newsgroups in IA and NWA archives"
-    )
-    parser.add_argument(
-        "--ia-directory",
-        type=Path,
-        default=Path("data/internet_archive/utf_8_data"),
-        help="Directory containing IA mbox files",
-    )
-    parser.add_argument(
-        "--nwa-directory",
-        type=Path,
-        default=Path("data/nwa_90s/utf_8_data"),
-        help="Directory containing NWA mbox files",
-    )
-    parser.add_argument(
-        "--output-directory",
-        type=Path,
-        default=Path("data/embeddings"),
-        help="Directory to save embedding files",
-    )
-    parser.add_argument(
-        "--top-n",
-        type=int,
-        default=10,
-        metavar="N",
-        help="Number of largest newsgroups to embed from each archive",
-    )
-    parser.add_argument(
-        "--model",
-        type=str,
-        default="codefuse-ai/F2LLM-v2-0.6B",
-        help="SentenceTransformer model to use for embeddings",
-    )
-    parser.add_argument(
-        "--batch-size",
-        type=int,
-        default=32,
-        metavar="N",
-        help="Batch size for encoding",
-    )
-    parser.add_argument(
-        "--max-seq-length",
-        type=int,
-        default=512,
-        metavar="N",
-        help="Maximum token sequence length — messages are truncated to this length",
-    )
-    parser.add_argument(
-        "--overwrite",
-        action="store_true",
-        help="Overwrite existing embedding files",
-    )
-
-    args = parser.parse_args()
-    logger.info("Args: %s", args)
-
-    model_output_dir = args.output_directory / args.model
-    model_output_dir.mkdir(parents=True, exist_ok=True)
-
-    ia_top = get_top_n_files(args.ia_directory, args.top_n)
-    nwa_top = get_top_n_files(args.nwa_directory, args.top_n)
-
-    logger.info("Loading model %s", args.model)
-    model = SentenceTransformer(args.model)
-    model.max_seq_length = args.max_seq_length
-
-    for mbox_file in ia_top:
-        embed_mbox_file(
-            mbox_file, "ia", model, model_output_dir, args.overwrite, args.batch_size
-        )
-
-    for mbox_file in nwa_top:
-        embed_mbox_file(
-            mbox_file, "nwa", model, model_output_dir, args.overwrite, args.batch_size
         )
