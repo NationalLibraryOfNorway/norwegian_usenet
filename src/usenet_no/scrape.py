@@ -66,7 +66,7 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    args.data_dir.mkdir(exist_ok=True)
+    args.data_dir.mkdir(exist_ok=True, parents=True)
 
     page_data = get_page_data(
         page_url=args.base_url,
