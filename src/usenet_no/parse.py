@@ -58,7 +58,6 @@ if __name__ == "__main__":
         action="store_true",
         help="If flagged, will overwrite existing files (encodings-file and mbox files in decoded-data-dir) instead of skipping",
     )
-    parser.add_argument()
     args = parser.parse_args()
     logger.info("args %s", args)
 
