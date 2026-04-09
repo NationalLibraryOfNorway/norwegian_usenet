@@ -185,5 +185,7 @@ Thumbs.db
 zipped_data
 unzipped_data
 utf_8_data
+date_filtered
 
 embeddings
+topics
