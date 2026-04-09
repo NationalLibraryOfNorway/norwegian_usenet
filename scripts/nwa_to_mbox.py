@@ -52,7 +52,7 @@ def concat_textfiles(newsgroup_dir: Path, outfile: Path) -> None:
     logger.debug("Running concat textfiles in %s (outfile: %s)", newsgroup_dir, outfile)
     files_read = 0
     text = ""
-    for each in newsgroup_dir.iterdir():
+    for each in sorted(newsgroup_dir.iterdir()):
         if each.is_dir():
             sub_group_outfile = (
                 outfile.parent / f"{outfile.stem}.{each.name.lower()}.mbox"
@@ -99,6 +99,9 @@ if __name__ == "__main__":
     extract_tarfiles(args.zipped_dir, args.unzipped_dir)
 
     args.output_directory.mkdir(exist_ok=True, parents=True)
+    for f in args.output_directory.iterdir():
+        f.unlink()
+    logger.info("Cleared output directory %s", args.output_directory)
 
     for directory in args.unzipped_dir.iterdir():
         if not directory.is_dir():
@@ -108,7 +111,7 @@ if __name__ == "__main__":
 
         logger.info("Newsgroups parent directory: %s", newsgroups_parent_dir)
 
-        for newsgroup_dir in newsgroups_parent_dir.iterdir():
+        for newsgroup_dir in sorted(newsgroups_parent_dir.iterdir()):
             if not newsgroup_dir.is_dir():
                 continue
             logger.debug("Newsgroup dir: %s", newsgroup_dir)
