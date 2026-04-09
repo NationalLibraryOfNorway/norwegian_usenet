@@ -49,6 +49,13 @@ def get_median_n_files(
     return sorted_files[start : start + n]
 
 
+def get_closest_n_files(
+    directory: Path, n: int, k: int, counts_file: Path | None = None
+) -> list[Path]:
+    counts = get_mbox_counts(directory, counts_file)
+    return sorted(counts, key=lambda f: abs(counts[f] - k))[:n]
+
+
 def embed_mbox_file(
     mbox_file: Path,
     source: str,
@@ -72,16 +79,16 @@ def embed_mbox_file(
         total += 1
         body = get_message_body(message)
         if not body:
-            logger.debug("Skipping empty message %d in %s", i, mbox_file.name)
+            logger.debug("Skipping empty message %d in %s", i, mbox_file)
             continue
         bodies.append(body)
         indices.append(i)
 
     if not bodies:
-        logger.warning("No non-empty messages in %s, skipping", mbox_file.name)
+        logger.warning("No non-empty messages in %s, skipping", mbox_file)
         return
 
-    logger.info("Embedding %d messages from %s", len(bodies), mbox_file.name)
+    logger.info("Embedding %d messages from %s", len(bodies), mbox_file)
     embeddings = model.encode(bodies, batch_size=batch_size, show_progress_bar=True)
     np.save(output_path, embeddings)
     logger.info("Saved embeddings to %s", output_path)
