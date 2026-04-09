@@ -1,6 +1,7 @@
 import argparse
 import logging
 import mailbox
+import shutil
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 
@@ -8,7 +9,7 @@ import pandas as pd
 from tqdm import tqdm
 
 from usenet_no.date_parsing import parse_and_normalize_date_field
-from usenet_no.mbox_utils import ensure_mbox_envelope, message_factory
+from usenet_no.mbox_utils import message_factory
 
 logger = logging.getLogger(__name__)
 
@@ -36,27 +37,26 @@ def filter_mbox_by_date(
         logger.info("%s: kept %d / %d (skipped)", mbox_file.name, kept, total)
         return kept, total
 
-    mbox_in = mailbox.mbox(str(mbox_file), factory=message_factory)
-    keys = list(mbox_in.keys())
-
     tmp_file = output_file.with_suffix(".tmp")
-    kept = 0
-    with tmp_file.open("wb") as f:
-        for key in keys:
-            message = mbox_in[key]
-            date_str = parse_and_normalize_date_field(message.get("Date", None))
-            if (
-                date_str == "unknown" or start_date <= date_str <= end_date
-            ):  # ISO 8601 sorts lexicographically
-                text = mbox_in.get_bytes(key).decode("utf-8", errors="replace")
-                f.write(ensure_mbox_envelope(text).encode("utf-8"))
-                kept += 1
-    if kept:
-        tmp_file.rename(output_file)
-    else:
-        tmp_file.unlink()
-    logger.info("%s: kept %d / %d", mbox_file.name, kept, len(keys))
-    return kept, len(keys)
+    shutil.copy2(mbox_file, tmp_file)
+
+    mbox = mailbox.mbox(str(tmp_file), factory=message_factory)
+    total = len(mbox)
+
+    for key, message in mbox.items():
+        date_str = parse_and_normalize_date_field(message.get("Date", None))
+        if date_str != "unknown" and not (  # ISO 8601 sorts lexicographically
+            start_date <= date_str <= end_date
+        ):
+            mbox.remove(key)
+
+    mbox.flush()
+    mbox.close()
+    tmp_file.rename(output_file)
+
+    kept = len(mailbox.mbox(str(output_file)))
+    logger.info("%s: kept %d / %d", mbox_file.name, kept, total)
+    return kept, total
 
 
 if __name__ == "__main__":
