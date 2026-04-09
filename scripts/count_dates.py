@@ -1,6 +1,7 @@
 import argparse
 import logging
 from collections import Counter
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 
 import pandas as pd
@@ -12,13 +13,11 @@ from usenet_no.date_parsing import parse_and_normalize_date_field
 logger = logging.getLogger(__name__)
 
 
-def count_dates_in_mbox_file(mbox_file: Path, date_counts: Counter[str]) -> None:
-    """
-    Reads messages in mbox_file and increments the counter for each Date header.
-    """
+def count_dates_in_mbox_file(mbox_file: Path) -> Counter[str]:
+    counts: Counter[str] = Counter()
     for date_field in get_messages_date_field(mbox_file=mbox_file):
-        counts_key = parse_and_normalize_date_field(date_field=date_field)
-        date_counts[counts_key] += 1
+        counts[parse_and_normalize_date_field(date_field=date_field)] += 1
+    return counts
 
 
 if __name__ == "__main__":
@@ -59,17 +58,18 @@ if __name__ == "__main__":
         )
         exit(0)
 
+    mbox_files = sorted(args.directory.glob("*.mbox"))[: args.limit]
     date_counts: Counter[str] = Counter()
-    mbox_files = sorted(args.directory.glob("*.mbox"))
 
-    for index, mbox_file in enumerate(
-        tqdm(mbox_files, total=args.limit or len(mbox_files))
-    ):
-        if index == args.limit:
-            break
-        count_dates_in_mbox_file(mbox_file, date_counts)
-        logger.debug("Processed %s", mbox_file.name)
-        df = pd.DataFrame(date_counts.items(), columns=["date", "count"])
-        df.to_csv(args.output_file, index=False)
+    with ProcessPoolExecutor() as executor:
+        futures = {executor.submit(count_dates_in_mbox_file, f): f for f in mbox_files}
+        for future in tqdm(
+            as_completed(futures), total=len(mbox_files), desc="Counting dates"
+        ):
+            date_counts += future.result()
 
+    df = pd.DataFrame(date_counts.items(), columns=["date", "count"]).sort_values(
+        "date"
+    )
+    df.to_csv(args.output_file, index=False)
     logger.info("Total dates counted: %d", sum(date_counts.values()))

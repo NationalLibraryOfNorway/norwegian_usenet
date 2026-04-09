@@ -92,6 +92,6 @@ def get_message_bodies(mbox_file: Path) -> set[str]:
 
 def get_messages_date_field(mbox_file: Path) -> Iterator[str | None]:
     mbox = mailbox.mbox(str(mbox_file), factory=message_factory)
-    for message in tqdm(mbox, desc=f"Getting dates from each message in {mbox_file}"):
+    for message in mbox:
         date_field = message.get("Date", None)
         yield date_field
