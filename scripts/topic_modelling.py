@@ -73,6 +73,21 @@ def load_embeddings_and_docs(
     return np.vstack(all_embeddings), all_docs
 
 
+def make_run_tag(
+    min_messages: int | None,
+    max_messages: int | None,
+    nr_topics: int | None,
+) -> str:
+    parts = []
+    if min_messages is not None:
+        parts.append(f"min{min_messages}")
+    if max_messages is not None:
+        parts.append(f"max{max_messages}")
+    if nr_topics is not None:
+        parts.append(f"nr{nr_topics}")
+    return "_".join(parts) if parts else "default"
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Run BERTopic topic modelling on pre-computed message embeddings"
@@ -133,8 +148,11 @@ if __name__ == "__main__":
     logger.info("Args: %s", args)
 
     embeddings_dir = args.embeddings_directory / args.model
-    output_dir = args.output_directory / args.model
+
+    run_tag = make_run_tag(args.min_messages, args.max_messages, args.nr_topics)
+    output_dir = args.output_directory / args.model / run_tag
     output_dir.mkdir(parents=True, exist_ok=True)
+    logger.info("Output directory: %s", output_dir)
 
     embeddings, docs = load_embeddings_and_docs(
         embeddings_dir,
