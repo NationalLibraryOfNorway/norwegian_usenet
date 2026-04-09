@@ -1,4 +1,5 @@
 import argparse
+import logging
 import time
 from pathlib import Path
 from urllib.parse import urlparse, unquote
@@ -6,6 +7,8 @@ from urllib.parse import urlparse, unquote
 import requests
 from bs4 import BeautifulSoup
 from tqdm import tqdm
+
+logger = logging.getLogger(__name__)
 
 
 def get_page_data(page_url: str, page_data_file: Path, download_again: bool) -> str:
@@ -52,15 +55,15 @@ def download_zip(url: str, local_filename: Path, retries: int = 5):
             }
         )
         try:
-            print(f"REQUESTING: {url} (attempt {attempt}/{retries})")
+            logger.info("REQUESTING: %s (attempt %d/%d)", url, attempt, retries)
             with session.get(
                 url,
                 stream=True,
                 timeout=60,
                 allow_redirects=True,
             ) as response:
-                print(f"FINAL URL:   {response.url}")
-                print(f"STATUS:      {response.status_code}")
+                logger.info("FINAL URL:   %s", response.url)
+                logger.info("STATUS:      %s", response.status_code)
 
                 if response.status_code in {401, 403, 429, 500, 502, 503, 504}:
                     raise requests.HTTPError(
@@ -79,17 +82,18 @@ def download_zip(url: str, local_filename: Path, retries: int = 5):
 
         except requests.RequestException as e:
             last_error = e
-            print(f"Download failed: {e}")
+            logger.warning("Download failed: %s", e)
 
             if tmp_file.exists():
                 tmp_file.unlink()
 
             if attempt < retries:
-                wait = min(2 ** attempt, 30)
-                print(f"Retrying in {wait} seconds...")
+                wait = min(2**attempt, 30)
+                logger.info("Retrying in %d seconds...", wait)
                 time.sleep(wait)
 
     raise last_error
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Download Usenet archives")
@@ -141,8 +145,8 @@ if __name__ == "__main__":
         if local_file.exists():
             continue
 
-        print(f"FILENAME: {filename!r}")
-        print(f"ZIP URL:  {zip_url}")
+        logger.info("FILENAME: %r", filename)
+        logger.info("ZIP URL:  %s", zip_url)
 
         try:
             download_zip(
@@ -152,13 +156,13 @@ if __name__ == "__main__":
             )
             time.sleep(0.5)
         except Exception as e:
-            print(f"FAILED: {filename} -> {e}")
+            logger.error("FAILED: %s -> %s", filename, e)
             failed.append(filename)
 
     if failed:
         failed_file = args.data_dir.parent / "failed_downloads.txt"
         failed_file.write_text("\n".join(failed) + "\n")
-        print(f"\nSaved failed downloads to {failed_file}")
-        print(f"Failed downloads: {len(failed)}")
+        logger.info("Saved failed downloads to %s", failed_file)
+        logger.info("Failed downloads: %d", len(failed))
     else:
-        print("\nAll downloads completed successfully.")
+        logger.info("All downloads completed successfully.")
