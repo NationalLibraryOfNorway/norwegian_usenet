@@ -1,3 +1,4 @@
+import argparse
 from pathlib import Path
 import tarfile
 import logging
@@ -51,7 +52,7 @@ def concat_textfiles(newsgroup_dir: Path, outfile: Path) -> None:
     logger.debug("Running concat textfiles in %s (outfile: %s)", newsgroup_dir, outfile)
     files_read = 0
     text = ""
-    for each in newsgroup_dir.iterdir():
+    for each in sorted(newsgroup_dir.iterdir()):
         if each.is_dir():
             sub_group_outfile = (
                 outfile.parent / f"{outfile.stem}.{each.name.lower()}.mbox"
@@ -70,15 +71,39 @@ def concat_textfiles(newsgroup_dir: Path, outfile: Path) -> None:
 
 
 if __name__ == "__main__":
-    zipped_dir = Path("data/nwa_90s/zipped_data")
-    unzipped_dir = Path("data/nwa_90s/unzipped_data")
-    output_directory = Path("data/nwa_90s/utf_8_data")
+    parser = argparse.ArgumentParser(
+        description="Convert NWA tar archives to utf-8 .mbox files"
+    )
+    parser.add_argument(
+        "--zipped-dir",
+        type=Path,
+        default=Path("data/nwa_90s/zipped_data"),
+        help="Directory containing .tar archives",
+    )
+    parser.add_argument(
+        "--unzipped-dir",
+        type=Path,
+        default=Path("data/nwa_90s/unzipped_data"),
+        help="Directory where tar archives are extracted",
+    )
+    parser.add_argument(
+        "--output-directory",
+        type=Path,
+        default=Path("data/nwa_90s/utf_8_data"),
+        help="Directory to write generated .mbox files",
+    )
 
-    extract_tarfiles(zipped_dir, unzipped_dir)
+    args = parser.parse_args()
+    logger.info("Args: %s", args)
 
-    output_directory.mkdir(exist_ok=True, parents=True)
+    extract_tarfiles(args.zipped_dir, args.unzipped_dir)
 
-    for directory in unzipped_dir.iterdir():
+    args.output_directory.mkdir(exist_ok=True, parents=True)
+    for f in args.output_directory.iterdir():
+        f.unlink()
+    logger.info("Cleared output directory %s", args.output_directory)
+
+    for directory in args.unzipped_dir.iterdir():
         if not directory.is_dir():
             continue
         logger.info("Finding usenet data in %s", directory)
@@ -86,9 +111,9 @@ if __name__ == "__main__":
 
         logger.info("Newsgroups parent directory: %s", newsgroups_parent_dir)
 
-        for newsgroup_dir in newsgroups_parent_dir.iterdir():
+        for newsgroup_dir in sorted(newsgroups_parent_dir.iterdir()):
             if not newsgroup_dir.is_dir():
                 continue
             logger.debug("Newsgroup dir: %s", newsgroup_dir)
-            outfile = output_directory / f"no.{newsgroup_dir.name.lower()}.mbox"
+            outfile = args.output_directory / f"no.{newsgroup_dir.name.lower()}.mbox"
             concat_textfiles(newsgroup_dir=newsgroup_dir, outfile=outfile)
