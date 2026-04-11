@@ -45,6 +45,14 @@ def filter_mbox_by_date(
         ):  # ISO 8601 sorts lexicographically
             kept_texts.append(mbox_in.get_bytes(key).decode("utf-8", errors="replace"))
 
+    if not kept_texts:
+        logger.info(
+            "%s: kept 0 / %d (no messages in date range, skipping output)",
+            mbox_file.name,
+            total,
+        )
+        return 0, total
+
     kept = write_mbox(kept_texts, output_file)
     logger.info("%s: kept %d / %d", mbox_file.name, kept, total)
     return kept, total
