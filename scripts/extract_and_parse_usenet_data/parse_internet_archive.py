@@ -108,7 +108,7 @@ if __name__ == "__main__":
             files_encodings[stem] = {"encoding": encoding}
 
     with args.encodings_file.open("w+") as f:
-        json.dump(files_encodings, fp=f, indent=4)
+        json.dump(files_encodings, fp=f, indent=4, sort_keys=True)
     logger.info(
         "Wrote encodings metadata for %d files to %s",
         len(files_encodings),
