@@ -1,6 +1,7 @@
 import argparse
 import logging
 from collections import Counter
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 
 import pandas as pd
@@ -13,15 +14,15 @@ from usenet_no.make_user_mapping import get_hash_dict
 logger = logging.getLogger(__name__)
 
 
-def count_posts_per_user_in_mbox_file(
-    mbox_file: Path, user_post_counts: Counter[tuple[str, str]]
-) -> None:
-    """
-    Reads messages in mbox_file and add the number of posts per user to user_post_counts
-    """
-    for message_from in get_messages_from_field(mbox_file=mbox_file):
+def count_posts_per_user_in_mbox_file(mbox_file: Path) -> Counter[tuple[str, str]]:
+    """Return a Counter of (name, email) -> post count for all messages in mbox_file."""
+    counts: Counter[tuple[str, str]] = Counter()
+    for message_from in get_messages_from_field(
+        mbox_file=mbox_file, show_progress=False
+    ):
         name, email = parseaddr(message_from or "")
-        user_post_counts[(name, email)] += 1
+        counts[(name, email)] += 1
+    return counts
 
 
 if __name__ == "__main__":
@@ -35,7 +36,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--output-file",
         type=Path,
-        default=Path("data/messages_per_user.csv"),
+        default=Path("data/messages_per_user_ia.csv"),
         help="Path to CSV output file",
     )
     parser.add_argument(
@@ -81,32 +82,31 @@ if __name__ == "__main__":
     email_to_hash = get_hash_dict(email_hashes_file)
     name_to_hash = get_hash_dict(name_hashes_file)
 
+    mbox_files = sorted(args.directory.glob("*.mbox"))[: args.limit]
     user_post_counts: Counter[tuple[str, str]] = Counter()
-    mbox_files = sorted(args.directory.glob("*.mbox"))
 
-    for index, mbox_file in enumerate(
-        tqdm(
-            mbox_files,
-            total=args.limit or len(mbox_files),
-            desc="Counting posts per user in mbox files",
-        )
-    ):
-        if index == args.limit:
-            break
-        count_posts_per_user_in_mbox_file(mbox_file, user_post_counts=user_post_counts)
-        logger.debug("Processed %s", mbox_file.name)
-        df = pd.DataFrame(
-            [
-                {
-                    "hashed_name": name_to_hash.get(name, ""),
-                    "hashed_email": email_to_hash.get(email, ""),
-                    "post_count": count,
-                }
-                for (name, email), count in user_post_counts.items()
-            ]
-        )
-        df.to_csv(args.output_file, index=False)
+    with ProcessPoolExecutor() as executor:
+        futures = {
+            executor.submit(count_posts_per_user_in_mbox_file, f): f for f in mbox_files
+        }
+        for future in tqdm(
+            as_completed(futures), total=len(futures), desc="Counting posts per user"
+        ):
+            user_post_counts += future.result()
 
+    df = pd.DataFrame(
+        [
+            {
+                "hashed_name": name_to_hash.get(name, ""),
+                "hashed_email": email_to_hash.get(email, ""),
+                "post_count": count,
+            }
+            for (name, email), count in user_post_counts.items()
+        ]
+    )
+    df.sort_values("hashed_email", ignore_index=True).to_csv(
+        args.output_file, index=False
+    )
     logger.info(
         "Total unique users: %d. See counts per user in %s",
         len(user_post_counts),
