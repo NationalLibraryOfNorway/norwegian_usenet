@@ -8,7 +8,28 @@ import re
 from pathlib import Path
 from typing import Iterable, Iterator
 
+_MESSAGE_ID_PATTERN = re.compile(r"<[^>]+>")
+
 logger = logging.getLogger(__name__)
+
+
+def parse_message_id(raw: str | None) -> str | None:
+    """Extract the bare message-id (with angle brackets) from a Message-ID header value.
+
+    Strips trailing junk like '#1/1' that some IA messages append.
+    Returns None if no valid id is found.
+    """
+    if not raw:
+        return None
+    m = _MESSAGE_ID_PATTERN.search(raw)
+    return m.group(0).lower() if m else None
+
+
+def parse_references(raw: str | None) -> list[str]:
+    """Extract all message-ids from a References header value."""
+    if not raw:
+        return []
+    return [mid.lower() for mid in _MESSAGE_ID_PATTERN.findall(raw)]
 
 
 def message_factory(fp: mailbox._PartialFile) -> mailbox.mboxMessage:
