@@ -2,15 +2,14 @@ import argparse
 import logging
 from pathlib import Path
 
+from usenet_no.embed_messages import embed_mbox_file, get_median_n_files
 from sentence_transformers import SentenceTransformer
-
-from usenet_no.embed_messages import embed_mbox_file, get_top_n_files
 
 logger = logging.getLogger(__name__)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Embed messages from the top N newsgroups in IA and NWA archives"
+        description="Embed messages from the N median-sized newsgroups in IA and NWA archives"
     )
     parser.add_argument(
         "--ia-directory",
@@ -31,11 +30,11 @@ if __name__ == "__main__":
         help="Directory to save embedding files",
     )
     parser.add_argument(
-        "--top-n",
+        "--median-n",
         type=int,
         default=10,
         metavar="N",
-        help="Number of largest newsgroups to embed from each archive",
+        help="Number of median-sized newsgroups to embed from each archive",
     )
     parser.add_argument(
         "--ia-counts-file",
@@ -58,7 +57,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--batch-size",
         type=int,
-        default=32,
+        default=1,
         metavar="N",
         help="Batch size for encoding",
     )
@@ -75,18 +74,22 @@ if __name__ == "__main__":
     model_output_dir = args.output_directory / args.model
     model_output_dir.mkdir(parents=True, exist_ok=True)
 
-    ia_top = get_top_n_files(args.ia_directory, args.top_n, args.ia_counts_file)
-    nwa_top = get_top_n_files(args.nwa_directory, args.top_n, args.nwa_counts_file)
+    ia_median = get_median_n_files(
+        args.ia_directory, args.median_n, args.ia_counts_file
+    )
+    nwa_median = get_median_n_files(
+        args.nwa_directory, args.median_n, args.nwa_counts_file
+    )
 
     logger.info("Loading model %s", args.model)
     model = SentenceTransformer(args.model)
 
-    for mbox_file in ia_top:
+    for mbox_file in ia_median:
         embed_mbox_file(
             mbox_file, "ia", model, model_output_dir, args.overwrite, args.batch_size
         )
 
-    for mbox_file in nwa_top:
+    for mbox_file in nwa_median:
         embed_mbox_file(
             mbox_file, "nwa", model, model_output_dir, args.overwrite, args.batch_size
         )
