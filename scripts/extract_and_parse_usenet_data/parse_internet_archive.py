@@ -1,13 +1,13 @@
-from zipfile import ZipFile
-from pathlib import Path
-
-from mailbox import mbox
 import argparse
-import cchardet as chardet
-from tqdm import tqdm
 import json
 import logging
+from concurrent.futures import ProcessPoolExecutor, as_completed
+from pathlib import Path
+from zipfile import ZipFile
 
+from tqdm import tqdm
+
+from usenet_no.parse_internet_archive import process_mbox_file
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +56,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--overwrite",
         action="store_true",
-        help="If flagged, will overwrite existing files (encodings-file and mbox files in decoded-data-dir) instead of skipping",
+        help="If flagged, will overwrite existing files instead of skipping",
     )
     args = parser.parse_args()
     logger.info("args %s", args)
@@ -69,7 +69,7 @@ if __name__ == "__main__":
     logger.info(
         "Number of zipped files: %d | Number of unzipped files: %d",
         num_docs_zipped,
-        num_docs_zipped,
+        num_docs_unzipped,
     )
     if num_docs_zipped != num_docs_unzipped:
         unzip_all(args.zipped_data_dir, args.unzipped_data_dir)
@@ -79,42 +79,33 @@ if __name__ == "__main__":
     else:
         files_encodings = {}
 
-    unzipped_mbox_files = list(args.unzipped_data_dir.iterdir())
-
-    for mbox_file in tqdm(
-        unzipped_mbox_files,
-        desc=f"Reading each mbox file and write with utf-8 encoding to {args.decoded_data_dir}",
-    ):
-        outfile = args.decoded_data_dir / mbox_file.name
-
-        if (
-            mbox_file.stem in files_encodings
-            and outfile.exists()
+    unzipped_mbox_files = [
+        f
+        for f in args.unzipped_data_dir.iterdir()
+        if not (
+            f.stem in files_encodings
+            and (args.decoded_data_dir / f.name).exists()
             and not args.overwrite
-        ):
-            continue
-        try:
-            # If messages can be iterated over by default, there are no encoding issues
-            [e for e in mbox(mbox_file)]
-            files_encodings[mbox_file.stem] = {"encoding": "utf-8"}
-            outfile.write_bytes(mbox_file.read_bytes())
-            logger.debug(
-                "Copied UTF-8 mbox file %s without re-encoding", mbox_file.name
-            )
+        )
+    ]
 
-        except UnicodeDecodeError:
-            detection = chardet.detect(mbox_file.read_bytes())
-            files_encodings[mbox_file.stem] = detection
-            encoding = detection.get("encoding")
-            text = mbox_file.read_bytes().decode(
-                encoding, errors=args.unicode_error_handler
-            )
-            outfile.write_text(text, encoding="utf-8")
-            logger.debug(
-                "Re-encoded %s from %s to UTF-8",
-                mbox_file.name,
-                encoding,
-            )
+    with ProcessPoolExecutor() as executor:
+        futures = {
+            executor.submit(
+                process_mbox_file,
+                mbox_file,
+                args.decoded_data_dir / mbox_file.name,
+                args.unicode_error_handler,
+            ): mbox_file
+            for mbox_file in unzipped_mbox_files
+        }
+        for future in tqdm(
+            as_completed(futures),
+            total=len(futures),
+            desc=f"Parsing mbox files to {args.decoded_data_dir}",
+        ):
+            stem, encoding = future.result()
+            files_encodings[stem] = {"encoding": encoding}
 
     with args.encodings_file.open("w+") as f:
         json.dump(files_encodings, fp=f, indent=4)

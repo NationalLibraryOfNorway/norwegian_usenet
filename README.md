@@ -22,13 +22,13 @@ Når dataen lastet ned og pakket ut antas følgene filstruktur:
 ```
 data/
 ├── internet_archive/
-│   ├── zipped_data/       # Nedlastede .zip-filer fra archive.org (src/usenet_no/scrape.py)
-│   ├── unzipped_data/     # Utpakkede .mbox-filer (src/usenet_no/parse.py)
-│   └── utf_8_data/        # UTF-8-enkodede .mbox-filer (src/usenet_no/parse.py)
+│   ├── zipped_data/       # Nedlastede .zip-filer fra archive.org (scripts/extract_and_parse_usenet_data/scrape_internet_archive.py)
+│   ├── unzipped_data/     # Utpakkede .mbox-filer (scripts/extract_and_parse_usenet_data/parse_internet_archive.py)
+│   └── utf_8_data/        # UTF-8-enkodede .mbox-filer (scripts/extract_and_parse_usenet_data/parse_internet_archive.py)
 ├── nwa_90s/
 │   ├── zipped_data/       # .tar-filer fra Nasjonalbiblioteket
-│   ├── unzipped_data/     # Utpakkede meldingsfiler (scripts/nwa_to_mbox.py)
-│   └── utf_8_data/        # Konkatenerte .mbox-filer, UTF-8-enkodet (scripts/nwa_to_mbox.py)
+│   ├── unzipped_data/     # Utpakkede meldingsfiler (scripts/extract_and_parse_usenet_data/parse_norwegian_web_archive.py)
+│   └── utf_8_data/        # Konkatenerte .mbox-filer, UTF-8-enkodet (scripts/extract_and_parse_usenet_data/parse_norwegian_web_archive.py)
 └── hidden/                # Mappings fra epost og navn til hash-verdier (src/usenet_no/make_user_mapping.py)
 ```
 (analyseskriptene bruker bare utf_8_data-undermappene)
@@ -39,21 +39,17 @@ I scripts/ ligger enkeltstående skript for å lage lese gjennom arkivet og lage
 I notebooks/ ligger jupyter notebooks for å visualisere og tolke resultatene fra scripts/data.
 
 ### Nedlasting og parsing av norske usenet (Internet Archive)
-`scrape` henter ut og laster ned alle zip-filene fra `https://archive.org/download/usenet-no` (lagres i `data/internet_archive/zipped_data` by default)  
-`parse` zipper opp og leser ut alle mbox-filene fra outputen produsert av scrape. Mboxfilene dekodes og enkodes til utf-8 og lagres til `decoded-data-dir` (default arg er `data/internet_archive/utf_8_data`)
+`scrape_internet_archive` henter ut og laster ned alle zip-filene fra `https://archive.org/download/usenet-no` (lagres i `data/internet_archive/zipped_data` by default)  
+`parse_internet_archive` zipper opp og leser ut alle mbox-filene fra outputen produsert av scrape. Mboxfilene dekodes og enkodes til utf-8 og lagres til `decoded-data-dir` (default arg er `data/internet_archive/utf_8_data`)
 
-Disse kan kjøres f.eks slik (i denne rekkefølgen)
-
-Med uv:  
-`uv run -m usenet_no.scrape`  
-`uv run -m usenet_no.parse`
-
-Eller uten (i venv e.l):  
-`python -m usenet_no.scrape`  
-`python -m usenet_no.parse` 
+Disse kan kjøres f.eks slik (i denne rekkefølgen):  
+`uv run scripts/extract_and_parse_usenet_data/scrape_internet_archive.py`  
+`uv run scripts/extract_and_parse_usenet_data/parse_internet_archive.py`
 
 ### Parsing av NWA-data
-`nwa_to_mbox` pakker ut .tar-filer fra `data/nwa_90s/zipped_data`, og skriver konkatenerte .mbox-filer til `data/nwa_90s/utf_8_data`
+`parse_norwegian_web_archive` pakker ut .tar-filer fra `data/nwa_90s/zipped_data`, og skriver konkatenerte .mbox-filer til `data/nwa_90s/utf_8_data`
+
+`uv run scripts/extract_and_parse_usenet_data/parse_norwegian_web_archive.py`
 
 ### Pseudonymisering
 For å telle statistikk over brukerdata, har vi laget en mapping fra epost og navn i klartekst, til hashede verdier.  

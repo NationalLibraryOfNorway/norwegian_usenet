@@ -6,7 +6,7 @@ import mailbox
 import logging
 import re
 from pathlib import Path
-from typing import Iterator
+from typing import Iterable, Iterator
 
 logger = logging.getLogger(__name__)
 
@@ -14,6 +14,24 @@ logger = logging.getLogger(__name__)
 def message_factory(fp: mailbox._PartialFile) -> mailbox.mboxMessage:
     utf8_message_parser = BytesParser(policy=policy.default.clone(utf8=True))
     return mailbox.mboxMessage(utf8_message_parser.parse(fp))
+
+
+def write_mbox(messages: Iterable[str], outfile: Path, append: bool = False) -> int:
+    """Write messages to outfile with consistent normalization.
+
+    Each message gets ensure_mbox_envelope applied, trailing whitespace stripped,
+    and is separated by a blank line. Written as UTF-8 bytes.
+    Use append=True when multiple sources contribute to the same output file.
+    Returns the number of messages written.
+    """
+    count = 0
+    mode = "ab" if append else "wb"
+    with outfile.open(mode) as f:
+        for text in messages:
+            normalized = ensure_mbox_envelope(text).rstrip() + "\n\n"
+            f.write(normalized.encode("utf-8"))
+            count += 1
+    return count
 
 
 def ensure_mbox_envelope(text: str) -> str:
@@ -63,7 +81,7 @@ def get_message_body(message: mailbox.mboxMessage) -> str:
             if part.get_content_type() == "text/plain":
                 payload = part.get_payload(decode=True)
                 if payload:
-                    parts.append(payload.decode("utf-8", errors="replace"))
+                    parts.append(payload.decode("utf-8", errors="replace").strip())
         body = "\n".join(parts)
     else:
         payload = message.get_payload(decode=True)
@@ -76,10 +94,10 @@ def get_message_bodies(mbox_file: Path) -> set[str]:
 
     Assumes all message payloads are UTF-8 encoded on disk, regardless of the
     charset declared in Content-Type headers. This holds for both data sources:
-    - NWA (data/nwa_90s/utf_8_data): scripts/nwa_to_mbox.py decodes each file with chardet and writes
-      as UTF-8 via Python's default text encoding.
-    - IA (data/internet_archive/utf_8_data): src/usenet_no/parse.py detects encoding with chardet and explicitly
-      re-encodes to UTF-8, or copies the file as-is if it already parses cleanly.
+    - NWA (data/nwa_90s/utf_8_data): src/usenet_no/parse_norwegian_web_archive.py decodes each file with
+      chardet and writes as UTF-8 via write_mbox.
+    - IA (data/internet_archive/utf_8_data): src/usenet_no/parse_internet_archive.py detects encoding with
+      chardet and writes each message as UTF-8 via write_mbox.
     """
     mbox = mailbox.mbox(str(mbox_file), factory=message_factory)
     bodies = set()
