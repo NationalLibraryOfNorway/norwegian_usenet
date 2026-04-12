@@ -102,7 +102,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--ia-directory",
         type=Path,
-        default=Path("data/internet_archive/utf_8_data"),
+        default=Path("data/internet_archive/date_filtered"),
         help="Directory containing IA mbox files",
     )
     parser.add_argument(
@@ -149,6 +149,7 @@ if __name__ == "__main__":
         help="Maximum number of messages (only used with --min-messages; no upper limit if omitted)",
     )
     args = parser.parse_args()
+    logger.info(args)
 
     if args.min_messages is not None:
         args.selection = None

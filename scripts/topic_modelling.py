@@ -116,7 +116,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--ia-directory",
         type=Path,
-        default=Path("data/internet_archive/utf_8_data"),
+        default=Path("data/internet_archive/date_filtered"),
         help="Directory containing IA mbox files",
     )
     parser.add_argument(
