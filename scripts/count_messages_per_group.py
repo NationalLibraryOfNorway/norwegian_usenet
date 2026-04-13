@@ -24,30 +24,30 @@ def count_messages_in_directory(directory: Path) -> dict[str, int]:
     """
     Counts the total number of messages in all MBOX files in a given directory.
     """
-    channel_message_counts = {}
+    newsgroup_message_counts = {}
     mbox_files = list(directory.glob("*.mbox"))
     for mbox_file in tqdm(mbox_files, desc="Counting messages per group"):
         message_count = count_messages_in_mbox_file(mbox_file)
-        channel_message_counts[mbox_file.name] = message_count
+        newsgroup_message_counts[mbox_file.name] = message_count
         logger.debug("Processed %s: %s messages", mbox_file.name, message_count)
 
-    return channel_message_counts
+    return newsgroup_message_counts
 
 
-def export_channel_message_counts_to_csv(
-    channel_message_counts: dict[str, int], output_file: Path
+def export_newsgroup_message_counts_to_csv(
+    newsgroup_message_counts: dict[str, int], output_file: Path
 ):
     """
-    Exports the message counts per channel to a CSV file.
+    Exports the message counts per newsgroup to a CSV file.
     """
 
-    total_messages = sum(channel_message_counts.values())
+    total_messages = sum(newsgroup_message_counts.values())
     with output_file.open(mode="w", newline="", encoding="utf-8") as file:
         writer = csv.writer(file)
-        writer.writerow(["channel", "message_count"])
+        writer.writerow(["newsgroup", "message_count"])
 
-        for channel, count in channel_message_counts.items():
-            writer.writerow([channel, count])
+        for newsgroup, count in newsgroup_message_counts.items():
+            writer.writerow([newsgroup, count])
 
         # Add a total row
         writer.writerow(["Total", total_messages])
@@ -72,12 +72,12 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    # Count messages in each channel
-    channel_message_counts = count_messages_in_directory(args.directory)
+    # Count messages in each newsgroup
+    newsgroup_message_counts = count_messages_in_directory(args.directory)
 
     # Print total number of messages
-    total_messages = sum(channel_message_counts.values())
-    logger.info("Total messages across all channels: %d", total_messages)
+    total_messages = sum(newsgroup_message_counts.values())
+    logger.info("Total messages across all newsgroups: %d", total_messages)
 
     # Export to CSV
-    export_channel_message_counts_to_csv(channel_message_counts, args.output_file)
+    export_newsgroup_message_counts_to_csv(newsgroup_message_counts, args.output_file)

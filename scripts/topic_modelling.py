@@ -18,6 +18,7 @@ def load_embeddings_and_docs(
     nwa_directory: Path,
     min_messages: int | None = None,
     max_messages: int | None = None,
+    selection: list[str] | None = None,
 ) -> tuple[np.ndarray, list[str]]:
     source_dirs = {"ia": ia_directory, "nwa": nwa_directory}
 
@@ -35,16 +36,20 @@ def load_embeddings_and_docs(
             logger.warning("Unknown source '%s' in %s, skipping", source, emb_file.name)
             continue
 
+        if selection is not None:
+            if mbox_stem not in selection:
+                continue
+            embeddings = np.load(emb_file)
+        else:
+            embeddings = np.load(emb_file)
+            if min_messages is not None and len(embeddings) < min_messages:
+                continue
+            if max_messages is not None and len(embeddings) > max_messages:
+                continue
+
         mbox_file = source_dirs[source] / f"{mbox_stem}.mbox"
         if not mbox_file.exists():
             logger.warning("mbox file not found: %s, skipping", mbox_file)
-            continue
-
-        embeddings = np.load(emb_file)
-
-        if min_messages is not None and len(embeddings) < min_messages:
-            continue
-        if max_messages is not None and len(embeddings) > max_messages:
             continue
 
         index_file = embeddings_dir / f"{emb_file.stem}_index.npy"
@@ -74,15 +79,19 @@ def load_embeddings_and_docs(
 
 
 def make_run_tag(
-    min_messages: int | None,
-    max_messages: int | None,
     nr_topics: int | None,
+    min_messages: int | None = None,
+    max_messages: int | None = None,
+    selection: list[str] | None = None,
 ) -> str:
-    parts = []
-    if min_messages is not None:
-        parts.append(f"min{min_messages}")
-    if max_messages is not None:
-        parts.append(f"max{max_messages}")
+    if selection is not None:
+        parts = ["_".join(sorted(selection))]
+    else:
+        parts = []
+        if min_messages is not None:
+            parts.append(f"min{min_messages}")
+        if max_messages is not None:
+            parts.append(f"max{max_messages}")
     if nr_topics is not None:
         parts.append(f"nr{nr_topics}")
     return "_".join(parts) if parts else "default"
@@ -107,7 +116,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--ia-directory",
         type=Path,
-        default=Path("data/internet_archive/utf_8_data"),
+        default=Path("data/internet_archive/date_filtered"),
         help="Directory containing IA mbox files",
     )
     parser.add_argument(
@@ -129,27 +138,53 @@ if __name__ == "__main__":
         metavar="N",
         help="Reduce topics to this many after fitting (omit to keep all)",
     )
-    parser.add_argument(
+
+    DEFAULT_SELECTION = [
+        "no.religion",
+        "no.bil",
+        "no.musikk",
+        "no.slekt",
+        "no.litteratur",
+        "no.prat.politikk",
+    ]
+
+    filter_group = parser.add_mutually_exclusive_group()
+    filter_group.add_argument(
+        "--selection",
+        nargs="+",
+        metavar="NEWSGROUP",
+        default=DEFAULT_SELECTION,
+        help="Newsgroup names to include (default: %(default)s). Mutually exclusive with --min-messages.",
+    )
+    filter_group.add_argument(
         "--min-messages",
         type=int,
         default=None,
         metavar="N",
-        help="Only include newsgroups with at least N messages",
+        help="Only include newsgroups with at least N messages. Switches to count-based filtering.",
     )
     parser.add_argument(
         "--max-messages",
         type=int,
         default=None,
         metavar="N",
-        help="Only include newsgroups with at most N messages",
+        help="Only include newsgroups with at most N messages (only used with --min-messages; no upper limit if omitted)",
     )
 
     args = parser.parse_args()
     logger.info("Args: %s", args)
 
+    if args.min_messages is not None:
+        args.selection = None
+
     embeddings_dir = args.embeddings_directory / args.model
 
-    run_tag = make_run_tag(args.min_messages, args.max_messages, args.nr_topics)
+    run_tag = make_run_tag(
+        args.nr_topics,
+        min_messages=args.min_messages,
+        max_messages=args.max_messages,
+        selection=args.selection,
+    )
     output_dir = args.output_directory / args.model / run_tag
     output_dir.mkdir(parents=True, exist_ok=True)
     logger.info("Output directory: %s", output_dir)
@@ -158,8 +193,9 @@ if __name__ == "__main__":
         embeddings_dir,
         args.ia_directory,
         args.nwa_directory,
-        args.min_messages,
-        args.max_messages,
+        min_messages=args.min_messages,
+        max_messages=args.max_messages,
+        selection=args.selection,
     )
     logger.info(
         "Loaded %d documents with embeddings of shape %s", len(docs), embeddings.shape

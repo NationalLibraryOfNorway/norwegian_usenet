@@ -1,0 +1,12 @@
+{
+  "ia_ids": 5180464,
+  "nwa_ids": 553925,
+  "ids_in_both": 336857,
+  "ids_ia_only": 4843607,
+  "ids_nwa_only": 217068,
+  "ia_refs_resolved_by_nwa": 27246,
+  "nwa_refs_resolved_by_ia": 6488,
+  "ghost_cited_by_ia_only": 174262,
+  "ghost_cited_by_nwa_only": 5191,
+  "ghost_cited_by_both": 5769
+}

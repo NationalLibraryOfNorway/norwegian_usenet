@@ -14,6 +14,7 @@ dependencies = [
     "faust-cchardet>=2.1.19",
     "ipykernel>=7.2.0",
     "ipywidgets>=8.1.8",
+    "kaleido>=1.2.0",
     "matplotlib>=3.10.8",
     "matplotlib-venn>=1.1.2",
     "nbformat>=5.10.4",

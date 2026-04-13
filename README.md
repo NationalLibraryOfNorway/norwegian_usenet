@@ -1,12 +1,12 @@
 # Usenet no
-Arbeidsrepo for utforskning av den norske delen av usenet 
+Working repository for exploring the Norwegian part of Usenet.
 
-## Installasjon  
+## Installation
 
-Med [uv](https://docs.astral.sh/uv/#installation):  
+With [uv](https://docs.astral.sh/uv/#installation):  
 `uv sync`
 
-Med pip og venv:   
+With pip and venv:
 ```
 python3 -m venv .venv
 source .venv/bin/activate
@@ -14,100 +14,127 @@ pip install .
 ```
 
 ## Data
-Dataen vi bruker i dette repoet kommer fra to kilder: Internet Archive og Nasjonalbibliotekets nettarkiv (NWA).
-Fordi disse dataene kan inneholde personopplysninger, er ikke selve dataen delt her.
-Det vi har er skript for å laste ned, ekstrahere og parse dataen fra internet archive, samt forskjellige skript for å analysere dataen fra begge arkiver.
+The data used in this repo comes from two sources: Internet Archive (IA) and the National Library of Norway's web archive (NWA).
+Because the data may contain personal information, it is not shared here.
+What we have are scripts to download, extract, and parse the data from both archives, as well as various scripts to analyze the data.
 
-Når dataen lastet ned og pakket ut antas følgene filstruktur:  
+Assumed file structure once data is downloaded and extracted:
 ```
 data/
 ├── internet_archive/
-│   ├── zipped_data/       # Nedlastede .zip-filer fra archive.org (src/usenet_no/scrape.py)
-│   ├── unzipped_data/     # Utpakkede .mbox-filer (src/usenet_no/parse.py)
-│   └── utf_8_data/        # UTF-8-enkodede .mbox-filer (src/usenet_no/parse.py)
+│   ├── zipped_data/        # Downloaded .zip files from archive.org (scripts/extract_and_parse_usenet_data/scrape_internet_archive.py)
+│   ├── unzipped_data/      # Extracted .mbox files (scripts/extract_and_parse_usenet_data/parse_internet_archive.py)
+│   ├── utf_8_data/         # UTF-8 encoded .mbox files (scripts/extract_and_parse_usenet_data/parse_internet_archive.py)
+│   └── date_filtered/      # IA messages filtered to the NWA date span (scripts/extract_and_parse_usenet_data/filter_internet_archive_by_date.py)
 ├── nwa_90s/
-│   ├── zipped_data/       # .tar-filer fra Nasjonalbiblioteket
-│   ├── unzipped_data/     # Utpakkede meldingsfiler (scripts/nwa_to_mbox.py)
-│   └── utf_8_data/        # Konkatenerte .mbox-filer, UTF-8-enkodet (scripts/nwa_to_mbox.py)
-└── hidden/                # Mappings fra epost og navn til hash-verdier (src/usenet_no/make_user_mapping.py)
+│   ├── zipped_data/        # .tar files from the National Library
+│   ├── unzipped_data/      # Extracted message files (scripts/extract_and_parse_usenet_data/parse_norwegian_web_archive.py)
+│   └── utf_8_data/         # Concatenated .mbox files, UTF-8 encoded (scripts/extract_and_parse_usenet_data/parse_norwegian_web_archive.py)
+└── hidden/                 # Mappings from email and name to hash values (src/usenet_no/make_user_mapping.py)
 ```
-(analyseskriptene bruker bare utf_8_data-undermappene)
+(Analysis scripts only use the `utf_8_data` subdirectories, or `date_filtered` for date-filtered IA analysis.)
 
-## Kode 
-I src/usenet_no/ ligger kodemoduler med kjernefunksjonalitet for å jobbe med mboxdata, i tillegg til koden for å laste ned usenetarkivet.
-I scripts/ ligger enkeltstående skript for å lage lese gjennom arkivet og lage statistikk (feks telle antall meldinger per bruker). Output fra disse lagres i data/. 
-I notebooks/ ligger jupyter notebooks for å visualisere og tolke resultatene fra scripts/data.
+## Code
+`src/usenet_no/` contains core library modules for working with mbox data.  
+`scripts/` contains standalone scripts for reading through the archives and generating statistics. Output is stored in `data/`.  
+`notebooks/` contains Jupyter notebooks for visualizing and interpreting results from the scripts.
 
-### Nedlasting og parsing av norske usenet (Internet Archive)
-`scrape` henter ut og laster ned alle zip-filene fra `https://archive.org/download/usenet-no` (lagres i `data/internet_archive/zipped_data` by default)  
-`parse` zipper opp og leser ut alle mbox-filene fra outputen produsert av scrape. Mboxfilene dekodes og enkodes til utf-8 og lagres til `decoded-data-dir` (default arg er `data/internet_archive/utf_8_data`)
+### Downloading and parsing Norwegian Usenet (Internet Archive)
+`scrape_internet_archive` fetches and downloads all zip files from `https://archive.org/download/usenet-no` (stored in `data/internet_archive/zipped_data` by default).  
+`parse_internet_archive` unzips and reads all mbox files from the scrape output. Files are decoded and re-encoded to UTF-8 and written to `data/internet_archive/utf_8_data`.
 
-Disse kan kjøres f.eks slik (i denne rekkefølgen)
+Run in this order:
+```
+uv run scripts/extract_and_parse_usenet_data/scrape_internet_archive.py
+uv run scripts/extract_and_parse_usenet_data/parse_internet_archive.py
+```
 
-Med uv:  
-`uv run -m usenet_no.scrape`  
-`uv run -m usenet_no.parse`
+### Filtering IA data by date
+`filter_internet_archive_by_date` filters the IA mbox files to only include messages within the date span of the NWA archive, and writes them to `data/internet_archive/date_filtered`.
 
-Eller uten (i venv e.l):  
-`python -m usenet_no.scrape`  
-`python -m usenet_no.parse` 
+```
+uv run scripts/extract_and_parse_usenet_data/filter_internet_archive_by_date.py
+```
 
-### Parsing av NWA-data
-`nwa_to_mbox` pakker ut .tar-filer fra `data/nwa_90s/zipped_data`, og skriver konkatenerte .mbox-filer til `data/nwa_90s/utf_8_data`
+### Parsing NWA data
+`parse_norwegian_web_archive` extracts .tar files from `data/nwa_90s/zipped_data` and writes concatenated .mbox files to `data/nwa_90s/utf_8_data`.
 
-### Pseudonymisering
-For å telle statistikk over brukerdata, har vi laget en mapping fra epost og navn i klartekst, til hashede verdier.  
-Disse mappingene brukes når vi teller antall poster per epost o.l, slik at vi kan ha datafilene lagret på github uten av det inneholder epost-adressene. 
+```
+uv run scripts/extract_and_parse_usenet_data/parse_norwegian_web_archive.py
+```
 
-Med uv:  
-`uv run -m usenet_no.make_user_mapping`  
-`uv run -m usenet_no.make_user_mapping --extend -i data/nwa_90s/utf_8_data`  
+### Pseudonymization
+To count statistics over user data, we have created a mapping from email addresses and names in plain text to hashed values.
+These mappings are used when counting posts per email address etc., so that data files can be stored on GitHub without containing email addresses.
 
+```
+uv run -m usenet_no.make_user_mapping
+uv run -m usenet_no.make_user_mapping --extend -i data/nwa_90s/utf_8_data
+```
 
-Eller uten (i venv e.l):  
-`python -m usenet_no.make_user_mapping`  
-`python -m usenet_no.make_user_mapping --extend -i data/nwa_90s/utf_8_data`
+### Scripts
 
+**Statistics:**
+- `scripts/count_messages_per_group.py` — counts messages per newsgroup (mbox file). Output: `data/messages_per_group_ia.csv` / `data/messages_per_group_nwa.csv`
+- `scripts/count_messages_per_user.py` — counts messages per user (anonymized with hash). Output: `data/messages_per_user_ia.csv` / `data/messages_per_user_nwa.csv`
+- `scripts/count_dates.py` — counts messages per date. Output: `data/date_count_ia.csv` / `data/date_count_nwa.csv`
 
-### Skript
-- scripts/count_messages_per_group.py — teller antall meldinger per newsgroup (mbox-fil). Output: `data/messages_per_group_ia.csv` / `data/messages_per_group_nwa.csv`
-- scripts/count_messages_per_user.py — teller antall meldinger per bruker (anonymisert med hash). Output: `data/messages_per_user_ia.csv` / `data/messages_per_user_nwa.csv`
-- scripts/count_dates.py — teller antall meldinger per dato. Output: `data/date_count_ia.csv` / `data/date_count_nwa.csv`
-- scripts/compare_ia_nwa_content.py — sammenligner meldingsinnhold mellom IA og NWA ved eksakt tekstmatch, per newsgroup. Output: `data/ia_nwa_content_comparison.csv`
+**Comparison:**
+- `scripts/compare_ia_nwa_content.py` — compares message body overlap between IA and NWA by exact text match, per newsgroup. Output: `data/ia_nwa_content_comparison.csv`
+- `scripts/compare_ia_nwa_message_ids.py` — compares message-ID overlap between IA and NWA, and collects external references. Output: `data/ia_nwa_message_id_overlap.json`
+- `scripts/compare_mbox_counts.py` — validates mbox read/write by comparing message counts before and after.
 
-Kjøres slik:
-`uv run scripts/count_messages_per_group.py`
-`uv run scripts/count_messages_per_user.py`
-`uv run scripts/count_dates.py`
-`uv run scripts/compare_ia_nwa_content.py`
+**Visualization:**
+- `scripts/newsgroup_tree.py` — generates an ASCII visualization of the nested newsgroup structure. Output: printed to stdout.
+- `scripts/newsgroup_tree_gif.py` — generates animated GIF visualizations of the newsgroup structure. Output: `data/newsgroup_tree_ia.gif` / `data/newsgroup_tree_nwa.gif`
+- `scripts/export_umap_for_web.py` — exports UMAP embedding data for the GitHub Pages visualization. Output: `docs/data/`
 
+Run example:
+```
+uv run scripts/count_messages_per_group.py
+uv run scripts/count_messages_per_user.py
+uv run scripts/count_dates.py
+uv run scripts/compare_ia_nwa_content.py
+uv run scripts/compare_ia_nwa_message_ids.py
+```
+
+### Embedding scripts
+Scripts for embedding messages are located in `scripts/embed_messages/`:
+- `embed_top_n.py` — embeds the top N most active newsgroups
+- `embed_n_median.py` — embeds N newsgroups around the median activity level
+- `embed_n_closest_to_k.py` — embeds N newsgroups closest to a given size k
+- `embed_selection.py` — embeds a configurable selection of newsgroups (defined in `data/newsgroups_for_selection.jsonl`)
 
 ## ePADD
-ePADD er et program som med et grafisk brukergrensesnitt som lar deg utforske epost-arkiver. 
-Siden usenet-arkivet er lagret som .mbox-filer, kan man utforske dette arkivet med ePADD.
+ePADD is a program with a graphical interface for exploring email archives.
+Since the Usenet archive is stored as .mbox files, it can be explored with ePADD.
 
-Last ned .jar-fil fra https://github.com/ePADD/epadd/releases/   
-(filnavn: epadd-standalone.jar) og flytt hit  
+Download the .jar file from https://github.com/ePADD/epadd/releases/  
+(filename: epadd-standalone.jar) and move it here.
 
-Du må ha java installert  
-`java -jar epadd-standalone.jar`
+Requires Java:
+```
+java -jar epadd-standalone.jar
+```
 
-### NB-epadd 
-Les om NB-epadd her https://github.com/NationalLibraryOfNorway/epadd-nb 
-(Krever uthenting av entiteter utenfor epadd, les mer i README i repoet)
+### NB-epadd
+Read about NB-epadd here: https://github.com/NationalLibraryOfNorway/epadd-nb  
+(Requires entity extraction outside of epadd — see the README in that repo.)
 
-
-## For utviklere
+## For developers
 
 ### Pre-commit
-Installér pre-commit (første gang):
-`uv run pre-commit install` 
+Install pre-commit hooks (first time):
+```
+uv run pre-commit install
+```
+This runs the hooks defined in `.pre-commit-config.yaml` on every commit.
 
-Da kjøres pre-commit hooks fra .pre-commit-config.yaml hver gang du gjør en commit 
+### Tests
+Tests mirror the directory structure in `src/`, with one file per function being tested.
+At the deepest level, a `.py` file in `src/` corresponds to a directory in `tests/`, with one `test_<function_name>.py` file per function in that source file.
 
-### Tester
-Vi organiserer tester som reflekterer mappestrukturen i src/, men med én fil per funksjon som skal testes. 
-Det vil si at på innerste nivå, vil en .py fil i src tilsvare en mappe i tests/, med en test_navn_på_funksjon.py-fil per funksjon i .py-fila i src. 
-
-Kjør tester slik: 
-`uv run pytest`
+Run tests:
+```
+uv run pytest
+```

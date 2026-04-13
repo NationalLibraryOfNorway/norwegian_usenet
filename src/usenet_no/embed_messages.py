@@ -20,9 +20,9 @@ def get_mbox_counts(
     if counts_file is not None and counts_file.exists():
         logger.info("Loading mbox counts from %s", counts_file)
         df = pd.read_csv(counts_file)
-        df = df[df["channel"] != "Total"]
+        df = df[df["newsgroup"] != "Total"]
         return dict(
-            zip(df["channel"].map(lambda name: directory / name), df["message_count"])
+            zip(df["newsgroup"].map(lambda name: directory / name), df["message_count"])
         )
 
     mbox_files = list(directory.glob("*.mbox"))

@@ -23,8 +23,9 @@ def hsl_to_hex(h, s, lightness):
 def load_embeddings_and_docs(
     embedding_dir: Path,
     source_dirs: dict[str, Path],
-    min_messages: int,
-    max_messages: int,
+    min_messages: int | None = None,
+    max_messages: int | None = None,
+    selection: list[str] | None = None,
 ) -> tuple[np.ndarray, list[str], list[str]]:
     all_embeddings = []
     embedding_indexer = []
@@ -33,11 +34,20 @@ def load_embeddings_and_docs(
     for f in sorted(embedding_dir.iterdir()):
         if f.stem.endswith("_index"):
             continue
-        embs = np.load(f)
-        if len(embs) < min_messages or len(embs) > max_messages:
-            continue
 
         mbox_stem, source = f.stem.rsplit("_", 1)
+
+        if selection is not None:
+            if mbox_stem not in selection:
+                continue
+            embs = np.load(f)
+        else:
+            embs = np.load(f)
+            if min_messages is not None and len(embs) < min_messages:
+                continue
+            if max_messages is not None and len(embs) > max_messages:
+                continue
+
         mbox_file = source_dirs[source] / f"{mbox_stem}.mbox"
         if not mbox_file.exists():
             logger.warning("mbox file not found: %s, skipping", mbox_file)
@@ -92,7 +102,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--ia-directory",
         type=Path,
-        default=Path("data/internet_archive/utf_8_data"),
+        default=Path("data/internet_archive/date_filtered"),
         help="Directory containing IA mbox files",
     )
     parser.add_argument(
@@ -106,28 +116,68 @@ if __name__ == "__main__":
         action="store_true",
         help="Recompute and overwrite the cached UMAP embeddings",
     )
-    parser.add_argument(
+
+    DEFAULT_SELECTION = [
+        "no.religion",
+        "no.bil",
+        "no.musikk",
+        "no.slekt",
+        "no.litteratur",
+        "no.prat.politikk",
+    ]
+
+    filter_group = parser.add_mutually_exclusive_group()
+    filter_group.add_argument(
+        "--selection",
+        nargs="+",
+        metavar="NEWSGROUP",
+        default=DEFAULT_SELECTION,
+        help="Newsgroup names to include (default: %(default)s). Mutually exclusive with --min-messages.",
+    )
+    filter_group.add_argument(
         "--min-messages",
         type=int,
-        default=400,
+        default=None,
         metavar="N",
-        help="Minimum number of messages for a newsgroup to be included",
+        help="Minimum number of messages for a newsgroup to be included. Switches to count-based filtering.",
     )
     parser.add_argument(
         "--max-messages",
         type=int,
-        default=600,
+        default=None,
         metavar="N",
-        help="Maximum number of messages for a newsgroup to be included",
+        help="Maximum number of messages (only used with --min-messages; no upper limit if omitted)",
     )
     args = parser.parse_args()
+    logger.info(args)
+
+    if args.min_messages is not None:
+        args.selection = None
 
     embedding_dir = args.embeddings_directory / args.model
     source_dirs = {"ia": args.ia_directory, "nwa": args.nwa_directory}
-    umap_cache = embedding_dir / "umap_2d_visualization.npy"
+
+    umap_cache_dir = args.embeddings_directory / "umap_embeddings" / args.model
+    umap_cache_dir.mkdir(parents=True, exist_ok=True)
+
+    if args.selection is not None:
+        cache_name = "_".join(sorted(args.selection))
+    else:
+        min_part = (
+            f"min{args.min_messages}" if args.min_messages is not None else "min0"
+        )
+        max_part = (
+            f"max{args.max_messages}" if args.max_messages is not None else "maxinf"
+        )
+        cache_name = f"{min_part}_{max_part}"
+    umap_cache = umap_cache_dir / f"{cache_name}.npy"
 
     embeddings, embedding_indexer, text_indexer = load_embeddings_and_docs(
-        embedding_dir, source_dirs, args.min_messages, args.max_messages
+        embedding_dir,
+        source_dirs,
+        min_messages=args.min_messages,
+        max_messages=args.max_messages,
+        selection=args.selection,
     )
     logger.info("Loaded %d messages total", len(embedding_indexer))
 

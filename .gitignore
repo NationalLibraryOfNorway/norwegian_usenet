@@ -161,11 +161,7 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
-zipped_data
-unzipped_data
-utf_8_data
-epadd-standalone.jar
-hidden
+
 
 # vscode settings
 .vscode
@@ -182,8 +178,16 @@ docs/orig_conf.py
 ehthumbs.db
 Thumbs.db
 
+memory
+
 zipped_data
 unzipped_data
 utf_8_data
+utf_8_data_old
+date_filtered
+hidden
 
 embeddings
+topics
+
+epadd-standalone.jar
