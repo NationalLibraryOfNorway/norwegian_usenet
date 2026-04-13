@@ -166,7 +166,7 @@ def main() -> None:
 
     for archive_label, csv_path, gif_name in [
         ("IA", args.ia_csv, "newsgroup_tree_ia.gif"),
-        ("NWA", args.nwa_csv, "newsgroup_tree_nwa.gif"),
+        ("NB", args.nwa_csv, "newsgroup_tree_nwa.gif"),
     ]:
         counts = load_counts(csv_path)
         tree = build_tree(counts)
