@@ -1,5 +1,7 @@
 # Usenet no
-Working repository for exploring the Norwegian part of Usenet.
+A repository for exploring the Norwegian part of Usenet.
+
+The code was developed for a case comparing two collections of Usenet newsgroups: one archived by the National Library of Norway (1994-1997), and the other found in Internet Archive's (ca 1991-2013). However, much of the code is hopefully useful for other cases that needs to fetch and analyse Usenet collections.
 
 ## Installation
 
