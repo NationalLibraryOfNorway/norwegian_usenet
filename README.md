@@ -1,7 +1,9 @@
 # Usenet no
-A repository for exploring the Norwegian part of Usenet.
+A repository for exploring Usenet collections.
 
 The code was developed for a case comparing two collections of Usenet newsgroups: one archived by the National Library of Norway (1994-1997), and the other found in Internet Archive's (ca 1991-2013). However, much of the code is hopefully useful for other cases that needs to fetch and analyse Usenet collections.
+
+For non-computational users, jump to the [ePADD](https://github.com/Sprakbanken/usenet_no#epadd) section.
 
 ## Installation
 
