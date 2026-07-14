@@ -7,7 +7,7 @@ from tqdm import tqdm
 
 from usenet_no.filter_internet_archive_by_date import (
     filter_mbox_by_date,
-    get_nwa_date_span,
+    get_nb_date_span,
 )
 
 logger = logging.getLogger(__name__)
@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Filter IA mbox files to the date span of the NWA archive"
+        description="Filter IA mbox files to the date span of the NB archive"
     )
     parser.add_argument(
         "--ia-directory",
@@ -24,10 +24,10 @@ if __name__ == "__main__":
         help="Directory containing IA mbox files",
     )
     parser.add_argument(
-        "--nwa-date-csv",
+        "--nb-date-csv",
         type=Path,
-        default=Path("data/date_count_nwa.csv"),
-        help="CSV with date counts for the NWA archive",
+        default=Path("data/date_count_nb.csv"),
+        help="CSV with date counts for the NB archive",
     )
     parser.add_argument(
         "--output-directory",
@@ -42,9 +42,9 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    start_date, end_date = get_nwa_date_span(args.nwa_date_csv)
-    logger.info("NWA date span: %s to %s", start_date, end_date)
-    print(f"NWA date span: {start_date} to {end_date}")
+    start_date, end_date = get_nb_date_span(args.nb_date_csv)
+    logger.info("NB date span: %s to %s", start_date, end_date)
+    print(f"NB date span: {start_date} to {end_date}")
 
     args.output_directory.mkdir(parents=True, exist_ok=True)
 

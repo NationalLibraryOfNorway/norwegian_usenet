@@ -18,7 +18,7 @@ pip install .
 ```
 
 ## Data
-The data used in this repo comes from two sources: Internet Archive (IA) and the National Library of Norway's web archive (NWA).
+The data used in this repo comes from two sources: Internet Archive (IA) and **N**asjonal**b**iblioteket (NB, eng:  National Library of Norway).
 Because the data may contain personal information, it is not shared here.
 What we have are scripts to download, extract, and parse the data from both archives, as well as various scripts to analyze the data.
 
@@ -29,8 +29,8 @@ data/
 │   ├── zipped_data/        # Downloaded .zip files from archive.org (scripts/extract_and_parse_usenet_data/scrape_internet_archive.py)
 │   ├── unzipped_data/      # Extracted .mbox files (scripts/extract_and_parse_usenet_data/parse_internet_archive.py)
 │   ├── utf_8_data/         # UTF-8 encoded .mbox files (scripts/extract_and_parse_usenet_data/parse_internet_archive.py)
-│   └── date_filtered/      # IA messages filtered to the NWA date span (scripts/extract_and_parse_usenet_data/filter_internet_archive_by_date.py)
-├── nwa_90s/
+│   └── date_filtered/      # IA messages filtered to the NB date span (scripts/extract_and_parse_usenet_data/filter_internet_archive_by_date.py)
+├── nb/
 │   ├── zipped_data/        # .tar files from the National Library
 │   ├── unzipped_data/      # Extracted message files (scripts/extract_and_parse_usenet_data/parse_norwegian_web_archive.py)
 │   └── utf_8_data/         # Concatenated .mbox files, UTF-8 encoded (scripts/extract_and_parse_usenet_data/parse_norwegian_web_archive.py)
@@ -54,14 +54,14 @@ uv run scripts/extract_and_parse_usenet_data/parse_internet_archive.py
 ```
 
 ### Filtering IA data by date
-`filter_internet_archive_by_date` filters the IA mbox files to only include messages within the date span of the NWA archive, and writes them to `data/internet_archive/date_filtered`.
+`filter_internet_archive_by_date` filters the IA mbox files to only include messages within the date span of the NB archive, and writes them to `data/internet_archive/date_filtered`.
 
 ```
 uv run scripts/extract_and_parse_usenet_data/filter_internet_archive_by_date.py
 ```
 
-### Parsing NWA data
-`parse_norwegian_web_archive` extracts .tar files from `data/nwa_90s/zipped_data` and writes concatenated .mbox files to `data/nwa_90s/utf_8_data`.
+### Parsing NB data
+`parse_norwegian_web_archive` extracts .tar files from `data/nb/zipped_data` and writes concatenated .mbox files to `data/nb/utf_8_data`.
 
 ```
 uv run scripts/extract_and_parse_usenet_data/parse_norwegian_web_archive.py
@@ -73,24 +73,24 @@ These mappings are used when counting posts per email address etc., so that data
 
 ```
 uv run -m usenet_no.make_user_mapping
-uv run -m usenet_no.make_user_mapping --extend -i data/nwa_90s/utf_8_data
+uv run -m usenet_no.make_user_mapping --extend -i data/nb/utf_8_data
 ```
 
 ### Scripts
 
 **Statistics:**
-- `scripts/count_messages_per_group.py` — counts messages per newsgroup (mbox file). Output: `data/messages_per_group_ia.csv` / `data/messages_per_group_nwa.csv`
-- `scripts/count_messages_per_user.py` — counts messages per user (anonymized with hash). Output: `data/messages_per_user_ia.csv` / `data/messages_per_user_nwa.csv`
-- `scripts/count_dates.py` — counts messages per date. Output: `data/date_count_ia.csv` / `data/date_count_nwa.csv`
+- `scripts/count_messages_per_group.py` — counts messages per newsgroup (mbox file). Output: `data/messages_per_group_ia.csv` / `data/messages_per_group_nb.csv`
+- `scripts/count_messages_per_user.py` — counts messages per user (anonymized with hash). Output: `data/messages_per_user_ia.csv` / `data/messages_per_user_nb.csv`
+- `scripts/count_dates.py` — counts messages per date. Output: `data/date_count_ia.csv` / `data/date_count_nb.csv`
 
 **Comparison:**
-- `scripts/compare_ia_nwa_content.py` — compares message body overlap between IA and NWA by exact text match, per newsgroup. Output: `data/ia_nwa_content_comparison.csv`
-- `scripts/compare_ia_nwa_message_ids.py` — compares message-ID overlap between IA and NWA, and collects external references. Output: `data/ia_nwa_message_id_overlap.json`
+- `scripts/compare_ia_nb_content.py` — compares message body overlap between IA and NB by exact text match, per newsgroup. Output: `data/ia_nb_content_comparison.csv`
+- `scripts/compare_ia_nb_message_ids.py` — compares message-ID overlap between IA and NB, and collects external references. Output: `data/ia_nb_message_id_overlap.json`
 - `scripts/compare_mbox_counts.py` — validates mbox read/write by comparing message counts before and after.
 
 **Visualization:**
 - `scripts/newsgroup_tree.py` — generates an ASCII visualization of the nested newsgroup structure. Output: printed to stdout.
-- `scripts/newsgroup_tree_gif.py` — generates animated GIF visualizations of the newsgroup structure. Output: `data/newsgroup_tree_ia.gif` / `data/newsgroup_tree_nwa.gif`
+- `scripts/newsgroup_tree_gif.py` — generates animated GIF visualizations of the newsgroup structure. Output: `data/newsgroup_tree_ia.gif` / `data/newsgroup_tree_nb.gif`
 - `scripts/export_umap_for_web.py` — exports UMAP embedding data for the GitHub Pages visualization. Output: `docs/data/`
 
 Run example:
@@ -98,8 +98,8 @@ Run example:
 uv run scripts/count_messages_per_group.py
 uv run scripts/count_messages_per_user.py
 uv run scripts/count_dates.py
-uv run scripts/compare_ia_nwa_content.py
-uv run scripts/compare_ia_nwa_message_ids.py
+uv run scripts/compare_ia_nb_content.py
+uv run scripts/compare_ia_nb_message_ids.py
 ```
 
 ### Embedding scripts

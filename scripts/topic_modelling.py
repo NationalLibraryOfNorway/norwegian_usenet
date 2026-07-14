@@ -15,12 +15,12 @@ logger = logging.getLogger(__name__)
 def load_embeddings_and_docs(
     embeddings_dir: Path,
     ia_directory: Path,
-    nwa_directory: Path,
+    nb_directory: Path,
     min_messages: int | None = None,
     max_messages: int | None = None,
     selection: list[str] | None = None,
 ) -> tuple[np.ndarray, list[str]]:
-    source_dirs = {"ia": ia_directory, "nwa": nwa_directory}
+    source_dirs = {"ia": ia_directory, "nb": nb_directory}
 
     embedding_files = sorted(
         f for f in embeddings_dir.glob("*.npy") if not f.stem.endswith("_index")
@@ -120,10 +120,10 @@ if __name__ == "__main__":
         help="Directory containing IA mbox files",
     )
     parser.add_argument(
-        "--nwa-directory",
+        "--nb-directory",
         type=Path,
-        default=Path("data/nwa_90s/utf_8_data"),
-        help="Directory containing NWA mbox files",
+        default=Path("data/nb/utf_8_data"),
+        help="Directory containing NB mbox files",
     )
     parser.add_argument(
         "--output-directory",
@@ -192,7 +192,7 @@ if __name__ == "__main__":
     embeddings, docs = load_embeddings_and_docs(
         embeddings_dir,
         args.ia_directory,
-        args.nwa_directory,
+        args.nb_directory,
         min_messages=args.min_messages,
         max_messages=args.max_messages,
         selection=args.selection,

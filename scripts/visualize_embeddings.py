@@ -106,10 +106,10 @@ if __name__ == "__main__":
         help="Directory containing IA mbox files",
     )
     parser.add_argument(
-        "--nwa-directory",
+        "--nb-directory",
         type=Path,
-        default=Path("data/nwa_90s/utf_8_data"),
-        help="Directory containing NWA mbox files",
+        default=Path("data/nb/utf_8_data"),
+        help="Directory containing NB mbox files",
     )
     parser.add_argument(
         "--overwrite-umap-cache",
@@ -155,7 +155,7 @@ if __name__ == "__main__":
         args.selection = None
 
     embedding_dir = args.embeddings_directory / args.model
-    source_dirs = {"ia": args.ia_directory, "nwa": args.nwa_directory}
+    source_dirs = {"ia": args.ia_directory, "nb": args.nb_directory}
 
     umap_cache_dir = args.embeddings_directory / "umap_embeddings" / args.model
     umap_cache_dir.mkdir(parents=True, exist_ok=True)
@@ -186,7 +186,7 @@ if __name__ == "__main__":
     newsgroups_indexer = [s.rsplit("_", 1)[0] for s in embedding_indexer]
     sources_indexer = [s.rsplit("_", 1)[1] for s in embedding_indexer]
 
-    symbol_map = {"nwa": "circle", "ia": "triangle-up"}
+    symbol_map = {"nb": "circle", "ia": "triangle-up"}
     unique_newsgroups = sorted(set(newsgroups_indexer))
     color_map = {
         ng: hsl_to_hex(int(i * 360 / len(unique_newsgroups)), 70, 50)

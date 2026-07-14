@@ -21,7 +21,7 @@ selection = [
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Embed messages from selected newsgroups in IA and NWA archives"
+        description="Embed messages from selected newsgroups in IA and NB archives"
     )
     parser.add_argument(
         "--ia-directory",
@@ -30,10 +30,10 @@ if __name__ == "__main__":
         help="Directory containing IA mbox files",
     )
     parser.add_argument(
-        "--nwa-directory",
+        "--nb-directory",
         type=Path,
-        default=Path("data/nwa_90s/utf_8_data"),
-        help="Directory containing NWA mbox files",
+        default=Path("data/nb/utf_8_data"),
+        help="Directory containing NB mbox files",
     )
     parser.add_argument(
         "--output-directory",
@@ -83,18 +83,18 @@ if __name__ == "__main__":
     model = SentenceTransformer(args.model)
 
     for newsgroup in tqdm(args.selection, desc="Embedding messages in mbox files"):
-        nwa_mbox_file = args.nwa_directory / f"{newsgroup}.mbox"
-        if nwa_mbox_file.exists():
+        nb_mbox_file = args.nb_directory / f"{newsgroup}.mbox"
+        if nb_mbox_file.exists():
             embed_mbox_file(
-                nwa_mbox_file,
-                "nwa",
+                nb_mbox_file,
+                "nb",
                 model,
                 model_output_dir,
                 args.overwrite,
                 args.batch_size,
             )
         else:
-            logger.warning("%s does not exist, can't embed messages", nwa_mbox_file)
+            logger.warning("%s does not exist, can't embed messages", nb_mbox_file)
 
         ia_mbox_file = args.ia_directory / f"{newsgroup}.mbox"
 

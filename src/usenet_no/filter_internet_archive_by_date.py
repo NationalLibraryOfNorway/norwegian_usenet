@@ -10,7 +10,7 @@ from usenet_no.mbox_utils import message_factory, write_mbox
 logger = logging.getLogger(__name__)
 
 
-def get_nwa_date_span(date_count_csv: Path) -> tuple[str, str]:
+def get_nb_date_span(date_count_csv: Path) -> tuple[str, str]:
     df = pd.read_csv(date_count_csv)
     dates = pd.to_datetime(df[df["date"] != "unknown"]["date"])
     return dates.min().strftime("%Y-%m-%d"), dates.max().strftime("%Y-%m-%d")

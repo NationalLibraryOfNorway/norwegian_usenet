@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Embed messages from the N median-sized newsgroups in IA and NWA archives"
+        description="Embed messages from the N median-sized newsgroups in IA and NB archives"
     )
     parser.add_argument(
         "--ia-directory",
@@ -18,10 +18,10 @@ if __name__ == "__main__":
         help="Directory containing IA mbox files",
     )
     parser.add_argument(
-        "--nwa-directory",
+        "--nb-directory",
         type=Path,
-        default=Path("data/nwa_90s/utf_8_data"),
-        help="Directory containing NWA mbox files",
+        default=Path("data/nb/utf_8_data"),
+        help="Directory containing NB mbox files",
     )
     parser.add_argument(
         "--output-directory",
@@ -43,10 +43,10 @@ if __name__ == "__main__":
         help="CSV file with precomputed IA mbox message counts",
     )
     parser.add_argument(
-        "--nwa-counts-file",
+        "--nb-counts-file",
         type=Path,
-        default=Path("data/messages_per_group_nwa.csv"),
-        help="CSV file with precomputed NWA mbox message counts",
+        default=Path("data/messages_per_group_nb.csv"),
+        help="CSV file with precomputed NB mbox message counts",
     )
     parser.add_argument(
         "--model",
@@ -77,8 +77,8 @@ if __name__ == "__main__":
     ia_median = get_median_n_files(
         args.ia_directory, args.median_n, args.ia_counts_file
     )
-    nwa_median = get_median_n_files(
-        args.nwa_directory, args.median_n, args.nwa_counts_file
+    nb_median = get_median_n_files(
+        args.nb_directory, args.median_n, args.nb_counts_file
     )
 
     logger.info("Loading model %s", args.model)
@@ -89,7 +89,7 @@ if __name__ == "__main__":
             mbox_file, "ia", model, model_output_dir, args.overwrite, args.batch_size
         )
 
-    for mbox_file in nwa_median:
+    for mbox_file in nb_median:
         embed_mbox_file(
-            mbox_file, "nwa", model, model_output_dir, args.overwrite, args.batch_size
+            mbox_file, "nb", model, model_output_dir, args.overwrite, args.batch_size
         )

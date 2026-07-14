@@ -31,7 +31,7 @@ def collect_ids_from_mbox(mbox_file: Path) -> tuple[set[str], set[str]]:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Compare message-id overlap between IA and NWA mbox archives, and collect external references"
+        description="Compare message-id overlap between IA and NB mbox archives, and collect external references"
     )
     parser.add_argument(
         "--ia-directory",
@@ -40,15 +40,15 @@ if __name__ == "__main__":
         help="Directory containing IA mbox files",
     )
     parser.add_argument(
-        "--nwa-directory",
+        "--nb-directory",
         type=Path,
-        default=Path("data/nwa_90s/utf_8_data"),
-        help="Directory containing NWA mbox files",
+        default=Path("data/nb/utf_8_data"),
+        help="Directory containing NB mbox files",
     )
     parser.add_argument(
         "--output",
         type=Path,
-        default=Path("data/ia_nwa_message_id_overlap.json"),
+        default=Path("data/ia_nb_message_id_overlap.json"),
         help="Path to JSON output file",
     )
     args = parser.parse_args()
@@ -56,9 +56,9 @@ if __name__ == "__main__":
     logger.info("Args: %s", args)
 
     ia_files = list(args.ia_directory.glob("*.mbox"))
-    nwa_files = list(args.nwa_directory.glob("*.mbox"))
+    nb_files = list(args.nb_directory.glob("*.mbox"))
 
-    logger.info("IA files: %d, NWA files: %d", len(ia_files), len(nwa_files))
+    logger.info("IA files: %d, NB files: %d", len(ia_files), len(nb_files))
 
     ia_ids: set[str] = set()
     ia_refs: set[str] = set()
@@ -67,37 +67,37 @@ if __name__ == "__main__":
         ia_ids |= ids
         ia_refs |= refs
 
-    nwa_ids: set[str] = set()
-    nwa_refs: set[str] = set()
-    for f in tqdm(nwa_files, desc="Reading NWA message IDs"):
+    nb_ids: set[str] = set()
+    nb_refs: set[str] = set()
+    for f in tqdm(nb_files, desc="Reading NB message IDs"):
         ids, refs = collect_ids_from_mbox(f)
-        nwa_ids |= ids
-        nwa_refs |= refs
+        nb_ids |= ids
+        nb_refs |= refs
 
-    all_ids = ia_ids | nwa_ids
+    all_ids = ia_ids | nb_ids
 
     # IDs missing from their own archive but present in the other
-    ia_resolved_by_nwa = (ia_refs - ia_ids) & nwa_ids
-    nwa_resolved_by_ia = (nwa_refs - nwa_ids) & ia_ids
+    ia_resolved_by_nb = (ia_refs - ia_ids) & nb_ids
+    nb_resolved_by_ia = (nb_refs - nb_ids) & ia_ids
 
     # References that appear in neither archive, partitioned by who cited them
-    ghost_ia_only = (ia_refs - nwa_refs) - all_ids
-    ghost_nwa_only = (nwa_refs - ia_refs) - all_ids
-    ghost_both = (ia_refs & nwa_refs) - all_ids
+    ghost_ia_only = (ia_refs - nb_refs) - all_ids
+    ghost_nb_only = (nb_refs - ia_refs) - all_ids
+    ghost_both = (ia_refs & nb_refs) - all_ids
 
     results = {
         # Message ID overlap
         "ia_ids": len(ia_ids),
-        "nwa_ids": len(nwa_ids),
-        "ids_in_both": len(ia_ids & nwa_ids),
-        "ids_ia_only": len(ia_ids - nwa_ids),
-        "ids_nwa_only": len(nwa_ids - ia_ids),
+        "nb_ids": len(nb_ids),
+        "ids_in_both": len(ia_ids & nb_ids),
+        "ids_ia_only": len(ia_ids - nb_ids),
+        "ids_nb_only": len(nb_ids - ia_ids),
         # Cross-archive reference resolution
-        "ia_refs_resolved_by_nwa": len(ia_resolved_by_nwa),
-        "nwa_refs_resolved_by_ia": len(nwa_resolved_by_ia),
+        "ia_refs_resolved_by_nb": len(ia_resolved_by_nb),
+        "nb_refs_resolved_by_ia": len(nb_resolved_by_ia),
         # Ghost references (cited but in neither archive)
         "ghost_cited_by_ia_only": len(ghost_ia_only),
-        "ghost_cited_by_nwa_only": len(ghost_nwa_only),
+        "ghost_cited_by_nb_only": len(ghost_nb_only),
         "ghost_cited_by_both": len(ghost_both),
     }
 

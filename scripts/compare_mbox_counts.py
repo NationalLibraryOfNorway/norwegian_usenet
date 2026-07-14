@@ -58,19 +58,19 @@ if __name__ == "__main__":
     parser.add_argument(
         "--ia", action="store_true", help="Compare internet_archive dirs"
     )
-    parser.add_argument("--nwa", action="store_true", help="Compare nwa_90s dirs")
+    parser.add_argument("--nb", action="store_true", help="Compare nb dirs")
     args = parser.parse_args()
 
-    if not args.ia and not args.nwa:
-        args.ia = args.nwa = True
+    if not args.ia and not args.nb:
+        args.ia = args.nb = True
 
     if args.ia:
         compare_dirs(
             Path("data/internet_archive/utf_8_data"),
             Path("data/internet_archive/utf_8_data_old"),
         )
-    if args.nwa:
+    if args.nb:
         compare_dirs(
-            Path("data/nwa_90s/utf_8_data"),
-            Path("data/nwa_90s/utf_8_data_old"),
+            Path("data/nb/utf_8_data"),
+            Path("data/nb/utf_8_data_old"),
         )

@@ -62,15 +62,15 @@ def main() -> None:
         help="CSV with IA message counts per newsgroup (default: %(default)s)",
     )
     parser.add_argument(
-        "--nwa-csv",
+        "--nb-csv",
         type=Path,
-        default=Path("data/messages_per_group_nwa.csv"),
-        help="CSV with NWA message counts per newsgroup (default: %(default)s)",
+        default=Path("data/messages_per_group_nb.csv"),
+        help="CSV with NB message counts per newsgroup (default: %(default)s)",
     )
     args = parser.parse_args()
 
     print_archive("IA", args.ia_csv)
-    print_archive("NWA", args.nwa_csv)
+    print_archive("NB", args.nb_csv)
 
 
 if __name__ == "__main__":

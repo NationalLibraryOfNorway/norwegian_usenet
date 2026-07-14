@@ -25,24 +25,24 @@ def extract_tarfiles(zipped_dir: Path, unzipped_dir: Path):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Convert NWA tar archives to utf-8 .mbox files"
+        description="Convert NB tar archives to utf-8 .mbox files"
     )
     parser.add_argument(
         "--zipped-dir",
         type=Path,
-        default=Path("data/nwa_90s/zipped_data"),
+        default=Path("data/nb/zipped_data"),
         help="Directory containing .tar archives",
     )
     parser.add_argument(
         "--unzipped-dir",
         type=Path,
-        default=Path("data/nwa_90s/unzipped_data"),
+        default=Path("data/nb/unzipped_data"),
         help="Directory where tar archives are extracted",
     )
     parser.add_argument(
         "--output-directory",
         type=Path,
-        default=Path("data/nwa_90s/utf_8_data"),
+        default=Path("data/nb/utf_8_data"),
         help="Directory to write generated .mbox files",
     )
     parser.add_argument(

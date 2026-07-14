@@ -117,10 +117,10 @@ def main() -> None:
         help="CSV with IA message counts per newsgroup (default: %(default)s)",
     )
     parser.add_argument(
-        "--nwa-csv",
+        "--nb-csv",
         type=Path,
-        default=Path("data/messages_per_group_nwa.csv"),
-        help="CSV with NWA message counts per newsgroup (default: %(default)s)",
+        default=Path("data/messages_per_group_nb.csv"),
+        help="CSV with NB message counts per newsgroup (default: %(default)s)",
     )
     parser.add_argument(
         "--output-dir",
@@ -166,7 +166,7 @@ def main() -> None:
 
     for archive_label, csv_path, gif_name in [
         ("IA", args.ia_csv, "newsgroup_tree_ia.gif"),
-        ("NB", args.nwa_csv, "newsgroup_tree_nwa.gif"),
+        ("NB", args.nb_csv, "newsgroup_tree_nb.gif"),
     ]:
         counts = load_counts(csv_path)
         tree = build_tree(counts)
