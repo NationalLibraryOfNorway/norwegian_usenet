@@ -58,18 +58,12 @@ The scripts for preparing the data for analysis live in `scripts/01_extract_and_
 
 It's the date filtered version of the internet archive that is used for most of the comparison analysis.
 
-### Pseudonymization
-To count statistics over user data, we have created a mapping from email addresses and names in plain text to hashed values.
-These mappings are used when counting posts per email address etc., so that data files can be stored on GitHub without containing email addresses.
+#### Step 02: counting messages and users in each archive 
 
-```
-uv run -m usenet_no.make_user_mapping
-uv run -m usenet_no.make_user_mapping --extend -i data/nb/utf_8_data
-```
+- [01_count_messages_per_group.py](scripts/02_statistics_per_archive/01_count_messages_per_group.py) counts messages per newsgroup (i.e. mbox file) for each of IA, date filtered IA and NB archives. Creates `data/messages_per_group_ia.csv`, `data/messages_per_group_ia_date_filtered.csv`  and `data/messages_per_group_nb.csv`
+- [02_hash_user_emails_and_names.py](scripts/02_statistics_per_archive/02_hash_user_emails_and_names.py) creates a mapping from email addresses and names in plain text to hashed values. This way, we can store output data files on GitHub,  without them containing names and email addresses. 
+- [03_count_messages_per_user.py](scripts/02_statistics_per_archive/03_count_messages_per_user.py) counts messages per user (anonymized with hash). Creates `data/messages_per_user_ia.csv`, `data/messages_per_user_ia_date_filtered.csv` and `data/messages_per_user_nb.csv`.
 
-**Statistics:**
-- `scripts/count_messages_per_group.py` — counts messages per newsgroup (mbox file). Output: `data/messages_per_group_ia.csv` / `data/messages_per_group_nb.csv`
-- `scripts/count_messages_per_user.py` — counts messages per user (anonymized with hash). Output: `data/messages_per_user_ia.csv` / `data/messages_per_user_nb.csv`
 
 **Comparison:**
 - `scripts/compare_ia_nb_content.py` — compares message body overlap between IA and NB by exact text match, per newsgroup. Output: `data/ia_nb_content_comparison.csv`
