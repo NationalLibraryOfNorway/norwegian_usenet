@@ -43,29 +43,20 @@ data/
 `scripts/` contains standalone scripts for reading through the archives and generating statistics. Output is stored in `data/`.  
 `notebooks/` contains Jupyter notebooks for visualizing and interpreting results from the scripts.
 
-### Downloading and parsing Norwegian Usenet (Internet Archive)
-`scrape_internet_archive` fetches and downloads all zip files from `https://archive.org/download/usenet-no` (stored in `data/internet_archive/zipped_data` by default).  
-`parse_internet_archive` unzips and reads all mbox files from the scrape output. Files are decoded and re-encoded to UTF-8 and written to `data/internet_archive/utf_8_data`.
+### Scripts
 
-Run in this order:
-```
-uv run scripts/extract_and_parse_usenet_data/scrape_internet_archive.py
-uv run scripts/extract_and_parse_usenet_data/parse_internet_archive.py
-```
+The scripts are grouped into subdirectories of the script folder, and are numbered by run order (we run the script with 01_ prefix first, then 02_ etc). 
 
-### Filtering IA data by date
-`filter_internet_archive_by_date` filters the IA mbox files to only include messages within the date span of the NB archive, and writes them to `data/internet_archive/date_filtered`.
+#### Step 01: extracting and parsing the data
+The scripts for preparing the data for analysis live in `scripts/01_extract_and_parse_usenet_data`.  
 
-```
-uv run scripts/extract_and_parse_usenet_data/filter_internet_archive_by_date.py
-```
+- [01_parse_nb_archive.py](scripts/01_extract_and_parse_usenet_data/01_parse_nb_archive.py) reads the data as it was stored on the CDs in the NB deposit, and write one utf-8-encoded .mbox file per newsgroup
+- [02_scrape_internet_archive.py](scripts/01_extract_and_parse_usenet_data/02_scrape_internet_archive.py) fetches and downloads all zip files from `https://archive.org/download/usenet-no` (stored in `data/internet_archive/zipped_data` by default).  
+- [03_parse_internet_archive.py](scripts/01_extract_and_parse_usenet_data/03_parse_internet_archive.py) unzips and reads all mbox files from the scrape output. Files are decoded and re-encoded to UTF-8 and written to `data/internet_archive/utf_8_data`.
+- [04_parse_date_fields_in_both_archives.py](scripts/01_extract_and_parse_usenet_data/04_parse_date_fields_in_both_archives.py) parses the date header of each message, and counts messages per date in each of IA and NB archives. Outputs one file for each archive: `data/date_count_ia.csv` and `data/date_count_nb.csv`
+- [05_filter_internet_archive_by_date.py](scripts/01_extract_and_parse_usenet_data/05_filter_internet_archive_by_date.py) filters the IA mbox files to only include messages within the date span of the NB archive (reading `data/date_count_nb.csv`), and writes them to `data/internet_archive/date_filtered`.
 
-### Parsing NB data
-`parse_norwegian_web_archive` extracts .tar files from `data/nb/zipped_data` and writes concatenated .mbox files to `data/nb/utf_8_data`.
-
-```
-uv run scripts/extract_and_parse_usenet_data/parse_norwegian_web_archive.py
-```
+It's the date filtered version of the internet archive that is used for most of the comparison analysis.
 
 ### Pseudonymization
 To count statistics over user data, we have created a mapping from email addresses and names in plain text to hashed values.
@@ -76,12 +67,9 @@ uv run -m usenet_no.make_user_mapping
 uv run -m usenet_no.make_user_mapping --extend -i data/nb/utf_8_data
 ```
 
-### Scripts
-
 **Statistics:**
 - `scripts/count_messages_per_group.py` — counts messages per newsgroup (mbox file). Output: `data/messages_per_group_ia.csv` / `data/messages_per_group_nb.csv`
 - `scripts/count_messages_per_user.py` — counts messages per user (anonymized with hash). Output: `data/messages_per_user_ia.csv` / `data/messages_per_user_nb.csv`
-- `scripts/count_dates.py` — counts messages per date. Output: `data/date_count_ia.csv` / `data/date_count_nb.csv`
 
 **Comparison:**
 - `scripts/compare_ia_nb_content.py` — compares message body overlap between IA and NB by exact text match, per newsgroup. Output: `data/ia_nb_content_comparison.csv`

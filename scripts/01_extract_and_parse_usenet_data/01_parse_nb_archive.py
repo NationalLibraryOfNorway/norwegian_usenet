@@ -19,7 +19,7 @@ def extract_tarfiles(zipped_dir: Path, unzipped_dir: Path):
         out_dir = unzipped_dir / compressed_dir.stem
         out_dir.mkdir(parents=True, exist_ok=True)
         with tarfile.open(compressed_dir, "r") as tar:
-            tar.extractall(path=out_dir)
+            tar.extractall(path=out_dir, filter="tar")
         logger.info("Extracted %s to %s", compressed_dir, out_dir)
 
 
@@ -66,6 +66,8 @@ if __name__ == "__main__":
     directories = [d for d in args.unzipped_dir.iterdir() if d.is_dir()]
     for directory in tqdm(directories, desc="Processing tar archives"):
         logger.info("Finding usenet data in %s", directory)
+
+        # This function is needed because the newsgroups are nested differently depending on which CD the data was stored on
         newsgroups_parent_dir = find_newsgroups_parent_dir(directory)
         logger.info("Newsgroups parent directory: %s", newsgroups_parent_dir)
 

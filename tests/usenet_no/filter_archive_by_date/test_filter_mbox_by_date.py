@@ -1,6 +1,6 @@
 import mailbox
 
-from usenet_no.filter_internet_archive_by_date import filter_mbox_by_date
+from usenet_no.filter_archive_by_date import filter_mbox_by_date
 from usenet_no.mbox_utils import message_factory, write_mbox
 
 

@@ -5,12 +5,14 @@ from pathlib import Path
 
 from tqdm import tqdm
 
-from usenet_no.filter_internet_archive_by_date import (
+from usenet_no.filter_archive_by_date import (
     filter_mbox_by_date,
     get_nb_date_span,
 )
 
 logger = logging.getLogger(__name__)
+
+# TODO: get earliest nb date and lates nb date
 
 
 if __name__ == "__main__":
