@@ -45,7 +45,7 @@ data/
 
 ### Scripts
 
-The scripts are grouped into subdirectories of the script folder, and are numbered by run order (we run the script with 01_ prefix first, then 02_ etc). 
+The scripts are grouped into subdirectories of the script folder, and are numbered by run order (we run the script with 01_ prefix first, then 02_ etc). Every script can be run with `uv run path-to-script.py`.
 
 #### Step 01: extracting and parsing the data
 The scripts for preparing the data for analysis live in `scripts/01_extract_and_parse_usenet_data`.  
@@ -64,25 +64,18 @@ It's the date filtered version of the internet archive that is used for most of 
 - [02_hash_user_emails_and_names.py](scripts/02_statistics_per_archive/02_hash_user_emails_and_names.py) creates a mapping from email addresses and names in plain text to hashed values. This way, we can store output data files on GitHub,  without them containing names and email addresses. 
 - [03_count_messages_per_user.py](scripts/02_statistics_per_archive/03_count_messages_per_user.py) counts messages per user (anonymized with hash). Creates `data/messages_per_user_ia.csv`, `data/messages_per_user_ia_date_filtered.csv` and `data/messages_per_user_nb.csv`.
 
+#### Step 03: comparing archives
+(more to come)
 
-**Comparison:**
-- `scripts/compare_ia_nb_content.py` — compares message body overlap between IA and NB by exact text match, per newsgroup. Output: `data/ia_nb_content_comparison.csv`
-- `scripts/compare_ia_nb_message_ids.py` — compares message-ID overlap between IA and NB, and collects external references. Output: `data/ia_nb_message_id_overlap.json`
-- `scripts/compare_mbox_counts.py` — validates mbox read/write by comparing message counts before and after.
+- (01_compare_ia_nb_message_content.py)[scripts/03_compare_archives/01_compare_ia_nb_message_content.py] compares message body overlap between IA and NB by exact text match, per newsgroup. Creates `data/ia_nb_content_comparison.csv` and `data/ia_nb_content_comparison_date_filtered.csv` 
+- (01_compare_ia_nb_message_ids.py)[scripts/03_compare_archives/01_compare_ia_nb_message_ids.py] compares message-ID overlap between IA and NB, and collects external references. Creates `data/ia_nb_message_id_overlap.json` and `data/ia_nb_message_id_overlap_date_filtered.json`
+
 
 **Visualization:**
 - `scripts/newsgroup_tree.py` — generates an ASCII visualization of the nested newsgroup structure. Output: printed to stdout.
 - `scripts/newsgroup_tree_gif.py` — generates animated GIF visualizations of the newsgroup structure. Output: `data/newsgroup_tree_ia.gif` / `data/newsgroup_tree_nb.gif`
 - `scripts/export_umap_for_web.py` — exports UMAP embedding data for the GitHub Pages visualization. Output: `docs/data/`
 
-Run example:
-```
-uv run scripts/count_messages_per_group.py
-uv run scripts/count_messages_per_user.py
-uv run scripts/count_dates.py
-uv run scripts/compare_ia_nb_content.py
-uv run scripts/compare_ia_nb_message_ids.py
-```
 
 ### Embedding scripts
 Scripts for embedding messages are located in `scripts/embed_messages/`:
