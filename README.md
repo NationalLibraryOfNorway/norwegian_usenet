@@ -43,7 +43,7 @@ data/
 `scripts/` contains standalone scripts for reading through the archives and generating statistics. Output is stored in `data/`.  
 `notebooks/` contains Jupyter notebooks for visualizing and interpreting results from the scripts.
 
-### Scripts
+## Scripts
 
 The scripts are grouped into subdirectories of the script folder, and are numbered by run order (we run the script with 01_ prefix first, then 02_ etc). Every script can be run with `uv run path-to-script.py`.
 
@@ -70,19 +70,22 @@ It's the date filtered version of the internet archive that is used for most of 
 - (01_compare_ia_nb_message_content.py)[scripts/03_compare_archives/01_compare_ia_nb_message_content.py] compares message body overlap between IA and NB by exact text match, per newsgroup. Creates `data/ia_nb_content_comparison.csv` and `data/ia_nb_content_comparison_date_filtered.csv` 
 - (01_compare_ia_nb_message_ids.py)[scripts/03_compare_archives/01_compare_ia_nb_message_ids.py] compares message-ID overlap between IA and NB, and collects external references. Creates `data/ia_nb_message_id_overlap.json` and `data/ia_nb_message_id_overlap_date_filtered.json`
 
+#### Step 04: embed messages
 
-**Visualization:**
-- `scripts/newsgroup_tree.py` — generates an ASCII visualization of the nested newsgroup structure. Output: printed to stdout.
-- `scripts/newsgroup_tree_gif.py` — generates animated GIF visualizations of the newsgroup structure. Output: `data/newsgroup_tree_ia.gif` / `data/newsgroup_tree_nb.gif`
-- `scripts/export_umap_for_web.py` — exports UMAP embedding data for the GitHub Pages visualization. Output: `docs/data/`
+(04_embed_messages.py)[scripts/04_embed_messages.py] - makes text embeddings for each message in each newsgroup (from a selection of newsgroups) from both archives. 
+
+#### Step 05: topic modelling 
+
+(05_topic_modelling.py)[scripts/05_topic_modelling.py] - uses BERTopic and the text embeddings generated in the previous step to find topics in the selected newsgroups
 
 
-### Embedding scripts
-Scripts for embedding messages are located in `scripts/embed_messages/`:
-- `embed_top_n.py` — embeds the top N most active newsgroups
-- `embed_n_median.py` — embeds N newsgroups around the median activity level
-- `embed_n_closest_to_k.py` — embeds N newsgroups closest to a given size k
-- `embed_selection.py` — embeds a configurable selection of newsgroups (defined in `data/newsgroups_for_selection.jsonl`)
+#### Step 06: visualize
+
+- [00_newsgroup_tree.py](scripts/06_visualize/00_newsgroup_tree.py) draws the nested newsgroup structure of each archive as an ASCII tree, reading `data/messages_per_group_ia.csv` and `data/messages_per_group_nb.csv` (from step 02). Prints to stdout.
+- [00_newsgroup_tree_gif.py](scripts/06_visualize/00_newsgroup_tree_gif.py) draws the same trees as scrolling animations. Creates `data/newsgroup_tree_ia.gif` and `data/newsgroup_tree_nb.gif`
+- [00_visualize_embeddings.py](scripts/06_visualize/00_visualize_embeddings.py) plots the UMAP embeddings from step 04 as an interactive Plotly scatter plot, coloured by newsgroup and shaped by archive. Opens in a browser.
+- [00_visualize_topics.py](scripts/06_visualize/00_visualize_topics.py) plots the same UMAP embeddings coloured by the BERTopic topics from step 05. Opens in a browser.
+
 
 ## ePADD
 ePADD is a program with a graphical interface for exploring email archives.
