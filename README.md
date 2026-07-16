@@ -67,8 +67,8 @@ It's the date filtered version of the internet archive that is used for most of 
 #### Step 03: comparing archives
 (more to come)
 
-- (01_compare_ia_nb_message_content.py)[scripts/03_compare_archives/01_compare_ia_nb_message_content.py] compares message body overlap between IA and NB by exact text match, per newsgroup. Creates `data/ia_nb_content_comparison.csv` and `data/ia_nb_content_comparison_date_filtered.csv` 
-- (01_compare_ia_nb_message_ids.py)[scripts/03_compare_archives/01_compare_ia_nb_message_ids.py] compares message-ID overlap between IA and NB, and collects external references. Creates `data/ia_nb_message_id_overlap.json` and `data/ia_nb_message_id_overlap_date_filtered.json`
+- (00_compare_ia_nb_message_content.py)[scripts/03_compare_archives/00_compare_ia_nb_message_content.py] compares message body overlap between IA and NB by exact text match, per newsgroup. Creates `data/ia_nb_content_comparison.csv` and `data/ia_nb_content_comparison_date_filtered.csv` 
+- (00_compare_ia_nb_message_ids.py)[scripts/03_compare_archives/00_compare_ia_nb_message_ids.py] compares message-ID overlap between IA and NB, and collects external references. Creates `data/ia_nb_message_id_overlap.json` and `data/ia_nb_message_id_overlap_date_filtered.json`
 
 #### Step 04: embed messages
 
