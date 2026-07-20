@@ -190,5 +190,8 @@ hidden
 embeddings
 topics
 
+# SQLite database built from the archives
+*.db
+
 epadd-standalone.jar
 todo.md
