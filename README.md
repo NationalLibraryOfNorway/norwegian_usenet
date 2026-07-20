@@ -26,17 +26,17 @@ Assumed file structure once data is downloaded and extracted:
 ```
 data/
 ├── internet_archive/
-│   ├── zipped_data/        # Downloaded .zip files from archive.org (scripts/extract_and_parse_usenet_data/scrape_internet_archive.py)
-│   ├── unzipped_data/      # Extracted .mbox files (scripts/extract_and_parse_usenet_data/parse_internet_archive.py)
-│   ├── utf_8_data/         # UTF-8 encoded .mbox files (scripts/extract_and_parse_usenet_data/parse_internet_archive.py)
-│   └── date_filtered/      # IA messages filtered to the NB date span (scripts/extract_and_parse_usenet_data/filter_internet_archive_by_date.py)
+│   ├── zipped_data/        # Downloaded .zip files from archive.org (scripts/01_extract_and_parse_usenet_data/02_scrape_internet_archive.py)
+│   ├── unzipped_data/      # Extracted .mbox files (scripts/01_extract_and_parse_usenet_data/03_parse_internet_archive.py)
+│   ├── utf_8_data/         # UTF-8 encoded .mbox files (scripts/01_extract_and_parse_usenet_data/03_parse_internet_archive.py)
+│   └── date_filtered/      # IA messages filtered to the NB date span (scripts/01_extract_and_parse_usenet_data/05_filter_internet_archive_by_date.py)
 ├── nb/
 │   ├── zipped_data/        # .tar files from the National Library
-│   ├── unzipped_data/      # Extracted message files (scripts/extract_and_parse_usenet_data/parse_norwegian_web_archive.py)
-│   └── utf_8_data/         # Concatenated .mbox files, UTF-8 encoded (scripts/extract_and_parse_usenet_data/parse_norwegian_web_archive.py)
-└── hidden/                 # Mappings from email and name to hash values (src/usenet_no/make_user_mapping.py)
+│   ├── unzipped_data/      # Extracted message files (scripts/01_extract_and_parse_usenet_data/01_parse_nb_archive.py)
+│   └── utf_8_data/         # Concatenated .mbox files, UTF-8 encoded (scripts/01_extract_and_parse_usenet_data/01_parse_nb_archive.py)
+└── usenet.db               # SQLite database of both archives (scripts/02_build_database.py)
 ```
-(Analysis scripts only use the `utf_8_data` subdirectories, or `date_filtered` for date-filtered IA analysis.)
+The database is built from the `utf_8_data` subdirectories and is what the analysis scripts read. It holds each sender's name and email both in plain text and hashed, so statistics can be published by hash while local analysis still has the address. Like the mbox directories, it is not shared.
 
 ## Code
 `src/usenet_no/` contains core library modules for working with mbox data.  
@@ -53,8 +53,9 @@ The scripts for preparing the data for analysis live in `scripts/01_extract_and_
 - [01_parse_nb_archive.py](scripts/01_extract_and_parse_usenet_data/01_parse_nb_archive.py) reads the data as it was stored on the CDs in the NB deposit, and write one utf-8-encoded .mbox file per newsgroup
 - [02_scrape_internet_archive.py](scripts/01_extract_and_parse_usenet_data/02_scrape_internet_archive.py) fetches and downloads all zip files from `https://archive.org/download/usenet-no` (stored in `data/internet_archive/zipped_data` by default).  
 - [03_parse_internet_archive.py](scripts/01_extract_and_parse_usenet_data/03_parse_internet_archive.py) unzips and reads all mbox files from the scrape output. Files are decoded and re-encoded to UTF-8 and written to `data/internet_archive/utf_8_data`.
+- [05_filter_internet_archive_by_date.py](scripts/01_extract_and_parse_usenet_data/05_filter_internet_archive_by_date.py) filters the IA mbox files to only include messages within the date span of the NB archive (reading `data/date_count_nb.csv`), and writes them to `data/internet_archive/date_filtered`. Messages whose date could not be parsed are kept.
 
-This step does nothing but read the source data and write the UTF-8 mbox directories that everything else builds on.
+The date filtered copy exists because the comparison scripts in step 04 read the mbox files rather than the database: comparing message bodies needs the text itself, which the database stores only as a hash.
 
 #### Step 02: building the database
 
@@ -64,10 +65,13 @@ Messages are stored one row per message per newsgroup, with nothing dropped or m
 
 #### Step 03: counting messages and users in each archive 
 
-- [01_count_messages_per_group.py](scripts/03_statistics_per_archive/01_count_messages_per_group.py) counts messages per newsgroup (i.e. mbox file) for each of IA, date filtered IA and NB archives. Creates `data/messages_per_group_ia.csv`, `data/messages_per_group_ia_date_filtered.csv`  and `data/messages_per_group_nb.csv`
-- [02_hash_user_emails_and_names.py](scripts/03_statistics_per_archive/02_hash_user_emails_and_names.py) creates a mapping from email addresses and names in plain text to hashed values. This way, we can store output data files on GitHub,  without them containing names and email addresses. 
-- [03_count_messages_per_user.py](scripts/03_statistics_per_archive/03_count_messages_per_user.py) counts messages per user (anonymized with hash). Creates `data/messages_per_user_ia.csv`, `data/messages_per_user_ia_date_filtered.csv` and `data/messages_per_user_nb.csv`.
-- [04_count_messages_per_date.py](scripts/03_statistics_per_archive/04_count_messages_per_date.py) parses the date header of each message, and counts messages per date in each of IA and NB archives. Outputs one file for each archive: `data/date_count_ia.csv` and `data/date_count_nb.csv`
+Every script here reads `data/usenet.db`, except the duplicate count, which reads the mbox files directly so that it stays independent of the data it is used to check. Where a statistic is reported for the date filtered IA archive, that is a `WHERE` clause restricting IA to the NB date span, not a separate copy of the data.
+
+- [01_count_messages_per_group.py](scripts/03_statistics_per_archive/01_count_messages_per_group.py) counts messages per newsgroup for each of IA, date filtered IA and NB archives. Creates `data/messages_per_group_ia.csv`, `data/messages_per_group_ia_date_filtered.csv`  and `data/messages_per_group_nb.csv`
+- [02_count_duplicate_messages.py](scripts/03_statistics_per_archive/02_count_duplicate_messages.py) finds *true duplicates*: messages stored more than once in the same mbox file with both the same Message-ID and the same body. Creates `data/duplicate_messages_per_group.jsonl`, with one row per duplicated Message-ID (`source_archive`, `newsgroup`, `message_id`, `count`), where `count` is the total number of copies present.
+- [03_count_messages_per_user.py](scripts/03_statistics_per_archive/03_count_messages_per_user.py) counts messages per user, reported by the hashes the database already holds, so no plain text name or email is written out. Creates `data/messages_per_user_ia.csv`, `data/messages_per_user_ia_date_filtered.csv` and `data/messages_per_user_nb.csv`. Messages with no sender are left out, and counted by `06_count_messages_without_sender.py` instead.
+- [04_count_messages_per_date.py](scripts/03_statistics_per_archive/04_count_messages_per_date.py) counts messages per date in each of IA and NB archives. Messages whose date could not be parsed are reported in a row labelled `unknown`. Outputs one file for each archive: `data/date_count_ia.csv` and `data/date_count_nb.csv`
+- [06_count_messages_without_sender.py](scripts/03_statistics_per_archive/06_count_messages_without_sender.py) counts messages that carry no From header, and whose sender is therefore unknown, per archive and newsgroup. Creates `data/messages_without_sender.jsonl`.
 
 #### Step 04: comparing archives
 (more to come)

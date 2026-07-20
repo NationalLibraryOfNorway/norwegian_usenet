@@ -1,54 +1,35 @@
+"""Count messages per date in each archive.
+
+Counts come from the database built in step 02, where the Date header of every
+message was already parsed and normalized. Messages whose date could not be
+parsed are stored with no date, and are reported here in a row labelled
+"unknown", as they were when the counts were read from the mbox files.
+"""
+
 import argparse
 import logging
-from collections import Counter
-from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 
 import pandas as pd
-from tqdm import tqdm
 
-from usenet_no.mbox_utils import get_messages_date_field
-from usenet_no.date_parsing import parse_and_normalize_date_field
+from usenet_no.database import IA_ARCHIVE, NB_ARCHIVE, connect
+from usenet_no.statistics import count_messages_per_date
 
 logger = logging.getLogger(__name__)
 
-
-def count_dates_in_mbox_file(mbox_file: Path) -> Counter[str]:
-    counts: Counter[str] = Counter()
-    for date_field in get_messages_date_field(mbox_file=mbox_file):
-        counts[parse_and_normalize_date_field(date_field=date_field)] += 1
-    return counts
-
-
-def count_dates_parallel(mbox_files: list[Path]) -> dict[str, int]:
-    """Parse Date header of every message in every mbox file and return the date count across all files"""
-    date_counts: Counter[str] = Counter()
-
-    with ProcessPoolExecutor() as executor:
-        futures = {executor.submit(count_dates_in_mbox_file, f): f for f in mbox_files}
-        for future in tqdm(
-            as_completed(futures), total=len(mbox_files), desc="Counting dates"
-        ):
-            date_counts += future.result()
-
-    return date_counts
+# How a message with no parseable date is labelled in the report
+UNKNOWN_DATE = "unknown"
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Parse date fields in messages Date header for all messages in both archives"
+        description="Count messages per date in both archives"
     )
     parser.add_argument(
-        "--ia-directory",
+        "--database-file",
         type=Path,
-        default=Path("data/internet_archive/utf_8_data"),
-        help="Directory containing Internet Archive (IA) .mbox files",
-    )
-    parser.add_argument(
-        "--nb-directory",
-        type=Path,
-        default=Path("data/nb/utf_8_data"),
-        help="Directory containing Nasjonalbiblioteket (NB) .mbox files",
+        default=Path("data/usenet.db"),
+        help="Path to the SQLite database file",
     )
     parser.add_argument(
         "--ia-output-file",
@@ -67,20 +48,23 @@ if __name__ == "__main__":
         action="store_true",
         help="If flagged, will overwrite existing files instead of skipping",
     )
-    parser.add_argument(
-        "--limit",
-        type=int,
-        metavar="N",
-        default=None,
-        help="If passed, will only count messages for the first N mbox files",
-    )
 
     args = parser.parse_args()
+    logging.basicConfig(level=logging.INFO)
     logger.info("Args: %s", args)
 
-    for directory, output_file in [
-        (args.ia_directory, args.ia_output_file),
-        (args.nb_directory, args.nb_output_file),
+    if not args.database_file.exists():
+        logger.error(
+            "Database not found: %s. Run scripts/02_build_database.py first.",
+            args.database_file,
+        )
+        exit(1)
+
+    connection = connect(args.database_file)
+
+    for archive, output_file in [
+        (IA_ARCHIVE, args.ia_output_file),
+        (NB_ARCHIVE, args.nb_output_file),
     ]:
         if output_file.exists() and not args.overwrite:
             logger.info(
@@ -89,18 +73,19 @@ if __name__ == "__main__":
             )
             continue
 
-        mbox_files = sorted(directory.glob("*.mbox"))[: args.limit]
+        date_counts = count_messages_per_date(connection, archive=archive)
 
-        date_counts = count_dates_parallel(mbox_files=mbox_files)
+        pd.DataFrame(
+            [(date or UNKNOWN_DATE, count) for date, count in date_counts],
+            columns=["date", "count"],
+        ).to_csv(output_file, index=False)
 
-        df = pd.DataFrame(date_counts.items(), columns=["date", "count"]).sort_values(
-            "date"
-        )
-
-        df.to_csv(output_file, index=False)
         logger.info(
-            "Counted %d dates in %s. Saved date counts to %s",
-            sum(date_counts.values()),
-            directory,
+            "Counted %d messages across %d dates in %s. Saved date counts to %s",
+            sum(count for _date, count in date_counts),
+            len(date_counts),
+            archive,
             output_file,
         )
+
+    connection.close()
