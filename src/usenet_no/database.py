@@ -6,7 +6,9 @@ analyses that used to run once per archive directory become a GROUP BY, and the
 date-filtered IA subset becomes a WHERE clause instead of a copy on disk.
 
 Message bodies are stored as hashes only: the content comparison needs exact
-equality, not the text itself.
+equality, not the text itself. Sender names and emails are stored both in plain
+text and hashed, so that published statistics can report the hash while local
+analysis can still use the address. The database itself is not shared.
 """
 
 import logging
@@ -36,13 +38,21 @@ NB_ARCHIVE = "nb"
 UNKNOWN_DATE = "unknown"
 
 SCHEMA = """
+CREATE TABLE IF NOT EXISTS users (
+    id         INTEGER PRIMARY KEY,
+    name       TEXT,
+    email      TEXT,
+    name_hash  TEXT,
+    email_hash TEXT,
+    UNIQUE(name, email)
+);
+
 CREATE TABLE IF NOT EXISTS messages (
     id         INTEGER PRIMARY KEY,
     archive    TEXT NOT NULL,
     newsgroup  TEXT NOT NULL,
     message_id TEXT,
-    from_name  TEXT,
-    from_email TEXT,
+    user_id    INTEGER REFERENCES users(id),
     date       TEXT,
     body_hash  TEXT
 );
@@ -52,9 +62,10 @@ CREATE TABLE IF NOT EXISTS message_references (
     referenced_id  TEXT NOT NULL
 );
 
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_messages_archive_newsgroup ON messages(archive, newsgroup);
 CREATE INDEX IF NOT EXISTS idx_messages_archive_message_id ON messages(archive, message_id);
-CREATE INDEX IF NOT EXISTS idx_messages_from_email ON messages(from_email);
+CREATE INDEX IF NOT EXISTS idx_messages_user_id ON messages(user_id);
 CREATE INDEX IF NOT EXISTS idx_messages_date ON messages(date);
 CREATE INDEX IF NOT EXISTS idx_messages_body_hash ON messages(body_hash);
 CREATE INDEX IF NOT EXISTS idx_references_row_id ON message_references(message_row_id);
@@ -71,6 +82,8 @@ class ExtractedMessage:
     message_id: str | None
     from_name: str | None
     from_email: str | None
+    from_name_hash: str | None
+    from_email_hash: str | None
     date: str | None
     body_hash: str | None
     references: list[str]
@@ -94,6 +107,11 @@ def extract_message(
 
     Emails are lowercased so that address variants collapse to one user; names
     keep their case, where it is meaningful.
+
+    Names and emails are stored both in plain text and hashed. The hashes are
+    what published statistics report, so that no output file carries a real
+    address; the plain text stays here because the database is local, and
+    questions like which domains people posted from need the address itself.
     """
     try:
         from_field = get_from_field(message)
@@ -102,6 +120,8 @@ def extract_message(
         from_field = ""
 
     name, email = parseaddr(from_field or "")
+    from_name = name or None
+    from_email = email.lower() or None
     date = parse_and_normalize_date_field(message.get("Date", None))
     body = get_message_body(message=message)
 
@@ -109,8 +129,10 @@ def extract_message(
         archive=archive,
         newsgroup=newsgroup,
         message_id=parse_message_id(message.get("Message-ID")),
-        from_name=name or None,
-        from_email=email.lower() or None,
+        from_name=from_name,
+        from_email=from_email,
+        from_name_hash=make_hash(from_name) if from_name else None,
+        from_email_hash=make_hash(from_email) if from_email else None,
         date=None if date == UNKNOWN_DATE else date,
         body_hash=make_hash(body) if body else None,
         references=parse_references(message.get("References")),
@@ -130,29 +152,76 @@ def extract_messages_from_mbox_file(
     ]
 
 
+UserKey = tuple[str | None, str | None]
+
+
+def load_user_ids(connection: sqlite3.Connection) -> dict[UserKey, int]:
+    """Read the existing users into a lookup, so inserts can reuse their ids.
+
+    Senders repeat across millions of messages, so the lookup is kept in memory
+    for the whole load rather than queried per message.
+    """
+    return {
+        (name, email): user_id
+        for user_id, name, email in connection.execute(
+            "SELECT id, name, email FROM users"
+        )
+    }
+
+
 def insert_messages(
-    connection: sqlite3.Connection, messages: list[ExtractedMessage]
+    connection: sqlite3.Connection,
+    messages: list[ExtractedMessage],
+    user_ids: dict[UserKey, int],
 ) -> None:
-    """Insert messages and their references, assigning row ids in Python so both
-    tables can be written with executemany."""
+    """Insert messages, their senders and their references.
+
+    Row ids are assigned in Python so that every table can be written with
+    executemany. `user_ids` is read and extended in place: a sender seen in an
+    earlier batch keeps the id it was given then.
+    """
     if not messages:
         return
 
     cursor = connection.cursor()
-    (max_id,) = cursor.execute("SELECT COALESCE(MAX(id), 0) FROM messages").fetchone()
+    (max_message_id,) = cursor.execute(
+        "SELECT COALESCE(MAX(id), 0) FROM messages"
+    ).fetchone()
+    next_user_id = max(user_ids.values(), default=0)
 
+    user_rows = []
     message_rows = []
     reference_rows = []
+
     for offset, message in enumerate(messages, start=1):
-        row_id = max_id + offset
+        row_id = max_message_id + offset
+
+        # Messages with no sender at all get no user, rather than a blank one
+        if message.from_name is None and message.from_email is None:
+            user_id = None
+        else:
+            user_key = (message.from_name, message.from_email)
+            if user_key not in user_ids:
+                next_user_id += 1
+                user_ids[user_key] = next_user_id
+                user_rows.append(
+                    (
+                        next_user_id,
+                        message.from_name,
+                        message.from_email,
+                        message.from_name_hash,
+                        message.from_email_hash,
+                    )
+                )
+            user_id = user_ids[user_key]
+
         message_rows.append(
             (
                 row_id,
                 message.archive,
                 message.newsgroup,
                 message.message_id,
-                message.from_name,
-                message.from_email,
+                user_id,
                 message.date,
                 message.body_hash,
             )
@@ -162,8 +231,14 @@ def insert_messages(
         )
 
     cursor.executemany(
-        "INSERT INTO messages (id, archive, newsgroup, message_id, from_name, from_email, date, body_hash)"
-        " VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        "INSERT INTO users (id, name, email, name_hash, email_hash)"
+        " VALUES (?, ?, ?, ?, ?)",
+        user_rows,
+    )
+    cursor.executemany(
+        "INSERT INTO messages"
+        " (id, archive, newsgroup, message_id, user_id, date, body_hash)"
+        " VALUES (?, ?, ?, ?, ?, ?, ?)",
         message_rows,
     )
     cursor.executemany(

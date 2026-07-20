@@ -18,6 +18,7 @@ from usenet_no.database import (
     create_schema,
     extract_messages_from_mbox_file,
     insert_messages,
+    load_user_ids,
 )
 
 logger = logging.getLogger(__name__)
@@ -85,6 +86,7 @@ if __name__ == "__main__":
 
     connection = connect(args.database_file)
     create_schema(connection)
+    user_ids = load_user_ids(connection)
 
     total_messages = 0
     with ProcessPoolExecutor() as executor:
@@ -93,8 +95,13 @@ if __name__ == "__main__":
             total=len(mbox_files_with_archive),
             desc="Loading messages into database",
         ):
-            insert_messages(connection, messages)
+            insert_messages(connection, messages, user_ids)
             total_messages += len(messages)
 
     connection.close()
-    logger.info("Loaded %d messages into %s", total_messages, args.database_file)
+    logger.info(
+        "Loaded %d messages from %d senders into %s",
+        total_messages,
+        len(user_ids),
+        args.database_file,
+    )

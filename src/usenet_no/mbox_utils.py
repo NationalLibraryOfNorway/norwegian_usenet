@@ -63,14 +63,18 @@ def ensure_mbox_envelope(text: str) -> str:
     return text
 
 
-def get_from_field(message: mailbox.mboxMessage) -> str:
-    return message["From"] or message.get_from()
+def get_from_field(message: mailbox.mboxMessage) -> str | None:
+    """Return the From header, or None when the message has none."""
+    return message["From"]
 
 
 def get_messages_from_field(
     mbox_file: Path, show_progress: bool = True
-) -> Iterator[str]:
-    """Iterates over every message in mbox file and yields the value in the From field of every message"""
+) -> Iterator[str | None]:
+    """Iterates over every message in mbox file and yields the value in the From field of every message.
+
+    Yields None for messages that carry no From header, i.e. whose sender is unknown.
+    """
     mbox = mailbox.mbox(str(mbox_file), factory=message_factory)
     for message in tqdm(
         mbox,

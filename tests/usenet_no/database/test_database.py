@@ -1,11 +1,14 @@
 from usenet_no.database import (
     IA_ARCHIVE,
+    ExtractedMessage,
     NB_ARCHIVE,
     connect,
     create_schema,
     extract_messages_from_mbox_file,
     insert_messages,
+    load_user_ids,
 )
+from usenet_no.hash import make_hash
 from usenet_no.mbox_utils import write_mbox
 
 
@@ -71,6 +74,33 @@ def test_lowercases_email_but_keeps_name_case(tmp_path):
     assert message.from_name == "Tita Enstad"
 
 
+def test_hashes_the_stored_name_and_email(tmp_path):
+    """The hash must match the value actually stored, i.e. the lowercased email."""
+    mbox_file = tmp_path / "no.test.mbox"
+    _make_mbox(
+        mbox_file,
+        [{"From": "Tita Enstad <Tita@Example.NO>", "body": "hello"}],
+    )
+
+    (message,) = extract_messages_from_mbox_file((mbox_file, IA_ARCHIVE))
+
+    assert message.from_email_hash == make_hash(message.from_email)
+    assert message.from_name_hash == make_hash(message.from_name)
+    # Address variants must hash alike, since they are one user
+    assert message.from_email_hash == make_hash("tita@example.no")
+
+
+def test_missing_sender_hashes_to_null(tmp_path):
+    mbox_file = tmp_path / "no.test.mbox"
+    _make_mbox(mbox_file, [{"From": "a@b.no", "body": "no display name"}])
+
+    (message,) = extract_messages_from_mbox_file((mbox_file, IA_ARCHIVE))
+
+    assert message.from_name is None
+    assert message.from_name_hash is None
+    assert message.from_email_hash is not None
+
+
 def test_unparseable_date_is_stored_as_null(tmp_path):
     mbox_file = tmp_path / "no.test.mbox"
     _make_mbox(
@@ -111,7 +141,9 @@ def test_inserts_messages_and_references(tmp_path):
     connection = _database(tmp_path)
 
     insert_messages(
-        connection, extract_messages_from_mbox_file((mbox_file, IA_ARCHIVE))
+        connection,
+        extract_messages_from_mbox_file((mbox_file, IA_ARCHIVE)),
+        load_user_ids(connection),
     )
 
     (message_count,) = connection.execute("SELECT COUNT(*) FROM messages").fetchone()
@@ -129,9 +161,14 @@ def test_insert_assigns_unique_ids_across_calls(tmp_path):
     _make_mbox(first, [{"From": "a@b.no", "References": "<x@y.no>", "body": "one"}])
     _make_mbox(second, [{"From": "c@d.no", "References": "<z@y.no>", "body": "two"}])
     connection = _database(tmp_path)
+    user_ids = load_user_ids(connection)
 
-    insert_messages(connection, extract_messages_from_mbox_file((first, IA_ARCHIVE)))
-    insert_messages(connection, extract_messages_from_mbox_file((second, NB_ARCHIVE)))
+    insert_messages(
+        connection, extract_messages_from_mbox_file((first, IA_ARCHIVE)), user_ids
+    )
+    insert_messages(
+        connection, extract_messages_from_mbox_file((second, NB_ARCHIVE)), user_ids
+    )
 
     ids = connection.execute("SELECT id FROM messages ORDER BY id").fetchall()
     # Each reference must point at a distinct message row
@@ -141,3 +178,98 @@ def test_insert_assigns_unique_ids_across_calls(tmp_path):
 
     assert ids == [(1,), (2,)]
     assert len(reference_row_ids) == 2
+
+
+def test_repeated_sender_becomes_one_user_row(tmp_path):
+    first = tmp_path / "no.first.mbox"
+    second = tmp_path / "no.second.mbox"
+    _make_mbox(first, [{"From": "Tita <t@x.no>", "body": "one"}])
+    _make_mbox(second, [{"From": "Tita <t@x.no>", "body": "two"}])
+    connection = _database(tmp_path)
+    user_ids = load_user_ids(connection)
+
+    # Two separate batches, so the sender must be reused across calls
+    insert_messages(
+        connection, extract_messages_from_mbox_file((first, IA_ARCHIVE)), user_ids
+    )
+    insert_messages(
+        connection, extract_messages_from_mbox_file((second, NB_ARCHIVE)), user_ids
+    )
+
+    (user_count,) = connection.execute("SELECT COUNT(*) FROM users").fetchone()
+    message_user_ids = connection.execute(
+        "SELECT DISTINCT user_id FROM messages"
+    ).fetchall()
+
+    assert user_count == 1
+    assert len(message_user_ids) == 1
+
+
+def test_same_email_with_different_names_are_separate_users(tmp_path):
+    mbox_file = tmp_path / "no.test.mbox"
+    _make_mbox(
+        mbox_file,
+        [
+            {"From": "Tita Enstad <t@x.no>", "body": "one"},
+            {"From": "tita <t@x.no>", "body": "two"},
+        ],
+    )
+    connection = _database(tmp_path)
+
+    insert_messages(
+        connection,
+        extract_messages_from_mbox_file((mbox_file, IA_ARCHIVE)),
+        load_user_ids(connection),
+    )
+
+    names = connection.execute("SELECT name FROM users ORDER BY name").fetchall()
+    (emails,) = connection.execute("SELECT COUNT(DISTINCT email) FROM users").fetchone()
+
+    assert names == [("Tita Enstad",), ("tita",)]
+    assert emails == 1
+
+
+def test_message_without_sender_has_no_user(tmp_path):
+    """Built directly: mailbox always synthesises a MAILER-DAEMON envelope, so a
+    message with no sender at all cannot be produced from an mbox file."""
+    connection = _database(tmp_path)
+    message = ExtractedMessage(
+        archive=IA_ARCHIVE,
+        newsgroup="no.test",
+        message_id="<a@x.no>",
+        from_name=None,
+        from_email=None,
+        from_name_hash=None,
+        from_email_hash=None,
+        date=None,
+        body_hash=None,
+        references=[],
+    )
+
+    insert_messages(connection, [message], load_user_ids(connection))
+
+    (user_count,) = connection.execute("SELECT COUNT(*) FROM users").fetchone()
+    (user_id,) = connection.execute("SELECT user_id FROM messages").fetchone()
+
+    assert user_count == 0
+    assert user_id is None
+
+
+def test_user_hashes_are_stored_on_the_user_row(tmp_path):
+    mbox_file = tmp_path / "no.test.mbox"
+    _make_mbox(mbox_file, [{"From": "Tita <Tita@X.NO>", "body": "one"}])
+    connection = _database(tmp_path)
+
+    insert_messages(
+        connection,
+        extract_messages_from_mbox_file((mbox_file, IA_ARCHIVE)),
+        load_user_ids(connection),
+    )
+
+    name, email, name_hash, email_hash = connection.execute(
+        "SELECT name, email, name_hash, email_hash FROM users"
+    ).fetchone()
+
+    assert email == "tita@x.no"
+    assert email_hash == make_hash("tita@x.no")
+    assert name_hash == make_hash(name)
