@@ -1,4 +1,4 @@
-"""Shared utilities for Jupyter notebooks."""
+"""Shared plotting utilities."""
 
 from __future__ import annotations
 

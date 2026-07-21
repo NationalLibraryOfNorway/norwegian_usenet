@@ -119,9 +119,9 @@ def get_message_bodies(mbox_file: Path) -> set[str]:
 
     Assumes all message payloads are UTF-8 encoded on disk, regardless of the
     charset declared in Content-Type headers. This holds for both data sources:
-    - NB (data/nb/utf_8_data): src/usenet_no/parse_norwegian_web_archive.py decodes each file with
+    - NB (data/input/nb/utf_8_data): src/usenet_no/parse_norwegian_web_archive.py decodes each file with
       chardet and writes as UTF-8 via write_mbox.
-    - IA (data/internet_archive/utf_8_data): src/usenet_no/parse_internet_archive.py detects encoding with
+    - IA (data/input/internet_archive/utf_8_data): src/usenet_no/parse_internet_archive.py detects encoding with
       chardet and writes each message as UTF-8 via write_mbox.
     """
     mbox = mailbox.mbox(str(mbox_file), factory=message_factory)

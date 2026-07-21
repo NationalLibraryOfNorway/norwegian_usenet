@@ -81,19 +81,21 @@ if __name__ == "__main__":
     parser.add_argument(
         "--zipped-dir",
         type=Path,
-        default=Path("data/nb/zipped_data"),
+        default=Path("data/input/nb/zipped_data"),
         help="Directory containing the NB .tar archives",
     )
     parser.add_argument(
         "--unzipped-dir",
         type=Path,
-        default=Path("data/nb/unzipped_data"),
+        default=Path("data/input/nb/unzipped_data"),
         help="Directory where tar archives are extracted",
     )
     parser.add_argument(
         "--output-file",
         type=Path,
-        default=Path("data/cut_off_newsgroup_names.csv"),
+        default=Path(
+            "data/output/01_extract_and_parse_usenet_data/cut_off_newsgroup_names.csv"
+        ),
         help="CSV file to write the corrections to",
     )
     parser.add_argument(

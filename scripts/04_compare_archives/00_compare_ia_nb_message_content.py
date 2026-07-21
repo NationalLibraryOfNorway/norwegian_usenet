@@ -33,19 +33,21 @@ if __name__ == "__main__":
     parser.add_argument(
         "--database-file",
         type=Path,
-        default=Path("data/usenet.db"),
+        default=Path("data/output/02_build_database/usenet.db"),
         help="Path to the SQLite database file",
     )
     parser.add_argument(
         "--full-output-file",
         type=Path,
-        default=Path("data/ia_nb_content_comparison.csv"),
+        default=Path("data/output/04_compare_archives/ia_nb_content_comparison.csv"),
         help="Path to CSV output file for the full IA archive comparison",
     )
     parser.add_argument(
         "--date-filtered-output-file",
         type=Path,
-        default=Path("data/ia_nb_content_comparison_date_filtered.csv"),
+        default=Path(
+            "data/output/04_compare_archives/ia_nb_content_comparison_date_filtered.csv"
+        ),
         help="Path to CSV output file for the date-filtered IA archive comparison",
     )
     parser.add_argument(

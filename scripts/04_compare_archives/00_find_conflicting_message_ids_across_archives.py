@@ -25,13 +25,15 @@ if __name__ == "__main__":
     parser.add_argument(
         "--database-file",
         type=Path,
-        default=Path("data/usenet.db"),
+        default=Path("data/output/02_build_database/usenet.db"),
         help="Path to the SQLite database file",
     )
     parser.add_argument(
         "--output-file",
         type=Path,
-        default=Path("data/conflicting_message_ids_across_archives.jsonl"),
+        default=Path(
+            "data/output/04_compare_archives/conflicting_message_ids_across_archives.jsonl"
+        ),
         help="Path to JSONL output file",
     )
     parser.add_argument(

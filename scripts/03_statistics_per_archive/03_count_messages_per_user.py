@@ -27,25 +27,27 @@ if __name__ == "__main__":
     parser.add_argument(
         "--database-file",
         type=Path,
-        default=Path("data/usenet.db"),
+        default=Path("data/output/02_build_database/usenet.db"),
         help="Path to the SQLite database file",
     )
     parser.add_argument(
         "--nb-output-file",
         type=Path,
-        default=Path("data/messages_per_user_nb.csv"),
+        default=Path("data/output/03_statistics_per_archive/messages_per_user_nb.csv"),
         help="Path to CSV output file for NB user counts",
     )
     parser.add_argument(
         "--ia-output-file",
         type=Path,
-        default=Path("data/messages_per_user_ia.csv"),
+        default=Path("data/output/03_statistics_per_archive/messages_per_user_ia.csv"),
         help="Path to CSV output file for IA user counts",
     )
     parser.add_argument(
         "--ia-date-filtered-output-file",
         type=Path,
-        default=Path("data/messages_per_user_ia_date_filtered.csv"),
+        default=Path(
+            "data/output/03_statistics_per_archive/messages_per_user_ia_date_filtered.csv"
+        ),
         help="Path to CSV output file for IA counts restricted to the NB date span",
     )
     parser.add_argument(

@@ -27,25 +27,25 @@ if __name__ == "__main__":
     parser.add_argument(
         "--zipped-data-dir",
         type=Path,
-        default=Path("data/internet_archive/zipped_data"),
+        default=Path("data/input/internet_archive/zipped_data"),
         help="Directory containing zipped mbox files",
     )
     parser.add_argument(
         "--unzipped-data-dir",
         type=Path,
-        default=Path("data/internet_archive/unzipped_data"),
+        default=Path("data/input/internet_archive/unzipped_data"),
         help="Directory to store unzipped mbox files",
     )
     parser.add_argument(
         "--decoded-data-dir",
         type=Path,
-        default=Path("data/internet_archive/utf_8_data"),
+        default=Path("data/input/internet_archive/utf_8_data"),
         help="Directory to store utf-8 encoded unzipped mbox files",
     )
     parser.add_argument(
         "--encodings-file",
         type=Path,
-        default=Path("data/internet_archive/encodings.json"),
+        default=Path("data/input/internet_archive/encodings.json"),
         help="Path to JSON file storing detected encodings",
     )
     parser.add_argument(

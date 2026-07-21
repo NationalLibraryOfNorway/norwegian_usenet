@@ -35,25 +35,25 @@ if __name__ == "__main__":
     parser.add_argument(
         "--ia-directory",
         type=Path,
-        default=Path("data/internet_archive/utf_8_data"),
+        default=Path("data/input/internet_archive/utf_8_data"),
         help="Directory containing Internet Archive (IA) .mbox files",
     )
     parser.add_argument(
         "--nb-directory",
         type=Path,
-        default=Path("data/nb/utf_8_data"),
+        default=Path("data/input/nb/utf_8_data"),
         help="Directory containing Nasjonalbiblioteket (NB) .mbox files",
     )
     parser.add_argument(
         "--database-file",
         type=Path,
-        default=Path("data/usenet.db"),
+        default=Path("data/output/02_build_database/usenet.db"),
         help="Path to the shared (hashes only) SQLite database file",
     )
     parser.add_argument(
         "--private-database-file",
         type=Path,
-        default=Path("data/usenet_private.db"),
+        default=Path("data/output/02_build_database/usenet_private.db"),
         help="Path to the private hash-to-plaintext SQLite database file",
     )
     parser.add_argument(

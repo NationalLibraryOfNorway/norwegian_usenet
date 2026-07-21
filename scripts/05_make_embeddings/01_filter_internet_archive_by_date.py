@@ -20,19 +20,19 @@ if __name__ == "__main__":
     parser.add_argument(
         "--ia-directory",
         type=Path,
-        default=Path("data/internet_archive/utf_8_data"),
+        default=Path("data/input/internet_archive/utf_8_data"),
         help="Directory containing IA mbox files",
     )
     parser.add_argument(
         "--nb-date-csv",
         type=Path,
-        default=Path("data/date_count_nb.csv"),
+        default=Path("data/output/03_statistics_per_archive/date_count_nb.csv"),
         help="CSV with date counts for the NB archive",
     )
     parser.add_argument(
         "--output-directory",
         type=Path,
-        default=Path("data/internet_archive/date_filtered"),
+        default=Path("data/input/internet_archive/date_filtered"),
         help="Directory to write filtered mbox files",
     )
     parser.add_argument(

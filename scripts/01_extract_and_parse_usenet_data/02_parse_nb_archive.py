@@ -21,13 +21,13 @@ if __name__ == "__main__":
     parser.add_argument(
         "--unzipped-dir",
         type=Path,
-        default=Path("data/nb/unzipped_data"),
+        default=Path("data/input/nb/unzipped_data"),
         help="Directory containing the extracted NB sources (01_extract_nb_archive_and_find_stubbed_newsgroup_names.py)",
     )
     parser.add_argument(
         "--output-directory",
         type=Path,
-        default=Path("data/nb/utf_8_data"),
+        default=Path("data/input/nb/utf_8_data"),
         help="Directory to write generated .mbox files",
     )
     parser.add_argument(
@@ -38,7 +38,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--newsgroup-corrections",
         type=Path,
-        default=Path("data/cut_off_newsgroup_names.csv"),
+        default=Path(
+            "data/output/01_extract_and_parse_usenet_data/cut_off_newsgroup_names.csv"
+        ),
         help="CSV mapping cut-off newsgroup names to their full names (01_extract_nb_archive_and_find_stubbed_newsgroup_names.py)",
     )
     args = parser.parse_args()

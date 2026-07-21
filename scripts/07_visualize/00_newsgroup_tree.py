@@ -58,13 +58,13 @@ def main() -> None:
     parser.add_argument(
         "--ia-csv",
         type=Path,
-        default=Path("data/messages_per_group_ia.csv"),
+        default=Path("data/output/03_statistics_per_archive/messages_per_group_ia.csv"),
         help="CSV with IA message counts per newsgroup (default: %(default)s)",
     )
     parser.add_argument(
         "--nb-csv",
         type=Path,
-        default=Path("data/messages_per_group_nb.csv"),
+        default=Path("data/output/03_statistics_per_archive/messages_per_group_nb.csv"),
         help="CSV with NB message counts per newsgroup (default: %(default)s)",
     )
     args = parser.parse_args()

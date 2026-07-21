@@ -15,7 +15,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--page-data",
         type=Path,
-        default=Path("data/page_data.txt"),
+        default=Path("data/output/01_extract_and_parse_usenet_data/page_data.txt"),
         help="Location of cached page HTML",
     )
     parser.add_argument(
@@ -26,7 +26,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--data-dir",
         type=Path,
-        default=Path("data/internet_archive/zipped_data"),
+        default=Path("data/input/internet_archive/zipped_data"),
         help="Directory where zip files are stored",
     )
     parser.add_argument(

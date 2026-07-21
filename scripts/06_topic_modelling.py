@@ -18,7 +18,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--embeddings-directory",
         type=Path,
-        default=Path("data/embeddings"),
+        default=Path("data/output/05_make_embeddings"),
         help="Base directory containing per-model embedding subdirectories",
     )
     parser.add_argument(
@@ -30,19 +30,19 @@ if __name__ == "__main__":
     parser.add_argument(
         "--ia-directory",
         type=Path,
-        default=Path("data/internet_archive/date_filtered"),
+        default=Path("data/input/internet_archive/date_filtered"),
         help="Directory containing IA mbox files",
     )
     parser.add_argument(
         "--nb-directory",
         type=Path,
-        default=Path("data/nb/utf_8_data"),
+        default=Path("data/input/nb/utf_8_data"),
         help="Directory containing NB mbox files",
     )
     parser.add_argument(
         "--output-directory",
         type=Path,
-        default=Path("data/topics"),
+        default=Path("data/output/06_topic_modelling"),
         help="Directory to save the BERTopic model and topic info",
     )
     parser.add_argument(
