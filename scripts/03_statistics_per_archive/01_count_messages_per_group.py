@@ -11,7 +11,7 @@ import logging
 from pathlib import Path
 
 from usenet_no.database import IA_ARCHIVE, NB_ARCHIVE, connect
-from usenet_no.statistics import count_messages_per_group, get_date_span
+from usenet_no.database.statistics import count_messages_per_group, get_date_span
 
 logger = logging.getLogger(__name__)
 

@@ -1,5 +1,5 @@
 from usenet_no.database import NB_ARCHIVE
-from usenet_no.statistics import get_date_span
+from usenet_no.database.statistics import get_date_span
 
 
 def test_date_span_ignores_unparseable_dates(mbox_data, database, load_archives):

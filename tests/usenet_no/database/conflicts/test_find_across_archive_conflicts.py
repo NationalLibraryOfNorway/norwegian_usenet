@@ -1,4 +1,4 @@
-from usenet_no.conflicts import (
+from usenet_no.database.conflicts import (
     find_across_archive_conflicts,
     find_within_archive_conflicts,
 )

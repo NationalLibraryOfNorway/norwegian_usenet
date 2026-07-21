@@ -16,7 +16,7 @@ from collections import Counter
 from pathlib import Path
 
 from usenet_no.database import connect
-from usenet_no.conflicts import find_within_archive_conflicts
+from usenet_no.database.conflicts import find_within_archive_conflicts
 
 logger = logging.getLogger(__name__)
 

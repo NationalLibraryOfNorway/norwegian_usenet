@@ -13,7 +13,7 @@ from pathlib import Path
 import pandas as pd
 
 from usenet_no.database import IA_ARCHIVE, NB_ARCHIVE, connect
-from usenet_no.statistics import count_messages_per_date
+from usenet_no.database.statistics import count_messages_per_date
 
 logger = logging.getLogger(__name__)
 

@@ -1,7 +1,7 @@
 import logging
 import sqlite3
 
-from usenet_no.database import IA_ARCHIVE, NB_ARCHIVE, date_span_clause
+from usenet_no.database.core import IA_ARCHIVE, NB_ARCHIVE, date_span_clause
 
 logger = logging.getLogger(__name__)
 

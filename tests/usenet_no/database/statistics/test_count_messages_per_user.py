@@ -1,5 +1,5 @@
 from usenet_no.database import IA_ARCHIVE
-from usenet_no.statistics import count_messages_per_user
+from usenet_no.database.statistics import count_messages_per_user
 
 
 def test_counts_messages_per_user_by_hash(mbox_data, database, load_archives):

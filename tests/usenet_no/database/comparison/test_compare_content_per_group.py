@@ -1,4 +1,4 @@
-from usenet_no.comparison import compare_content_per_group
+from usenet_no.database.comparison import compare_content_per_group
 from usenet_no.database import IA_ARCHIVE, NB_ARCHIVE
 
 SPAN = ("1996-01-06", "1996-01-20")

@@ -1,14 +1,23 @@
-"""SQLite database holding the messages of both Usenet archives.
+"""SQLite databases holding the messages of both Usenet archives.
 
-One row per message in `messages`, one row per (message, referenced id) pair in
-`message_references`. The `archive` column distinguishes the two sources, so
-analyses that used to run once per archive directory become a GROUP BY, and the
-date-filtered IA subset becomes a WHERE clause instead of a copy on disk.
+Two databases are built in one pass over the mbox files:
 
-Message bodies are stored as hashes only: the content comparison needs exact
-equality, not the text itself. Sender names and emails are stored both in plain
-text and hashed, so that published statistics can report the hash while local
-analysis can still use the address. The database itself is not shared.
+- The *shared* database holds one row per message in `messages`, one row per
+  (message, referenced id) pair in `message_references` and one row per sender
+  in `users`. Names, emails, message ids and bodies appear only as hashes, so
+  the file can be shared. Subjects and the Newsgroups header are kept in plain
+  text.
+- The *private* database maps the hashed names, emails and message ids back to
+  their plain text, so local analysis can connect a hash to the address or to
+  the message body in the mbox files. It is not shared.
+
+Message bodies are stored in neither database: the content comparison needs
+exact equality, not the text itself, so the shared database holds a hash and
+the full text lives only in the mbox files.
+
+The `archive` column distinguishes the two sources, so analyses that used to
+run once per archive directory become a GROUP BY, and the date-filtered IA
+subset becomes a WHERE clause instead of a copy on disk.
 """
 
 import logging
@@ -37,24 +46,24 @@ NB_ARCHIVE = "nb"
 # which we store as NULL instead.
 UNKNOWN_DATE = "unknown"
 
-SCHEMA = """
+SHARED_SCHEMA = """
 CREATE TABLE IF NOT EXISTS users (
     id         INTEGER PRIMARY KEY,
-    name       TEXT,
-    email      TEXT,
     name_hash  TEXT,
-    email_hash TEXT,
-    UNIQUE(name, email)
+    email_hash TEXT
 );
 
+-- `newsgroup` is the group whose mbox file held the message; `newsgroups` is
+-- the message's own Newsgroups header, i.e. the cross-post list.
 CREATE TABLE IF NOT EXISTS messages (
     id              INTEGER PRIMARY KEY,
     archive         TEXT NOT NULL,
     newsgroup       TEXT NOT NULL,
-    message_id      TEXT,
     message_id_hash TEXT,
     user_id         INTEGER REFERENCES users(id),
     date            TEXT,
+    subject         TEXT,
+    newsgroups      TEXT,
     body_hash       TEXT
 );
 
@@ -67,15 +76,38 @@ CREATE TABLE IF NOT EXISTS message_references (
     referenced_id_hash TEXT NOT NULL
 );
 
-CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_users_email_hash ON users(email_hash);
 CREATE INDEX IF NOT EXISTS idx_messages_archive_newsgroup ON messages(archive, newsgroup);
-CREATE INDEX IF NOT EXISTS idx_messages_archive_message_id ON messages(archive, message_id);
 CREATE INDEX IF NOT EXISTS idx_messages_message_id_hash ON messages(message_id_hash);
 CREATE INDEX IF NOT EXISTS idx_messages_user_id ON messages(user_id);
 CREATE INDEX IF NOT EXISTS idx_messages_date ON messages(date);
 CREATE INDEX IF NOT EXISTS idx_messages_body_hash ON messages(body_hash);
 CREATE INDEX IF NOT EXISTS idx_references_row_id ON message_references(message_row_id);
 CREATE INDEX IF NOT EXISTS idx_references_hash ON message_references(referenced_id_hash);
+"""
+
+PRIVATE_SCHEMA = """
+-- `users.id` matches the id in the shared database's users table, so the two
+-- can be joined after ATTACH. Two senders are the same user exactly when they
+-- share the plain text (name, email) pair.
+CREATE TABLE IF NOT EXISTS users (
+    id         INTEGER PRIMARY KEY,
+    name       TEXT,
+    email      TEXT,
+    name_hash  TEXT,
+    email_hash TEXT,
+    UNIQUE(name, email)
+);
+
+CREATE TABLE IF NOT EXISTS message_ids (
+    message_id      TEXT PRIMARY KEY,
+    message_id_hash TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_private_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_private_users_name_hash ON users(name_hash);
+CREATE INDEX IF NOT EXISTS idx_private_users_email_hash ON users(email_hash);
+CREATE INDEX IF NOT EXISTS idx_private_message_ids_hash ON message_ids(message_id_hash);
 """
 
 
@@ -92,6 +124,8 @@ class ExtractedMessage:
     from_name_hash: str | None
     from_email_hash: str | None
     date: str | None
+    subject: str | None
+    newsgroups: str | None
     body_hash: str | None
     referenced_id_hashes: list[str]
 
@@ -120,8 +154,25 @@ def connect(database_file: Path) -> sqlite3.Connection:
 
 
 def create_schema(connection: sqlite3.Connection) -> None:
-    connection.executescript(SCHEMA)
+    """Create the shared database's tables and indexes."""
+    connection.executescript(SHARED_SCHEMA)
     connection.commit()
+
+
+def create_private_schema(connection: sqlite3.Connection) -> None:
+    """Create the private hash-to-plaintext mapping tables and indexes."""
+    connection.executescript(PRIVATE_SCHEMA)
+    connection.commit()
+
+
+def _get_header(message: mailbox.mboxMessage, header: str) -> str | None:
+    """Return one header's decoded value, or None when missing or unreadable."""
+    try:
+        value = message.get(header)
+    except Exception as e:
+        logger.debug("Could not read %s field: %s %s", header, type(e), e)
+        return None
+    return str(value) if value else None
 
 
 def extract_message(
@@ -132,10 +183,8 @@ def extract_message(
     Emails are lowercased so that address variants collapse to one user; names
     keep their case, where it is meaningful.
 
-    Names and emails are stored both in plain text and hashed. The hashes are
-    what published statistics report, so that no output file carries a real
-    address; the plain text stays here because the database is local, and
-    questions like which domains people posted from need the address itself.
+    Names, emails and message ids are kept both in plain text and hashed: the
+    hashes go into the shared database, the plain text into the private one.
     """
     try:
         from_field = get_from_field(message)
@@ -160,6 +209,8 @@ def extract_message(
         from_name_hash=make_hash(from_name) if from_name else None,
         from_email_hash=make_hash(from_email) if from_email else None,
         date=None if date == UNKNOWN_DATE else date,
+        subject=_get_header(message, "Subject"),
+        newsgroups=_get_header(message, "Newsgroups"),
         body_hash=make_hash(body) if body else None,
         referenced_id_hashes=[
             make_hash(referenced_id)
@@ -184,15 +235,17 @@ def extract_messages_from_mbox_file(
 UserKey = tuple[str | None, str | None]
 
 
-def load_user_ids(connection: sqlite3.Connection) -> dict[UserKey, int]:
+def load_user_ids(private_connection: sqlite3.Connection) -> dict[UserKey, int]:
     """Read the existing users into a lookup, so inserts can reuse their ids.
 
-    Senders repeat across millions of messages, so the lookup is kept in memory
-    for the whole load rather than queried per message.
+    Reads the private database, since that is where the plain text (name,
+    email) pairs that identify a user live. Senders repeat across millions of
+    messages, so the lookup is kept in memory for the whole load rather than
+    queried per message.
     """
     return {
         (name, email): user_id
-        for user_id, name, email in connection.execute(
+        for user_id, name, email in private_connection.execute(
             "SELECT id, name, email FROM users"
         )
     }
@@ -200,14 +253,19 @@ def load_user_ids(connection: sqlite3.Connection) -> dict[UserKey, int]:
 
 def insert_messages(
     connection: sqlite3.Connection,
+    private_connection: sqlite3.Connection,
     messages: list[ExtractedMessage],
     user_ids: dict[UserKey, int],
 ) -> None:
-    """Insert messages, their senders and their references.
+    """Insert messages into the shared database and their plain text into the private one.
 
     Row ids are assigned in Python so that every table can be written with
-    executemany. `user_ids` is read and extended in place: a sender seen in an
-    earlier batch keeps the id it was given then.
+    executemany, and the same user id is written to both databases. `user_ids`
+    is read and extended in place: a sender seen in an earlier batch keeps the
+    id it was given then.
+
+    The private database is committed first, so that every hash the shared
+    database holds can be mapped back to its plain text.
     """
     if not messages:
         return
@@ -219,7 +277,9 @@ def insert_messages(
     next_user_id = max(user_ids.values(), default=0)
 
     user_rows = []
+    private_user_rows = []
     message_rows = []
+    message_id_rows = []
     reference_rows = []
 
     for offset, message in enumerate(messages, start=1):
@@ -234,6 +294,9 @@ def insert_messages(
                 next_user_id += 1
                 user_ids[user_key] = next_user_id
                 user_rows.append(
+                    (next_user_id, message.from_name_hash, message.from_email_hash)
+                )
+                private_user_rows.append(
                     (
                         next_user_id,
                         message.from_name,
@@ -249,27 +312,43 @@ def insert_messages(
                 row_id,
                 message.archive,
                 message.newsgroup,
-                message.message_id,
                 message.message_id_hash,
                 user_id,
                 message.date,
+                message.subject,
+                message.newsgroups,
                 message.body_hash,
             )
         )
+        if message.message_id is not None:
+            message_id_rows.append((message.message_id, message.message_id_hash))
         reference_rows.extend(
             (row_id, referenced_id_hash)
             for referenced_id_hash in message.referenced_id_hashes
         )
 
-    cursor.executemany(
+    private_cursor = private_connection.cursor()
+    private_cursor.executemany(
         "INSERT INTO users (id, name, email, name_hash, email_hash)"
         " VALUES (?, ?, ?, ?, ?)",
+        private_user_rows,
+    )
+    # The same id maps to the same hash wherever it appears, so copies repeated
+    # across mbox files and archives collapse to one mapping row.
+    private_cursor.executemany(
+        "INSERT OR IGNORE INTO message_ids (message_id, message_id_hash) VALUES (?, ?)",
+        message_id_rows,
+    )
+    private_connection.commit()
+
+    cursor.executemany(
+        "INSERT INTO users (id, name_hash, email_hash) VALUES (?, ?, ?)",
         user_rows,
     )
     cursor.executemany(
         "INSERT INTO messages"
-        " (id, archive, newsgroup, message_id, message_id_hash, user_id, date, body_hash)"
-        " VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        " (id, archive, newsgroup, message_id_hash, user_id, date, subject, newsgroups, body_hash)"
+        " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
         message_rows,
     )
     cursor.executemany(

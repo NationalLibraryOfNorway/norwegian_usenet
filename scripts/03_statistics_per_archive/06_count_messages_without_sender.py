@@ -16,7 +16,7 @@ from collections import Counter
 from pathlib import Path
 
 from usenet_no.database import connect
-from usenet_no.statistics import count_messages_without_sender
+from usenet_no.database.statistics import count_messages_without_sender
 
 logger = logging.getLogger(__name__)
 

@@ -10,7 +10,7 @@ Two questions, kept apart because they mean different things:
   same characters differently.
 
 Both read the database built in step 02. Redundant copies that agree on the
-body are not conflicts at all; those are counted in `usenet_no.duplicates`.
+body are not conflicts at all; those are counted in `usenet_no.database.duplicates`.
 """
 
 import logging

@@ -34,12 +34,13 @@ data/
 │   ├── zipped_data/        # .tar files from the National Library (loaded from multiple CDs)
 │   ├── unzipped_data/      # Extracted message files (scripts/01_extract_and_parse_usenet_data/01_parse_nb_archive.py)
 │   └── utf_8_data/         # Concatenated .mbox files, UTF-8 encoded (scripts/01_extract_and_parse_usenet_data/01_parse_nb_archive.py)
-└── usenet.db               # SQLite database of both archives (scripts/02_build_database.py)
+├── usenet.db               # Shared SQLite database of both archives, hashes only (scripts/02_build_database.py)
+└── usenet_private.db       # Private hash-to-plaintext mapping (scripts/02_build_database.py)
 ```
-The database is built from the `utf_8_data` subdirectories and is what the analysis scripts read. It holds each sender's name and email both in plain text and hashed, so statistics can be published by hash while local analysis still has the address. Like the mbox directories, it is not shared.
+The databases are built from the `utf_8_data` subdirectories, and `usenet.db` is what the analysis scripts read. It holds names, emails, message ids and bodies only as hashes, so the file can be shared. The statistics and comparisons in steps 03 and 04 read `usenet.db` and nothing else, so anyone with the file can reproduce them. `usenet_private.db` maps the hashed names, emails and message ids back to their plain text, so local analysis can connect a hash to the address or to the message body in the mbox files. Like the mbox directories, it is not shared.
 
 ## Code
-`src/usenet_no/` contains core library modules for working with mbox data.  
+`src/usenet_no/` contains core library modules for working with mbox data. Everything that creates or queries the SQLite databases lives in the `usenet_no.database` package.  
 `scripts/` contains standalone scripts for reading through the archives and generating statistics. Output is stored in `data/`.  
 `notebooks/` contains Jupyter notebooks for visualizing and interpreting results from the scripts.
 
@@ -56,16 +57,16 @@ The scripts for preparing the data for analysis live in `scripts/01_extract_and_
 
 #### Step 02: building the database
 
-[02_build_database.py](scripts/02_build_database.py) reads every message of both archives into a SQLite database at `data/usenet.db`, so that later analyses are SQL queries over one dataset instead of repeated parses of the archive directories. In the analyses that read the database, restricting the Internet Archive to the date span of the NB archive is a `WHERE` clause, rather than a filtered copy on disk (the filtered copy in `data/internet_archive/date_filtered` is only used by the embedding scripts in step 05, which read the mbox files).
+[02_build_database.py](scripts/02_build_database.py) reads every message of both archives into two SQLite databases in one pass, so that later analyses are SQL queries over one dataset instead of repeated parses of the archive directories. The shared database at `data/usenet.db` stores names, emails, message ids and bodies only as hashes, plus the subject and the Newsgroups header in plain text; the private database at `data/usenet_private.db` maps the hashes back to their plain text. In the analyses that read the database, restricting the Internet Archive to the date span of the NB archive is a `WHERE` clause, rather than a filtered copy on disk (the filtered copy in `data/internet_archive/date_filtered` is only used by the embedding scripts in step 05, which read the mbox files).
 
-Messages are stored one row per message per newsgroup, with nothing dropped or merged, so the database is a faithful transcription of the mbox files. Message bodies are stored as hashes only.
+Messages are stored one row per message per newsgroup, with nothing dropped or merged, so the database is a faithful transcription of the mbox files.
 
 #### Step 03: counting messages and users in each archive 
 
-Every script here reads `data/usenet.db`, except the duplicate count, which reads the mbox files directly so that it stays independent of the data it is used to check. Where a statistic is reported for the date filtered IA archive, that is a `WHERE` clause restricting IA to the NB date span, not a separate copy of the data.
+Every script here reads `data/usenet.db`. Where a statistic is reported for the date filtered IA archive, that is a `WHERE` clause restricting IA to the NB date span, not a separate copy of the data.
 
 - [01_count_messages_per_group.py](scripts/03_statistics_per_archive/01_count_messages_per_group.py) counts messages per newsgroup for each of IA, date filtered IA and NB archives. Creates `data/messages_per_group_ia.csv`, `data/messages_per_group_ia_date_filtered.csv`  and `data/messages_per_group_nb.csv`
-- [02_count_duplicate_messages.py](scripts/03_statistics_per_archive/02_count_duplicate_messages.py) finds *true duplicates*: messages stored more than once in the same mbox file with both the same Message-ID and the same body. Creates `data/duplicate_messages_per_group.jsonl`, with one row per duplicated Message-ID (`source_archive`, `newsgroup`, `message_id`, `count`), where `count` is the total number of copies present.
+- [02_count_duplicate_messages.py](scripts/03_statistics_per_archive/02_count_duplicate_messages.py) finds *true duplicates*: messages stored more than once in the same mbox file with both the same Message-ID and the same body. Every copy is its own row in the database, so these are rows sharing archive, newsgroup, hashed Message-ID and hashed body. Creates `data/duplicate_messages_per_group.jsonl`, with one row per duplicated Message-ID (`source_archive`, `newsgroup`, `hashed_message_id`, `count`), where `count` is the total number of copies present.
 - [03_count_messages_per_user.py](scripts/03_statistics_per_archive/03_count_messages_per_user.py) counts messages per user, reported by the hashes the database already holds, so no plain text name or email is written out. Creates `data/messages_per_user_ia.csv`, `data/messages_per_user_ia_date_filtered.csv` and `data/messages_per_user_nb.csv`. Messages with no sender are left out, and counted by `06_count_messages_without_sender.py` instead.
 - [04_count_messages_per_date.py](scripts/03_statistics_per_archive/04_count_messages_per_date.py) counts messages per date in each of IA and NB archives. Messages whose date could not be parsed are reported in a row labelled `unknown`. Outputs one file for each archive: `data/date_count_ia.csv` and `data/date_count_nb.csv`
 - [05_find_conflicting_message_ids.py](scripts/03_statistics_per_archive/05_find_conflicting_message_ids.py) finds Message-IDs that carry more than one distinct body *within* a single archive, i.e. messages that cannot be deduplicated on Message-ID without losing a version. Creates `data/conflicting_message_ids_within_archive.jsonl`.

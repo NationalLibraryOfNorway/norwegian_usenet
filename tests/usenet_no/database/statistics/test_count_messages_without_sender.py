@@ -1,5 +1,5 @@
 from usenet_no.database import IA_ARCHIVE
-from usenet_no.statistics import count_messages_without_sender
+from usenet_no.database.statistics import count_messages_without_sender
 
 
 def test_counts_messages_with_no_from_header(mbox_data, database, load_archives):

@@ -8,7 +8,7 @@ date span is a WHERE clause here, rather than a filtered copy of the data.
 import logging
 import sqlite3
 
-from usenet_no.database import date_span_clause
+from usenet_no.database.core import date_span_clause
 
 logger = logging.getLogger(__name__)
 

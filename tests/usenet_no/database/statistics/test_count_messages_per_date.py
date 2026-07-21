@@ -1,5 +1,5 @@
 from usenet_no.database import NB_ARCHIVE
-from usenet_no.statistics import count_messages_per_date
+from usenet_no.database.statistics import count_messages_per_date
 
 
 def test_counts_messages_per_date_with_undated_last(mbox_data, database, load_archives):
