@@ -1,0 +1,2 @@
+# mbox is whitespace-sensitive: never rewrite line endings on checkout
+*.mbox -text

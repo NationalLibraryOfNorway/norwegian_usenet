@@ -16,6 +16,7 @@ from pathlib import Path
 from tqdm import tqdm
 
 from usenet_no.duplicates import find_true_duplicates_in_mbox_file
+from usenet_no.hash import make_hash
 
 logger = logging.getLogger(__name__)
 
@@ -107,7 +108,7 @@ if __name__ == "__main__":
                     {
                         "source_archive": row.source_archive,
                         "newsgroup": row.newsgroup,
-                        "message_id": row.message_id,
+                        "hashed_message_id": make_hash(row.message_id),
                         "count": row.count,
                     }
                 )

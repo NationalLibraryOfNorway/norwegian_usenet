@@ -35,6 +35,14 @@ Body with trailing whitespace
 
 """
 
+MESSAGE_WITH_NORWEGIAN = """\
+From sender@example.com
+From: sender@example.com
+Subject: Norwegian chars
+
+Hei, dette er æøå.
+"""
+
 
 def _count_messages(path):
     return len(mailbox.mbox(str(path), factory=message_factory))
@@ -76,14 +84,7 @@ def test_append_false_overwrites(tmp_path):
 
 
 def test_writes_utf8_bytes(tmp_path):
-    message_with_norwegian = """\
-From sender@example.com
-From: sender@example.com
-Subject: Norwegian chars
-
-Hei, dette er æøå.
-"""
     out = tmp_path / "out.mbox"
-    write_mbox([message_with_norwegian], out)
+    write_mbox([MESSAGE_WITH_NORWEGIAN], out)
     assert "æøå" in out.read_bytes().decode("utf-8")
     assert _count_messages(out) == 1

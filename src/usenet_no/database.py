@@ -48,28 +48,34 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 CREATE TABLE IF NOT EXISTS messages (
-    id         INTEGER PRIMARY KEY,
-    archive    TEXT NOT NULL,
-    newsgroup  TEXT NOT NULL,
-    message_id TEXT,
-    user_id    INTEGER REFERENCES users(id),
-    date       TEXT,
-    body_hash  TEXT
+    id              INTEGER PRIMARY KEY,
+    archive         TEXT NOT NULL,
+    newsgroup       TEXT NOT NULL,
+    message_id      TEXT,
+    message_id_hash TEXT,
+    user_id         INTEGER REFERENCES users(id),
+    date            TEXT,
+    body_hash       TEXT
 );
 
+-- Referenced ids are stored hashed only. A reference whose message is in the
+-- archives resolves through messages.message_id_hash, and one whose message is
+-- missing is only ever counted, so the plain text would add nothing but a
+-- second copy of 27 million identifying strings.
 CREATE TABLE IF NOT EXISTS message_references (
-    message_row_id INTEGER NOT NULL REFERENCES messages(id),
-    referenced_id  TEXT NOT NULL
+    message_row_id     INTEGER NOT NULL REFERENCES messages(id),
+    referenced_id_hash TEXT NOT NULL
 );
 
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_messages_archive_newsgroup ON messages(archive, newsgroup);
 CREATE INDEX IF NOT EXISTS idx_messages_archive_message_id ON messages(archive, message_id);
+CREATE INDEX IF NOT EXISTS idx_messages_message_id_hash ON messages(message_id_hash);
 CREATE INDEX IF NOT EXISTS idx_messages_user_id ON messages(user_id);
 CREATE INDEX IF NOT EXISTS idx_messages_date ON messages(date);
 CREATE INDEX IF NOT EXISTS idx_messages_body_hash ON messages(body_hash);
 CREATE INDEX IF NOT EXISTS idx_references_row_id ON message_references(message_row_id);
-CREATE INDEX IF NOT EXISTS idx_references_referenced_id ON message_references(referenced_id);
+CREATE INDEX IF NOT EXISTS idx_references_hash ON message_references(referenced_id_hash);
 """
 
 
@@ -80,13 +86,14 @@ class ExtractedMessage:
     archive: str
     newsgroup: str
     message_id: str | None
+    message_id_hash: str | None
     from_name: str | None
     from_email: str | None
     from_name_hash: str | None
     from_email_hash: str | None
     date: str | None
     body_hash: str | None
-    references: list[str]
+    referenced_id_hashes: list[str]
 
 
 def connect(database_file: Path) -> sqlite3.Connection:
@@ -122,20 +129,25 @@ def extract_message(
     name, email = parseaddr(from_field or "")
     from_name = name or None
     from_email = email.lower() or None
+    message_id = parse_message_id(message.get("Message-ID"))
     date = parse_and_normalize_date_field(message.get("Date", None))
     body = get_message_body(message=message)
 
     return ExtractedMessage(
         archive=archive,
         newsgroup=newsgroup,
-        message_id=parse_message_id(message.get("Message-ID")),
+        message_id=message_id,
+        message_id_hash=make_hash(message_id) if message_id else None,
         from_name=from_name,
         from_email=from_email,
         from_name_hash=make_hash(from_name) if from_name else None,
         from_email_hash=make_hash(from_email) if from_email else None,
         date=None if date == UNKNOWN_DATE else date,
         body_hash=make_hash(body) if body else None,
-        references=parse_references(message.get("References")),
+        referenced_id_hashes=[
+            make_hash(referenced_id)
+            for referenced_id in parse_references(message.get("References"))
+        ],
     )
 
 
@@ -221,13 +233,15 @@ def insert_messages(
                 message.archive,
                 message.newsgroup,
                 message.message_id,
+                message.message_id_hash,
                 user_id,
                 message.date,
                 message.body_hash,
             )
         )
         reference_rows.extend(
-            (row_id, referenced_id) for referenced_id in message.references
+            (row_id, referenced_id_hash)
+            for referenced_id_hash in message.referenced_id_hashes
         )
 
     cursor.executemany(
@@ -237,12 +251,13 @@ def insert_messages(
     )
     cursor.executemany(
         "INSERT INTO messages"
-        " (id, archive, newsgroup, message_id, user_id, date, body_hash)"
-        " VALUES (?, ?, ?, ?, ?, ?, ?)",
+        " (id, archive, newsgroup, message_id, message_id_hash, user_id, date, body_hash)"
+        " VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
         message_rows,
     )
     cursor.executemany(
-        "INSERT INTO message_references (message_row_id, referenced_id) VALUES (?, ?)",
+        "INSERT INTO message_references (message_row_id, referenced_id_hash)"
+        " VALUES (?, ?)",
         reference_rows,
     )
     connection.commit()
