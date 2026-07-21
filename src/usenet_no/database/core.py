@@ -5,8 +5,11 @@ Two databases are built in one pass over the mbox files:
 - The *shared* database holds one row per message in `messages`, one row per
   (message, referenced id) pair in `message_references` and one row per sender
   in `users`. Names, emails, message ids and bodies appear only as hashes, so
-  the file can be shared. Subjects and the Newsgroups header are kept in plain
-  text.
+  the file can be shared. No free text is stored at all: subjects and the
+  Newsgroups header carried plain text addresses and message ids of their own
+  (cancel messages name their target id in the subject, mis-addressed posts put
+  an address in the Newsgroups list), which would have handed back the plain
+  text the hashing is there to withhold.
 - The *private* database maps the hashed names, emails and message ids back to
   their plain text, so local analysis can connect a hash to the address or to
   the message body in the mbox files. It is not shared.
@@ -53,8 +56,9 @@ CREATE TABLE IF NOT EXISTS users (
     email_hash TEXT
 );
 
--- `newsgroup` is the group whose mbox file held the message; `newsgroups` is
--- the message's own Newsgroups header, i.e. the cross-post list.
+-- `newsgroup` is the group whose mbox file held the message. The message's own
+-- Newsgroups header is not stored, and neither is the subject; both are free
+-- text that turned out to carry addresses and message ids in the clear.
 CREATE TABLE IF NOT EXISTS messages (
     id              INTEGER PRIMARY KEY,
     archive         TEXT NOT NULL,
@@ -62,8 +66,6 @@ CREATE TABLE IF NOT EXISTS messages (
     message_id_hash TEXT,
     user_id         INTEGER REFERENCES users(id),
     date            TEXT,
-    subject         TEXT,
-    newsgroups      TEXT,
     body_hash       TEXT
 );
 
@@ -124,8 +126,6 @@ class ExtractedMessage:
     from_name_hash: str | None
     from_email_hash: str | None
     date: str | None
-    subject: str | None
-    newsgroups: str | None
     body_hash: str | None
     referenced_id_hashes: list[str]
 
@@ -165,16 +165,6 @@ def create_private_schema(connection: sqlite3.Connection) -> None:
     connection.commit()
 
 
-def _get_header(message: mailbox.mboxMessage, header: str) -> str | None:
-    """Return one header's decoded value, or None when missing or unreadable."""
-    try:
-        value = message.get(header)
-    except Exception as e:
-        logger.debug("Could not read %s field: %s %s", header, type(e), e)
-        return None
-    return str(value) if value else None
-
-
 def extract_message(
     message: mailbox.mboxMessage, archive: str, newsgroup: str
 ) -> ExtractedMessage:
@@ -209,8 +199,6 @@ def extract_message(
         from_name_hash=make_hash(from_name) if from_name else None,
         from_email_hash=make_hash(from_email) if from_email else None,
         date=None if date == UNKNOWN_DATE else date,
-        subject=_get_header(message, "Subject"),
-        newsgroups=_get_header(message, "Newsgroups"),
         body_hash=make_hash(body) if body else None,
         referenced_id_hashes=[
             make_hash(referenced_id)
@@ -315,8 +303,6 @@ def insert_messages(
                 message.message_id_hash,
                 user_id,
                 message.date,
-                message.subject,
-                message.newsgroups,
                 message.body_hash,
             )
         )
@@ -347,8 +333,8 @@ def insert_messages(
     )
     cursor.executemany(
         "INSERT INTO messages"
-        " (id, archive, newsgroup, message_id_hash, user_id, date, subject, newsgroups, body_hash)"
-        " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        " (id, archive, newsgroup, message_id_hash, user_id, date, body_hash)"
+        " VALUES (?, ?, ?, ?, ?, ?, ?)",
         message_rows,
     )
     cursor.executemany(

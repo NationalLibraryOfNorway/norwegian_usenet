@@ -126,8 +126,6 @@ def test_message_without_sender_has_no_user(database, private_database):
         from_name_hash=None,
         from_email_hash=None,
         date=None,
-        subject=None,
-        newsgroups=None,
         body_hash=None,
         referenced_id_hashes=[],
     )
@@ -141,26 +139,6 @@ def test_message_without_sender_has_no_user(database, private_database):
 
     assert user_count == 0
     assert user_id is None
-
-
-def test_subject_and_newsgroups_are_stored_on_the_message_row(
-    mbox_data, database, private_database
-):
-    mbox_file = mbox_data / "ia/no.full.message.mbox"
-
-    insert_messages(
-        database,
-        private_database,
-        extract_messages_from_mbox_file((mbox_file, IA_ARCHIVE)),
-        load_user_ids(private_database),
-    )
-
-    subject, newsgroups = database.execute(
-        "SELECT subject, newsgroups FROM messages"
-    ).fetchone()
-
-    assert subject == "Full message"
-    assert newsgroups == "no.full.message,no.general"
 
 
 def test_shared_database_holds_no_plaintext_columns(database):
@@ -181,6 +159,23 @@ def test_shared_database_holds_no_plaintext_columns(database):
     assert "email" not in plaintext_columns
     assert "message_id" not in plaintext_columns
     assert "body" not in plaintext_columns
+
+
+def test_messages_table_holds_no_free_text_columns(database):
+    """Subject and the Newsgroups header were dropped because both carried
+    addresses and message ids in the clear, which the hashed columns withhold.
+    Pinning the column set keeps a new free text column from reopening that."""
+    columns = {row[1] for row in database.execute("PRAGMA table_info(messages)")}
+
+    assert columns == {
+        "id",
+        "archive",
+        "newsgroup",
+        "message_id_hash",
+        "user_id",
+        "date",
+        "body_hash",
+    }
 
 
 def test_user_ids_match_between_shared_and_private_database(

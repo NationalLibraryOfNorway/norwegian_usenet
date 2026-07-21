@@ -190,8 +190,10 @@ hidden
 embeddings
 topics
 
-# SQLite database built from the archives
+# SQLite database with unhashed columns
+usenet_private.db
 *.db
 
 epadd-standalone.jar
 todo.md
+notes.md

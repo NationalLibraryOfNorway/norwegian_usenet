@@ -58,7 +58,7 @@ The scripts for preparing the data for analysis live in `scripts/01_extract_and_
 
 #### Step 02: building the database
 
-[02_build_database.py](scripts/02_build_database.py) reads every message of both archives into two SQLite databases in one pass, so that later analyses are SQL queries over one dataset instead of repeated parses of the archive directories. The shared database at `data/usenet.db` stores names, emails, message ids and bodies only as hashes, plus the subject and the Newsgroups header in plain text; the private database at `data/usenet_private.db` maps the hashes back to their plain text. In the analyses that read the database, restricting the Internet Archive to the date span of the NB archive is a `WHERE` clause, rather than a filtered copy on disk (the filtered copy in `data/internet_archive/date_filtered` is only used by the embedding scripts in step 05, which read the mbox files).
+[02_build_database.py](scripts/02_build_database.py) reads every message of both archives into two SQLite databases in one pass, so that later analyses are SQL queries over one dataset instead of repeated parses of the archive directories. The shared database at `data/usenet.db` stores names, emails, message ids and bodies only as hashes, and no free text at all; the private database at `data/usenet_private.db` maps the hashes back to their plain text.
 
 Messages are stored one row per message per newsgroup, with nothing dropped or merged, so the database is a faithful transcription of the mbox files.
 

@@ -13,18 +13,7 @@ def test_extracts_message_fields(mbox_data):
     assert message.message_id_hash == make_hash("<abc@example.no>")
     assert message.from_name == "Kari Nordmann"
     assert message.date == "1996-01-01"
-    assert message.subject == "Full message"
-    assert message.newsgroups == "no.full.message,no.general"
     assert message.body_hash is not None
-
-
-def test_missing_subject_and_newsgroups_are_none(mbox_data):
-    mbox_file = mbox_data / "ia/no.with.references.mbox"
-
-    (message,) = extract_messages_from_mbox_file((mbox_file, IA_ARCHIVE))
-
-    assert message.subject is None
-    assert message.newsgroups is None
 
 
 def test_lowercases_email_but_keeps_name_case(mbox_data):
