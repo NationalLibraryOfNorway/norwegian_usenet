@@ -1,0 +1,9 @@
+From sender@example.com
+Message-ID: <shared@example.no>
+
+held by both archives
+
+From sender@example.com
+Message-ID: <nb.only@example.no>
+
+held by nb alone

@@ -8,6 +8,8 @@ date span is a WHERE clause here, rather than a filtered copy of the data.
 import logging
 import sqlite3
 
+from usenet_no.database import date_span_clause
+
 logger = logging.getLogger(__name__)
 
 
@@ -24,18 +26,6 @@ def get_date_span(connection: sqlite3.Connection, archive: str) -> tuple[str, st
     return first_date, last_date
 
 
-def _date_span_clause(date_span: tuple[str, str] | None) -> tuple[str, tuple]:
-    """Build the WHERE fragment restricting messages to a date span.
-
-    Messages whose date could not be parsed are kept: a message is only dropped
-    when it is known to fall outside the span. This matches how the
-    date-filtered archive was built on disk.
-    """
-    if date_span is None:
-        return "", ()
-    return " AND (date IS NULL OR date BETWEEN ? AND ?)", date_span
-
-
 def count_messages_per_user(
     connection: sqlite3.Connection,
     archive: str,
@@ -49,7 +39,7 @@ def count_messages_per_user(
 
     Returned sorted by (email_hash, name_hash) so reruns produce identical output.
     """
-    clause, span_parameters = _date_span_clause(date_span)
+    clause, span_parameters = date_span_clause(date_span)
     return list(
         connection.execute(
             "SELECT users.name_hash, users.email_hash, COUNT(*)"
@@ -117,7 +107,7 @@ def count_messages_per_group(
 
     Returned sorted by newsgroup so reruns produce identical output.
     """
-    clause, span_parameters = _date_span_clause(date_span)
+    clause, span_parameters = date_span_clause(date_span)
     rows = connection.execute(
         f"SELECT newsgroup, COUNT(*) FROM messages WHERE archive = ?{clause}"
         " GROUP BY newsgroup",

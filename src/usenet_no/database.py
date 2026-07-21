@@ -96,6 +96,23 @@ class ExtractedMessage:
     referenced_id_hashes: list[str]
 
 
+def date_span_clause(
+    date_span: tuple[str, str] | None, column: str = "date"
+) -> tuple[str, tuple]:
+    """Build the WHERE fragment restricting messages to a date span.
+
+    Messages whose date could not be parsed are kept: a message is only dropped
+    when it is known to fall outside the span. This matches how the
+    date-filtered archive was built on disk.
+
+    `column` names the date column, so the fragment can be used in a join where
+    it has to be qualified.
+    """
+    if date_span is None:
+        return "", ()
+    return f" AND ({column} IS NULL OR {column} BETWEEN ? AND ?)", date_span
+
+
 def connect(database_file: Path) -> sqlite3.Connection:
     connection = sqlite3.connect(database_file)
     connection.execute("PRAGMA foreign_keys = ON")
