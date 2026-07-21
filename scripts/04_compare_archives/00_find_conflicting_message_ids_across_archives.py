@@ -1,10 +1,7 @@
 """Find Message-IDs held by both archives whose copies never agree on a body.
 
 These are messages the two archives disagree about: the same posting, but no
-version in common. Most of them come from the archives having decoded the same
-characters differently, so this count is the ceiling on how much of the
-apparent content mismatch between IA and NB is an encoding artefact rather than
-genuinely different material.
+version in common.
 
 Writes one JSON object per conflict, sorted by message_id so the output is
 stable across runs.

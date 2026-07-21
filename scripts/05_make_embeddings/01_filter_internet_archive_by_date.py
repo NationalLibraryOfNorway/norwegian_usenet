@@ -12,12 +12,10 @@ from usenet_no.filter_archive_by_date import (
 
 logger = logging.getLogger(__name__)
 
-# TODO: get earliest nb date and lates nb date
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Filter IA mbox files to the date span of the NB archive"
+        description="Filter IA mbox files to the date span of the NB archive (to use for embeddings later)"
     )
     parser.add_argument(
         "--ia-directory",
