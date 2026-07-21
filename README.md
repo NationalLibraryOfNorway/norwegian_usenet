@@ -26,14 +26,14 @@ Assumed file structure once data is downloaded and extracted:
 ```
 data/
 ├── internet_archive/
-│   ├── zipped_data/        # Downloaded .zip files from archive.org (scripts/01_extract_and_parse_usenet_data/02_scrape_internet_archive.py)
-│   ├── unzipped_data/      # Extracted .mbox files (scripts/01_extract_and_parse_usenet_data/03_parse_internet_archive.py)
-│   ├── utf_8_data/         # UTF-8 encoded .mbox files (scripts/01_extract_and_parse_usenet_data/03_parse_internet_archive.py)
+│   ├── zipped_data/        # Downloaded .zip files from archive.org (scripts/01_extract_and_parse_usenet_data/03_scrape_internet_archive.py)
+│   ├── unzipped_data/      # Extracted .mbox files (scripts/01_extract_and_parse_usenet_data/04_parse_internet_archive.py)
+│   ├── utf_8_data/         # UTF-8 encoded .mbox files (scripts/01_extract_and_parse_usenet_data/04_parse_internet_archive.py)
 │   └── date_filtered/      # IA messages filtered to the NB date span (scripts/05_make_embeddings/01_filter_internet_archive_by_date.py)
 ├── nb/
 │   ├── zipped_data/        # .tar files from the National Library (loaded from multiple CDs)
-│   ├── unzipped_data/      # Extracted message files (scripts/01_extract_and_parse_usenet_data/01_parse_nb_archive.py)
-│   └── utf_8_data/         # Concatenated .mbox files, UTF-8 encoded (scripts/01_extract_and_parse_usenet_data/01_parse_nb_archive.py)
+│   ├── unzipped_data/      # Extracted message files (scripts/01_extract_and_parse_usenet_data/01_extract_nb_archive_and_find_stubbed_newsgroup_names.py)
+│   └── utf_8_data/         # Concatenated .mbox files, UTF-8 encoded (scripts/01_extract_and_parse_usenet_data/02_parse_nb_archive.py)
 ├── usenet.db               # Shared SQLite database of both archives, hashes only (scripts/02_build_database.py)
 └── usenet_private.db       # Private hash-to-plaintext mapping (scripts/02_build_database.py)
 ```
@@ -51,9 +51,10 @@ The scripts are grouped into subdirectories of the script folder, and are number
 #### Step 01: extracting and parsing the data
 The scripts for preparing the data for analysis live in `scripts/01_extract_and_parse_usenet_data`.  
 
-- [01_parse_nb_archive.py](scripts/01_extract_and_parse_usenet_data/01_parse_nb_archive.py) reads the data as it was stored on the CDs in the NB deposit, and write one utf-8-encoded .mbox file per newsgroup
-- [02_scrape_internet_archive.py](scripts/01_extract_and_parse_usenet_data/02_scrape_internet_archive.py) fetches and downloads all zip files from `https://archive.org/download/usenet-no` (stored in `data/internet_archive/zipped_data` by default).  
-- [03_parse_internet_archive.py](scripts/01_extract_and_parse_usenet_data/03_parse_internet_archive.py) unzips and reads all mbox files from the scrape output. Files are decoded and re-encoded to UTF-8 and written to `data/internet_archive/utf_8_data`.
+- [01_extract_nb_archive_and_find_stubbed_newsgroup_names.py](scripts/01_extract_and_parse_usenet_data/01_extract_nb_archive_and_find_stubbed_newsgroup_names.py) extracts the NB tar archives to `data/nb/unzipped_data`, then finds newsgroup names the KZ2001-0147 CD cut off to 8 characters (8.3 file naming), by matching them against the other NB sources' names at the same position in the newsgroup tree. Writes the pairs to `data/cut_off_newsgroup_names.csv`, which is meant to be reviewed before running the next script and can carry hand-added rows.
+- [02_parse_nb_archive.py](scripts/01_extract_and_parse_usenet_data/02_parse_nb_archive.py) reads the extracted NB data and writes one utf-8-encoded .mbox file per newsgroup. Newsgroup names listed in `data/cut_off_newsgroup_names.csv` are replaced when building the mbox filenames, so messages from a cut-off directory land in the same file as the sources that carry the full name.
+- [03_scrape_internet_archive.py](scripts/01_extract_and_parse_usenet_data/03_scrape_internet_archive.py) fetches and downloads all zip files from `https://archive.org/download/usenet-no` (stored in `data/internet_archive/zipped_data` by default).  
+- [04_parse_internet_archive.py](scripts/01_extract_and_parse_usenet_data/04_parse_internet_archive.py) unzips and reads all mbox files from the scrape output. Files are decoded and re-encoded to UTF-8 and written to `data/internet_archive/utf_8_data`.
 
 #### Step 02: building the database
 
