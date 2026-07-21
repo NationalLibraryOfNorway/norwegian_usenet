@@ -72,13 +72,6 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     logger.info("Args: %s", args)
 
-    if not args.database_file.exists():
-        logger.error(
-            "Database not found: %s. Run scripts/02_build_database.py first.",
-            args.database_file,
-        )
-        exit(1)
-
     connection = connect(args.database_file)
     nb_date_span = get_date_span(connection, NB_ARCHIVE)
     logger.info("NB date span: %s to %s", *nb_date_span)

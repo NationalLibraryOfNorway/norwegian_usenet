@@ -53,13 +53,6 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     logger.info("Args: %s", args)
 
-    if not args.database_file.exists():
-        logger.error(
-            "Database not found: %s. Run scripts/02_build_database.py first.",
-            args.database_file,
-        )
-        exit(1)
-
     connection = connect(args.database_file)
 
     for archive, output_file in [
