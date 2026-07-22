@@ -1,27 +1,75 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Norwegian Usenet — UMAP Visualizations</title>
   <style>
-    body { font-family: system-ui, sans-serif; max-width: 800px; margin: 3rem auto; padding: 0 1.5rem; line-height: 1.6; color: #222; }
-    h1 { font-size: 1.6rem; margin-bottom: 0.4rem; }
-    p.subtitle { color: #555; margin-top: 0; }
-    .card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin-top: 2rem; }
-    .card { border: 1px solid #ddd; border-radius: 8px; padding: 1.2rem 1.4rem; text-decoration: none; color: inherit; transition: box-shadow 0.15s; }
-    .card:hover { box-shadow: 0 2px 10px rgba(0,0,0,0.12); }
-    .card h2 { font-size: 1rem; margin: 0 0 0.4rem; }
-    .card p { font-size: 0.88rem; color: #555; margin: 0; }
-    @media (max-width: 500px) { .card-grid { grid-template-columns: 1fr; } }
+    body {
+      font-family: system-ui, sans-serif;
+      max-width: 800px;
+      margin: 3rem auto;
+      padding: 0 1.5rem;
+      line-height: 1.6;
+      color: #222;
+    }
+
+    h1 {
+      font-size: 1.6rem;
+      margin-bottom: 0.4rem;
+    }
+
+    p.subtitle {
+      color: #555;
+      margin-top: 0;
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.2rem;
+      margin-top: 2rem;
+    }
+
+    .card {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 1.2rem 1.4rem;
+      text-decoration: none;
+      color: inherit;
+      transition: box-shadow 0.15s;
+    }
+
+    .card:hover {
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+    }
+
+    .card h2 {
+      font-size: 1rem;
+      margin: 0 0 0.4rem;
+    }
+
+    .card p {
+      font-size: 0.88rem;
+      color: #555;
+      margin: 0;
+    }
+
+    @media (max-width: 500px) {
+      .card-grid {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
+
 <body>
   <h1>Norwegian Usenet — UMAP Embeddings</h1>
   <p class="subtitle">
     Interactive visualizations of ~147 000 Usenet messages from six newsgroups
     (no.bil, no.litteratur, no.musikk, no.prat.politikk, no.religion, no.slekt),
-    projected to 2D with UMAP. Color = newsgroup, shape = data source (IA / NWA).
+    projected to 2D with UMAP. Color = newsgroup, shape = data source (IA / NB).
   </p>
 
   <div class="card-grid">
@@ -35,4 +83,5 @@
     </a>
   </div>
 </body>
+
 </html>

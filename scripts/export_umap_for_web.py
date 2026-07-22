@@ -116,9 +116,9 @@ if __name__ == "__main__":
         default=Path("data/internet_archive/date_filtered"),
     )
     parser.add_argument(
-        "--nwa-directory",
+        "--nb-directory",
         type=Path,
-        default=Path("data/nwa_90s/utf_8_data"),
+        default=Path("data/nb/utf_8_data"),
     )
     parser.add_argument(
         "--output-dir",
@@ -127,7 +127,7 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    source_dirs = {"ia": args.ia_directory, "nwa": args.nwa_directory}
+    source_dirs = {"ia": args.ia_directory, "nb": args.nb_directory}
     cache_stem = "_".join(sorted(DEFAULT_SELECTION)) + ".npy"
 
     for model, output_name in MODELS:

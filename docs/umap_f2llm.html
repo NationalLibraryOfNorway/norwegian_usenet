@@ -1,24 +1,58 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>UMAP — F2LLM-v2-0.6B</title>
   <script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
   <style>
-    body { font-family: system-ui, sans-serif; margin: 0; padding: 1rem 1.5rem; color: #222; }
-    h1 { font-size: 1.2rem; margin-bottom: 0.2rem; }
-    p.meta { font-size: 0.85rem; color: #666; margin: 0 0 0.8rem; }
-    a.back { font-size: 0.85rem; color: #555; text-decoration: none; }
-    a.back:hover { text-decoration: underline; }
-    #plot { width: 100%; height: calc(100vh - 110px); min-height: 500px; }
-    #status { font-size: 0.85rem; color: #888; margin-top: 0.4rem; }
+    body {
+      font-family: system-ui, sans-serif;
+      margin: 0;
+      padding: 1rem 1.5rem;
+      color: #222;
+    }
+
+    h1 {
+      font-size: 1.2rem;
+      margin-bottom: 0.2rem;
+    }
+
+    p.meta {
+      font-size: 0.85rem;
+      color: #666;
+      margin: 0 0 0.8rem;
+    }
+
+    a.back {
+      font-size: 0.85rem;
+      color: #555;
+      text-decoration: none;
+    }
+
+    a.back:hover {
+      text-decoration: underline;
+    }
+
+    #plot {
+      width: 100%;
+      height: calc(100vh - 110px);
+      min-height: 500px;
+    }
+
+    #status {
+      font-size: 0.85rem;
+      color: #888;
+      margin-top: 0.4rem;
+    }
   </style>
 </head>
+
 <body>
   <a class="back" href="index.html">← Back</a>
   <h1>UMAP Embeddings — codefuse-ai/F2LLM-v2-0.6B</h1>
-  <p class="meta">Color = newsgroup &nbsp;·&nbsp; Shape = source (circle = NWA, triangle = IA)</p>
+  <p class="meta">Color = newsgroup &nbsp;·&nbsp; Shape = source (circle = NB, triangle = IA)</p>
   <div id="plot"></div>
   <div id="status">Loading data…</div>
 
@@ -98,4 +132,5 @@
     })();
   </script>
 </body>
+
 </html>
