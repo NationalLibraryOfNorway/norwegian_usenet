@@ -43,71 +43,49 @@ data/
 `scripts/` contains standalone scripts for reading through the archives and generating statistics. Output is stored in `data/`.  
 `notebooks/` contains Jupyter notebooks for visualizing and interpreting results from the scripts.
 
-### Downloading and parsing Norwegian Usenet (Internet Archive)
-`scrape_internet_archive` fetches and downloads all zip files from `https://archive.org/download/usenet-no` (stored in `data/internet_archive/zipped_data` by default).  
-`parse_internet_archive` unzips and reads all mbox files from the scrape output. Files are decoded and re-encoded to UTF-8 and written to `data/internet_archive/utf_8_data`.
+## Scripts
 
-Run in this order:
-```
-uv run scripts/extract_and_parse_usenet_data/scrape_internet_archive.py
-uv run scripts/extract_and_parse_usenet_data/parse_internet_archive.py
-```
+The scripts are grouped into subdirectories of the script folder, and are numbered by run order (we run the script with 01_ prefix first, then 02_ etc). Every script can be run with `uv run path-to-script.py`.
 
-### Filtering IA data by date
-`filter_internet_archive_by_date` filters the IA mbox files to only include messages within the date span of the NB archive, and writes them to `data/internet_archive/date_filtered`.
+#### Step 01: extracting and parsing the data
+The scripts for preparing the data for analysis live in `scripts/01_extract_and_parse_usenet_data`.  
 
-```
-uv run scripts/extract_and_parse_usenet_data/filter_internet_archive_by_date.py
-```
+- [01_parse_nb_archive.py](scripts/01_extract_and_parse_usenet_data/01_parse_nb_archive.py) reads the data as it was stored on the CDs in the NB deposit, and write one utf-8-encoded .mbox file per newsgroup
+- [02_scrape_internet_archive.py](scripts/01_extract_and_parse_usenet_data/02_scrape_internet_archive.py) fetches and downloads all zip files from `https://archive.org/download/usenet-no` (stored in `data/internet_archive/zipped_data` by default).  
+- [03_parse_internet_archive.py](scripts/01_extract_and_parse_usenet_data/03_parse_internet_archive.py) unzips and reads all mbox files from the scrape output. Files are decoded and re-encoded to UTF-8 and written to `data/internet_archive/utf_8_data`.
+- [04_parse_date_fields_in_both_archives.py](scripts/01_extract_and_parse_usenet_data/04_parse_date_fields_in_both_archives.py) parses the date header of each message, and counts messages per date in each of IA and NB archives. Outputs one file for each archive: `data/date_count_ia.csv` and `data/date_count_nb.csv`
+- [05_filter_internet_archive_by_date.py](scripts/01_extract_and_parse_usenet_data/05_filter_internet_archive_by_date.py) filters the IA mbox files to only include messages within the date span of the NB archive (reading `data/date_count_nb.csv`), and writes them to `data/internet_archive/date_filtered`.
 
-### Parsing NB data
-`parse_norwegian_web_archive` extracts .tar files from `data/nb/zipped_data` and writes concatenated .mbox files to `data/nb/utf_8_data`.
+It's the date filtered version of the internet archive that is used for most of the comparison analysis.
 
-```
-uv run scripts/extract_and_parse_usenet_data/parse_norwegian_web_archive.py
-```
+#### Step 02: counting messages and users in each archive 
 
-### Pseudonymization
-To count statistics over user data, we have created a mapping from email addresses and names in plain text to hashed values.
-These mappings are used when counting posts per email address etc., so that data files can be stored on GitHub without containing email addresses.
+- [01_count_messages_per_group.py](scripts/02_statistics_per_archive/01_count_messages_per_group.py) counts messages per newsgroup (i.e. mbox file) for each of IA, date filtered IA and NB archives. Creates `data/messages_per_group_ia.csv`, `data/messages_per_group_ia_date_filtered.csv`  and `data/messages_per_group_nb.csv`
+- [02_hash_user_emails_and_names.py](scripts/02_statistics_per_archive/02_hash_user_emails_and_names.py) creates a mapping from email addresses and names in plain text to hashed values. This way, we can store output data files on GitHub,  without them containing names and email addresses. 
+- [03_count_messages_per_user.py](scripts/02_statistics_per_archive/03_count_messages_per_user.py) counts messages per user (anonymized with hash). Creates `data/messages_per_user_ia.csv`, `data/messages_per_user_ia_date_filtered.csv` and `data/messages_per_user_nb.csv`.
 
-```
-uv run -m usenet_no.make_user_mapping
-uv run -m usenet_no.make_user_mapping --extend -i data/nb/utf_8_data
-```
+#### Step 03: comparing archives
+(more to come)
 
-### Scripts
+- (00_compare_ia_nb_message_content.py)[scripts/03_compare_archives/00_compare_ia_nb_message_content.py] compares message body overlap between IA and NB by exact text match, per newsgroup. Creates `data/ia_nb_content_comparison.csv` and `data/ia_nb_content_comparison_date_filtered.csv` 
+- (00_compare_ia_nb_message_ids.py)[scripts/03_compare_archives/00_compare_ia_nb_message_ids.py] compares message-ID overlap between IA and NB, and collects external references. Creates `data/ia_nb_message_id_overlap.json` and `data/ia_nb_message_id_overlap_date_filtered.json`
 
-**Statistics:**
-- `scripts/count_messages_per_group.py` — counts messages per newsgroup (mbox file). Output: `data/messages_per_group_ia.csv` / `data/messages_per_group_nb.csv`
-- `scripts/count_messages_per_user.py` — counts messages per user (anonymized with hash). Output: `data/messages_per_user_ia.csv` / `data/messages_per_user_nb.csv`
-- `scripts/count_dates.py` — counts messages per date. Output: `data/date_count_ia.csv` / `data/date_count_nb.csv`
+#### Step 04: embed messages
 
-**Comparison:**
-- `scripts/compare_ia_nb_content.py` — compares message body overlap between IA and NB by exact text match, per newsgroup. Output: `data/ia_nb_content_comparison.csv`
-- `scripts/compare_ia_nb_message_ids.py` — compares message-ID overlap between IA and NB, and collects external references. Output: `data/ia_nb_message_id_overlap.json`
-- `scripts/compare_mbox_counts.py` — validates mbox read/write by comparing message counts before and after.
+(04_embed_messages.py)[scripts/04_embed_messages.py] - makes text embeddings for each message in each newsgroup (from a selection of newsgroups) from both archives. 
 
-**Visualization:**
-- `scripts/newsgroup_tree.py` — generates an ASCII visualization of the nested newsgroup structure. Output: printed to stdout.
-- `scripts/newsgroup_tree_gif.py` — generates animated GIF visualizations of the newsgroup structure. Output: `data/newsgroup_tree_ia.gif` / `data/newsgroup_tree_nb.gif`
-- `scripts/export_umap_for_web.py` — exports UMAP embedding data for the GitHub Pages visualization. Output: `docs/data/`
+#### Step 05: topic modelling 
 
-Run example:
-```
-uv run scripts/count_messages_per_group.py
-uv run scripts/count_messages_per_user.py
-uv run scripts/count_dates.py
-uv run scripts/compare_ia_nb_content.py
-uv run scripts/compare_ia_nb_message_ids.py
-```
+(05_topic_modelling.py)[scripts/05_topic_modelling.py] - uses BERTopic and the text embeddings generated in the previous step to find topics in the selected newsgroups
 
-### Embedding scripts
-Scripts for embedding messages are located in `scripts/embed_messages/`:
-- `embed_top_n.py` — embeds the top N most active newsgroups
-- `embed_n_median.py` — embeds N newsgroups around the median activity level
-- `embed_n_closest_to_k.py` — embeds N newsgroups closest to a given size k
-- `embed_selection.py` — embeds a configurable selection of newsgroups (defined in `data/newsgroups_for_selection.jsonl`)
+
+#### Step 06: visualize
+
+- [00_newsgroup_tree.py](scripts/06_visualize/00_newsgroup_tree.py) draws the nested newsgroup structure of each archive as an ASCII tree, reading `data/messages_per_group_ia.csv` and `data/messages_per_group_nb.csv` (from step 02). Prints to stdout.
+- [00_newsgroup_tree_gif.py](scripts/06_visualize/00_newsgroup_tree_gif.py) draws the same trees as scrolling animations. Creates `data/newsgroup_tree_ia.gif` and `data/newsgroup_tree_nb.gif`
+- [00_visualize_embeddings.py](scripts/06_visualize/00_visualize_embeddings.py) plots the UMAP embeddings from step 04 as an interactive Plotly scatter plot, coloured by newsgroup and shaped by archive. Opens in a browser.
+- [00_visualize_topics.py](scripts/06_visualize/00_visualize_topics.py) plots the same UMAP embeddings coloured by the BERTopic topics from step 05. Opens in a browser.
+
 
 ## ePADD
 ePADD is a program with a graphical interface for exploring email archives.

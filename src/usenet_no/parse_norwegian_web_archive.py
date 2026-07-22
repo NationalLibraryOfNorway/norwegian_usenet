@@ -9,7 +9,9 @@ logger = logging.getLogger(__name__)
 
 
 def find_newsgroups_parent_dir(directory: Path) -> Path:
-    """Find the parent directory to all the newsgroups directories"""
+    """Find the parent directory to all the newsgroups directories.
+    This function is needed because the newsgroups are nested differently depending on which CD the data was stored on
+    """
     # In one of the directories, the parent dir is named NEWS
     if directory.name == "no" or (
         directory.name == "NEWS" and "KZ" in directory.parent.name

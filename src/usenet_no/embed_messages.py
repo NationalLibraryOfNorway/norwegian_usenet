@@ -1,59 +1,15 @@
 import logging
 import mailbox
 from pathlib import Path
-
-import pandas as pd
+from tqdm import tqdm
 
 import numpy as np
 from sentence_transformers import SentenceTransformer
-from tqdm import tqdm
 
 from usenet_no.mbox_utils import message_factory, get_message_body
 
+
 logger = logging.getLogger(__name__)
-
-
-def get_mbox_counts(
-    directory: Path, counts_file: Path | None = None
-) -> dict[Path, int]:
-    """Get a dict wihere key is mbox file and value is number of messages in mbox file"""
-    if counts_file is not None and counts_file.exists():
-        logger.info("Loading mbox counts from %s", counts_file)
-        df = pd.read_csv(counts_file)
-        df = df[df["newsgroup"] != "Total"]
-        return dict(
-            zip(df["newsgroup"].map(lambda name: directory / name), df["message_count"])
-        )
-
-    mbox_files = list(directory.glob("*.mbox"))
-    return {
-        f: len(mailbox.mbox(str(f)))
-        for f in tqdm(mbox_files, desc=f"Counting messages in {directory}")
-    }
-
-
-def get_top_n_files(
-    directory: Path, n: int, counts_file: Path | None = None
-) -> list[Path]:
-    counts = get_mbox_counts(directory, counts_file)
-    return sorted(counts, key=lambda f: counts[f], reverse=True)[:n]
-
-
-def get_median_n_files(
-    directory: Path, n: int, counts_file: Path | None = None
-) -> list[Path]:
-    counts = get_mbox_counts(directory, counts_file)
-    sorted_files = sorted(counts, key=lambda f: counts[f])
-    mid = len(sorted_files) // 2
-    start = max(0, mid - n // 2)
-    return sorted_files[start : start + n]
-
-
-def get_closest_n_files(
-    directory: Path, n: int, k: int, counts_file: Path | None = None
-) -> list[Path]:
-    counts = get_mbox_counts(directory, counts_file)
-    return sorted(counts, key=lambda f: abs(counts[f] - k))[:n]
 
 
 def embed_mbox_file(
@@ -63,6 +19,7 @@ def embed_mbox_file(
     output_dir: Path,
     overwrite: bool,
     batch_size: int = 32,
+    encode_kwargs: dict | None = None,
 ) -> None:
     output_path = output_dir / f"{mbox_file.stem}_{source}.npy"
     index_path = output_dir / f"{mbox_file.stem}_{source}_index.npy"
@@ -89,7 +46,9 @@ def embed_mbox_file(
         return
 
     logger.info("Embedding %d messages from %s", len(bodies), mbox_file)
-    embeddings = model.encode(bodies, batch_size=batch_size, show_progress_bar=True)
+    embeddings = model.encode(
+        bodies, batch_size=batch_size, show_progress_bar=True, **(encode_kwargs or {})
+    )
     np.save(output_path, embeddings)
     logger.info("Saved embeddings to %s", output_path)
 
@@ -101,3 +60,62 @@ def embed_mbox_file(
             len(bodies),
             total,
         )
+
+
+def load_embeddings_and_docs(
+    embeddings_dir: Path,
+    ia_directory: Path,
+    nb_directory: Path,
+    selection: list[str],
+) -> tuple[np.ndarray, list[str], list[str]]:
+    source_dirs = {"ia": ia_directory, "nb": nb_directory}
+
+    embedding_files = sorted(
+        f for f in embeddings_dir.glob("*.npy") if not f.stem.endswith("_index")
+    )
+
+    all_embeddings = []
+    all_stems = []
+    all_docs = []
+
+    for emb_file in tqdm(embedding_files, desc="Loading embeddings and documents"):
+        mbox_stem, source = emb_file.stem.rsplit("_", 1)
+
+        if source not in source_dirs:
+            logger.warning("Unknown source '%s' in %s, skipping", source, emb_file.name)
+            continue
+
+        if mbox_stem not in selection:
+            continue
+        embeddings = np.load(emb_file)
+
+        mbox_file = source_dirs[source] / f"{mbox_stem}.mbox"
+        if not mbox_file.exists():
+            logger.warning("mbox file not found: %s, skipping", mbox_file)
+            continue
+
+        index_file = embeddings_dir / f"{emb_file.stem}_index.npy"
+        indices = np.load(index_file) if index_file.exists() else None
+
+        messages = list(mailbox.mbox(str(mbox_file), factory=message_factory))
+        docs = (
+            [get_message_body(messages[i]) for i in indices]
+            if indices is not None
+            else [get_message_body(m) for m in messages]
+        )
+
+        if len(docs) != len(embeddings):
+            logger.warning(
+                "Document count (%d) != embedding count (%d) for %s, skipping",
+                len(docs),
+                len(embeddings),
+                emb_file.name,
+            )
+            continue
+
+        all_embeddings.append(embeddings)
+        all_stems.extend([emb_file.stem] * len(embeddings))
+        all_docs.extend(docs)
+        logger.info("Loaded %d documents from %s", len(docs), emb_file.name)
+
+    return np.vstack(all_embeddings), all_stems, all_docs
