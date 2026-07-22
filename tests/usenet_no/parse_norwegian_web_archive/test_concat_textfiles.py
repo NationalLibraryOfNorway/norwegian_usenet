@@ -8,7 +8,7 @@ append (not overwrite) and only skip files that pre-existed before the current r
 import mailbox
 
 from usenet_no.mbox_utils import message_factory
-from usenet_no.parse_norwegian_web_archive import concat_textfiles
+from usenet_no.parse_norwegian_web_archive import concat_textfiles, correct_stem
 
 
 MESSAGE_TEMPLATE = """\
@@ -98,3 +98,52 @@ def test_subdirectory_creates_sub_mbox(tmp_path):
 
     assert _count_messages(out) == 1
     assert _count_messages(out_dir / "no.alt.sub.mbox") == 1
+
+
+def test_corrections_rename_a_sub_group_file(tmp_path):
+    """A cut-off subdirectory name is written under its corrected stem."""
+    newsgroup_dir = tmp_path / "source" / "ALT"
+    sub_dir = newsgroup_dir / "DISKUSJO"
+    sub_dir.mkdir(parents=True)
+    _write_message_file(sub_dir / "001")
+
+    out_dir = tmp_path / "output"
+    out_dir.mkdir()
+
+    concat_textfiles(
+        newsgroup_dir,
+        out_dir / "no.alt.mbox",
+        pre_existing=set(),
+        corrections={"no.alt.diskusjo": "no.alt.diskusjoner"},
+    )
+
+    assert _count_messages(out_dir / "no.alt.diskusjoner.mbox") == 1
+    assert not (out_dir / "no.alt.diskusjo.mbox").exists()
+
+
+def test_corrections_merge_cut_off_source_into_full_name_file(tmp_path):
+    """A cut-off source and a full-name source end up in the same output file."""
+    cut_off_dir = tmp_path / "kz" / "ELEKTRON"
+    full_dir = tmp_path / "other" / "elektronikk"
+    cut_off_dir.mkdir(parents=True)
+    full_dir.mkdir(parents=True)
+    _write_message_file(cut_off_dir / "001", body="from the cut-off source")
+    _write_message_file(full_dir / "001", body="from the full-name source")
+
+    out_dir = tmp_path / "output"
+    out_dir.mkdir()
+    corrections = {"no.elektron": "no.elektronikk"}
+    pre_existing = set()
+
+    # The top-level stem is corrected by the caller, as in 02_parse_nb_archive
+    for source_dir in (cut_off_dir, full_dir):
+        stem = correct_stem(f"no.{source_dir.name.lower()}", corrections)
+        concat_textfiles(
+            source_dir,
+            out_dir / f"{stem}.mbox",
+            pre_existing=pre_existing,
+            corrections=corrections,
+        )
+
+    assert _count_messages(out_dir / "no.elektronikk.mbox") == 2
+    assert not (out_dir / "no.elektron.mbox").exists()

@@ -63,14 +63,18 @@ def ensure_mbox_envelope(text: str) -> str:
     return text
 
 
-def get_from_field(message: mailbox.mboxMessage) -> str:
-    return message["From"] or message.get_from()
+def get_from_field(message: mailbox.mboxMessage) -> str | None:
+    """Return the From header, or None when the message has none."""
+    return message["From"]
 
 
 def get_messages_from_field(
     mbox_file: Path, show_progress: bool = True
-) -> Iterator[str]:
-    """Iterates over every message in mbox file and yields the value in the From field of every message"""
+) -> Iterator[str | None]:
+    """Iterates over every message in mbox file and yields the value in the From field of every message.
+
+    Yields None for messages that carry no From header, i.e. whose sender is unknown.
+    """
     mbox = mailbox.mbox(str(mbox_file), factory=message_factory)
     for message in tqdm(
         mbox,
@@ -115,9 +119,9 @@ def get_message_bodies(mbox_file: Path) -> set[str]:
 
     Assumes all message payloads are UTF-8 encoded on disk, regardless of the
     charset declared in Content-Type headers. This holds for both data sources:
-    - NB (data/nb/utf_8_data): src/usenet_no/parse_norwegian_web_archive.py decodes each file with
+    - NB (data/input/nb/utf_8_data): src/usenet_no/parse_norwegian_web_archive.py decodes each file with
       chardet and writes as UTF-8 via write_mbox.
-    - IA (data/internet_archive/utf_8_data): src/usenet_no/parse_internet_archive.py detects encoding with
+    - IA (data/input/internet_archive/utf_8_data): src/usenet_no/parse_internet_archive.py detects encoding with
       chardet and writes each message as UTF-8 via write_mbox.
     """
     mbox = mailbox.mbox(str(mbox_file), factory=message_factory)

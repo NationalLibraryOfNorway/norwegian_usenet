@@ -1,4 +1,6 @@
+import csv
 import logging
+import tarfile
 from pathlib import Path
 
 import cchardet as chardet
@@ -6,6 +8,44 @@ import cchardet as chardet
 from usenet_no.mbox_utils import write_mbox
 
 logger = logging.getLogger(__name__)
+
+
+def extract_tarfiles(zipped_dir: Path, unzipped_dir: Path) -> None:
+    for compressed_dir in zipped_dir.glob("*.tar"):
+        logger.info("Unpacking %s", compressed_dir)
+        out_dir = unzipped_dir / compressed_dir.stem
+        out_dir.mkdir(parents=True, exist_ok=True)
+        with tarfile.open(compressed_dir, "r") as tar:
+            tar.extractall(path=out_dir, filter="tar")
+        logger.info("Extracted %s to %s", compressed_dir, out_dir)
+
+
+def load_newsgroup_corrections(corrections_file: Path) -> dict[str, str]:
+    """Read the cut-off newsgroup name corrections into a stem-to-stem mapping.
+
+    The file is written by
+    scripts/01_extract_and_parse_usenet_data/01_extract_nb_archive_and_find_stubbed_newsgroup_names.py
+    and maps mbox file stems like `no.alt.diskusjo` to the full name the
+    KZ2001-0147 CD cut them off from, like `no.alt.diskusjoner`. Returns an
+    empty mapping when the file does not exist, so the parse can run before the
+    corrections have been generated.
+    """
+    if not corrections_file.exists():
+        logger.info(
+            "No newsgroup corrections file at %s; keeping names as they are",
+            corrections_file,
+        )
+        return {}
+    with corrections_file.open(encoding="utf-8", newline="") as file:
+        return {row["cut_off_name"]: row["full_name"] for row in csv.DictReader(file)}
+
+
+def correct_stem(stem: str, corrections: dict[str, str]) -> str:
+    """Return the corrected mbox file stem for a newsgroup, or the stem unchanged."""
+    if stem in corrections:
+        logger.info("Correcting newsgroup name: %s -> %s", stem, corrections[stem])
+        return corrections[stem]
+    return stem
 
 
 def find_newsgroups_parent_dir(directory: Path) -> Path:
@@ -39,7 +79,10 @@ def read_text(text_file: Path) -> str:
 
 
 def concat_textfiles(
-    newsgroup_dir: Path, outfile: Path, pre_existing: set[str]
+    newsgroup_dir: Path,
+    outfile: Path,
+    pre_existing: set[str],
+    corrections: dict[str, str] | None = None,
 ) -> None:
     """Read all message files in newsgroup_dir and append them to outfile.
 
@@ -47,15 +90,25 @@ def concat_textfiles(
     Files in pre_existing are skipped so incremental re-runs don't double-append,
     while files created during the current run are appended to (supporting multiple
     tar archives contributing to the same newsgroup output file).
+
+    corrections maps cut-off mbox file stems to the stem to write instead (see
+    load_newsgroup_corrections), so messages from a cut-off directory land in
+    the same output file as the sources that carry the full name. The caller
+    corrects the stem of the top-level outfile itself, with correct_stem.
     """
     logger.debug("Running concat textfiles in %s (outfile: %s)", newsgroup_dir, outfile)
     messages = []
     for each in sorted(newsgroup_dir.iterdir()):
         if each.is_dir():
-            sub_group_outfile = (
-                outfile.parent / f"{outfile.stem}.{each.name.lower()}.mbox"
+            sub_stem = correct_stem(
+                f"{outfile.stem}.{each.name.lower()}", corrections or {}
             )
-            concat_textfiles(each, outfile=sub_group_outfile, pre_existing=pre_existing)
+            concat_textfiles(
+                each,
+                outfile=outfile.parent / f"{sub_stem}.mbox",
+                pre_existing=pre_existing,
+                corrections=corrections,
+            )
         else:
             messages.append(read_text(each))
 

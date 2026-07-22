@@ -1,0 +1,5 @@
+From sender@example.com
+Message-ID: <nb.reply@example.no>
+References: <ia.only@example.no> <ghost.nb@example.no> <ghost.both@example.no>
+
+a reply citing one posting only ia kept and two nobody kept
