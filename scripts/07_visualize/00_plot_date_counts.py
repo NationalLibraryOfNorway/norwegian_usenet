@@ -90,7 +90,7 @@ def main() -> None:
     parser.add_argument(
         "--out-dir",
         type=Path,
-        default=Path("data/output/07_visualize"),
+        default=Path("data/output/07_visualize/plot_date_counts"),
         help="Directory for output .png files (default: %(default)s)",
     )
     args = parser.parse_args()

@@ -150,7 +150,7 @@ def main() -> None:
     parser.add_argument(
         "--out-dir",
         type=Path,
-        default=Path("data/output/07_visualize"),
+        default=Path("data/output/07_visualize/plot_messages_per_group"),
         help="Directory for output .png files (default: %(default)s)",
     )
     args = parser.parse_args()
