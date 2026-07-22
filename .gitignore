@@ -193,7 +193,7 @@ data/output/06_topic_modelling/
 
 # SQLite database with unhashed columns
 usenet_private.db
-*.db
+
 
 epadd-standalone.jar
 todo.md
