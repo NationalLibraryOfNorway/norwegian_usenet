@@ -43,7 +43,7 @@ data/
     ├── 03_statistics_per_archive/
     ├── 04_compare_archives/
     ├── 05_make_embeddings/
-    ├── 06_topic_modelling/
+    ├── 06_newsgroups_and_user_analysis/
     └── 07_visualize/
 ```
 The databases are built from the `utf_8_data` subdirectories, and `usenet.db` is what the analysis scripts read. It holds names, emails, message ids and bodies only as hashes, so the file can be shared. The statistics and comparisons in steps 03 and 04 read `usenet.db` and nothing else, so anyone with the file can reproduce them. `usenet_private.db` maps the hashed names, emails and message ids back to their plain text, so local analysis can connect a hash to the address or to the message body in the mbox files. Like the mbox directories, it is not shared.
@@ -99,12 +99,15 @@ These scripts read the mbox files rather than the database, since embedding need
 - [02_make_jina_embeddings.py](scripts/05_make_embeddings/02_make_jina_embeddings.py) does the same with a Jina embedding model. It is an alternative to `02_embed_messages.py`, hence the same number prefix — run one or the other.
 - [03_umap_reduce_embeddings.py](scripts/05_make_embeddings/03_umap_reduce_embeddings.py) reduces the embeddings to 2 dimensions with UMAP, and caches the result in `data/output/05_make_embeddings/umap_embeddings/<model>/`.
 
-#### Step 06: topic modelling 
+#### Step 06: newsgroups and user analysis
 
-[06_topic_modelling.py](scripts/06_topic_modelling.py) uses BERTopic and the text embeddings generated in the previous step to find topics in the selected newsgroups
+- [00_newsgroup_user_jaccard_overlap.py](scripts/06_newsgroups_and_user_analysis/00_newsgroup_user_jaccard_overlap.py) computes the Jaccard overlap between the user sets of every pair of newsgroups, reading `data/output/02_build_database/usenet.db`. A user is one hashed email address. Creates one row per newsgroup pair sharing at least one user (`newsgroup_a`, `newsgroup_b`, `users_a`, `users_b`, `shared_users`, `jaccard`) in `data/output/06_newsgroups_and_user_analysis/newsgroup_user_jaccard_overlap_nb.csv`, `data/output/06_newsgroups_and_user_analysis/newsgroup_user_jaccard_overlap_ia_date_filtered.csv` and `data/output/06_newsgroups_and_user_analysis/newsgroup_user_jaccard_overlap_nb_and_ia_date_filtered.csv`
+- [06_topic_modelling.py](scripts/06_newsgroups_and_user_analysis/06_topic_modelling.py) uses BERTopic and the text embeddings generated in the previous step to find topics in the selected newsgroups
 
 
 #### Step 07: visualize
+
+These scripts need the plotting libraries in the optional `viz` dependency group, which is not installed by default. Install it with `uv sync --group viz`.
 
 - [00_newsgroup_tree.py](scripts/07_visualize/00_newsgroup_tree.py) draws the nested newsgroup structure of each archive as an ASCII tree, reading `data/output/03_statistics_per_archive/messages_per_group_ia.csv` and `data/output/03_statistics_per_archive/messages_per_group_nb.csv` (from step 03). Prints to stdout.
 - [00_newsgroup_tree_gif.py](scripts/07_visualize/00_newsgroup_tree_gif.py) draws the same trees as scrolling animations. Creates `data/output/07_visualize/newsgroup_tree_gif/newsgroup_tree_ia.gif` and `data/output/07_visualize/newsgroup_tree_gif/newsgroup_tree_nb.gif`
@@ -115,6 +118,7 @@ These scripts read the mbox files rather than the database, since embedding need
 - [00_plot_messages_per_user.py](scripts/07_visualize/00_plot_messages_per_user.py) plots posts by the top 100 users vs the rest, the cumulative post distribution by user, and user overlap between the archives, reading the `messages_per_user_*.csv` files from step 03. Prints user statistics to stdout and saves image files to `data/output/07_visualize/plot_messages_per_user/`.
 - [00_plot_ia_nb_content_comparison.py](scripts/07_visualize/00_plot_ia_nb_content_comparison.py) plots exact-body-match message overlap between IA and NB, reading the `ia_nb_content_comparison*.csv` files from step 04. Prints overlap statistics to stdout and saves `content_overlap_venn.png` to `data/output/07_visualize/plot_ia_nb_content_comparison/`.
 - [00_plot_ia_nb_message_id_overlap.py](scripts/07_visualize/00_plot_ia_nb_message_id_overlap.py) plots message-ID overlap and cross-archive reference resolution, reading the `ia_nb_message_id_overlap*.json` files from step 04. Prints reference statistics to stdout and saves .png files to `data/output/07_visualize/plot_ia_nb_message_id_overlap/`.
+- [00_plot_newsgroup_overlap_graph.py](scripts/07_visualize/00_plot_newsgroup_overlap_graph.py) draws a graph of newsgroups, with edges based on user overlap. The script reads a `newsgroup_user_jaccard_overlap_*.csv` file from step 06. A pair becomes an edge if it clears both `--jaccard-threshold` and `--min-shared-users`, and the layout places newsgroups at a distance of 1 - jaccard from each other. Saves an interactive .html figure, named after the input file and the two thresholds, to `data/output/07_visualize/plot_newsgroup_overlap_graph/`. (The current script is adapted for the current default input file, the graph layout may look bad if input file is changed)
 
 ## ePADD
 ePADD is a program with a graphical interface for exploring email archives.

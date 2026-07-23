@@ -8,7 +8,7 @@ from bertopic import BERTopic
 
 from usenet_no.embed_messages import load_embeddings_and_docs
 from usenet_no.topic_modelling import make_run_tag
-from usenet_no.viz import hsl_to_hex
+from viz import hsl_to_hex
 
 logger = logging.getLogger(__name__)
 
