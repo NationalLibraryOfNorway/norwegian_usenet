@@ -102,7 +102,7 @@ These scripts read the mbox files rather than the database, since embedding need
 #### Step 06: newsgroups and user analysis
 
 - [00_newsgroup_user_jaccard_overlap.py](scripts/06_newsgroups_and_user_analysis/00_newsgroup_user_jaccard_overlap.py) computes the Jaccard overlap between the user sets of every pair of newsgroups, reading `data/output/02_build_database/usenet.db`. A user is one hashed email address. Creates one row per newsgroup pair sharing at least one user (`newsgroup_a`, `newsgroup_b`, `users_a`, `users_b`, `shared_users`, `jaccard`) in `data/output/06_newsgroups_and_user_analysis/newsgroup_user_jaccard_overlap_nb.csv`, `data/output/06_newsgroups_and_user_analysis/newsgroup_user_jaccard_overlap_ia_date_filtered.csv` and `data/output/06_newsgroups_and_user_analysis/newsgroup_user_jaccard_overlap_nb_and_ia_date_filtered.csv`
-- [06_topic_modelling.py](scripts/06_newsgroups_and_user_analysis/06_topic_modelling.py) uses BERTopic and the text embeddings generated in the previous step to find topics in the selected newsgroups
+- [00_topic_modelling.py](scripts/06_newsgroups_and_user_analysis/00_topic_modelling.py) uses BERTopic and the text embeddings generated in the previous step to find topics in the selected newsgroups
 
 
 #### Step 07: visualize

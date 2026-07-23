@@ -189,7 +189,7 @@ hidden
 
 data/output/05_make_embeddings/*
 !data/output/05_make_embeddings/newsgroups_for_selection.jsonl
-data/output/06_topic_modelling/
+data/output/**/topic_modelling/
 
 # SQLite database with unhashed columns
 usenet_private.db

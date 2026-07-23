@@ -51,7 +51,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--topics-directory",
         type=Path,
-        default=Path("data/output/06_topic_modelling"),
+        default=Path("data/output/06_newsgroups_and_user_analysis/topic_modelling"),
         help="Directory containing the saved BERTopic models",
     )
     parser.add_argument(
@@ -101,7 +101,7 @@ if __name__ == "__main__":
     if not model_path.exists():
         raise SystemExit(
             f"No BERTopic model at {model_path}. "
-            "Run scripts/06_topic_modelling.py with the same --selection and "
+            "Run scripts/06_newsgroups_and_user_analysis/00_topic_modelling.py with the same --selection and "
             "--nr-topics first."
         )
 
