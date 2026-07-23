@@ -1,0 +1,5 @@
+From sender@example.com
+Message-ID: <cites.both.origins@example.no>
+References: <origin.one@example.no> <origin.two@example.no>
+
+one reply citing both origins

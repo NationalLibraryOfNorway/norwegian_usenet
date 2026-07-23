@@ -1,0 +1,5 @@
+From sender@example.com
+Message-ID: <stutter@example.no>
+References: <origin.one@example.no> <origin.one@example.no>
+
+a reply listing the same id twice

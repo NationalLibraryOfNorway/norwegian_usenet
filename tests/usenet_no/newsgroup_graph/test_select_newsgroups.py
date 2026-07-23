@@ -49,3 +49,16 @@ def test_the_selection_carries_what_the_drawing_needs(graph):
 def test_an_unknown_newsgroup_raises(graph):
     with pytest.raises(ValueError, match="no.fourth"):
         select_newsgroups(graph, ["no.first", "no.fourth"])
+
+
+def test_a_directed_graph_stays_directed():
+    directed = nx.DiGraph()
+    directed.add_edge("no.first", "no.second", references=500)
+    directed.add_edge("no.second", "no.first", references=300)
+    directed.add_node("no.third", messages=50)
+
+    selected = select_newsgroups(directed, ["no.first", "no.second"])
+
+    assert isinstance(selected, nx.DiGraph)
+    assert selected.edges["no.first", "no.second"] == {"references": 500}
+    assert selected.edges["no.second", "no.first"] == {"references": 300}

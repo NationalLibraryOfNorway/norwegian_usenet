@@ -1,0 +1,20 @@
+From sender@example.com
+Message-ID: <dated.reply@example.no>
+Date: Mon, 15 Jan 1996 12:00:00 +0000
+References: <dated.origin@example.no>
+
+a reply inside the span to the origin inside the span
+
+From sender@example.com
+Message-ID: <cites.late.origin@example.no>
+Date: Tue, 16 Jan 1996 12:00:00 +0000
+References: <late.origin@example.no>
+
+a reply inside the span to the origin after the span
+
+From sender@example.com
+Message-ID: <late.reply.to.dated@example.no>
+Date: Sat, 01 Jan 2005 13:00:00 +0000
+References: <dated.origin@example.no>
+
+a reply after the span to the origin inside the span

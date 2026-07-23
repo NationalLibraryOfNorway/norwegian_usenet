@@ -1,0 +1,10 @@
+From sender@example.com
+Message-ID: <internal.origin@example.no>
+
+a posting replied to within its own group
+
+From sender@example.com
+Message-ID: <internal.reply@example.no>
+References: <internal.origin@example.no>
+
+a reply within the group
