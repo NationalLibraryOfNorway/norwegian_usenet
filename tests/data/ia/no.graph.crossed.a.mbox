@@ -1,0 +1,10 @@
+From sender@example.com
+Message-ID: <crossed@example.no>
+
+a crossposted message, held by this group and by crossed.b
+
+From sender@example.com
+Message-ID: <local.cite@example.no>
+References: <crossed@example.no>
+
+a reply to the crossposted message from one of its own groups

@@ -1,0 +1,10 @@
+From sender@example.com
+Message-ID: <mutual.a@example.no>
+
+a posting replied to from the other group
+
+From sender@example.com
+Message-ID: <a.replies.b@example.no>
+References: <mutual.b@example.no>
+
+a reply to the other group's posting

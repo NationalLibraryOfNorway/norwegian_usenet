@@ -1,0 +1,9 @@
+From sender@example.com
+Message-ID: <origin.one@example.no>
+
+the first origin
+
+From sender@example.com
+Message-ID: <origin.two@example.no>
+
+the second origin

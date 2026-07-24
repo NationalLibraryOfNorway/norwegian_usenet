@@ -1,16 +1,3 @@
-"""Compare message id overlap between the IA and NB archives.
-
-Counts come from the database built in step 02, so both outputs are produced
-from one dataset. The date-filtered variant restricts IA to the NB date span
-with a WHERE clause, instead of a separate copy of the archive on disk.
-
-Each comparison is written twice: the archive-wide counts as JSON, and a CSV
-with one row per newsgroup, matching the layout of the content comparison.
-
-Ids are compared through their hashes, which is all the database stores; the
-References headers are hashed too, so nothing here can print a real message id.
-"""
-
 import argparse
 import csv
 import json

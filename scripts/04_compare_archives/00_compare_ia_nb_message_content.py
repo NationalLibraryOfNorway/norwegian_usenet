@@ -1,10 +1,3 @@
-"""Compare message content per newsgroup between the IA and NB archives.
-
-Counts come from the database built in step 02, comparing bodies through the
-hashes it stores. The date-filtered variant restricts IA to the NB date span
-with a WHERE clause, instead of a separate copy of the archive on disk.
-"""
-
 import argparse
 import csv
 import logging
