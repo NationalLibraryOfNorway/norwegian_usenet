@@ -1,12 +1,3 @@
-"""Find Message-IDs held by both archives whose copies never agree on a body.
-
-These are messages the two archives disagree about: the same posting, but no
-version in common.
-
-Writes one JSON object per conflict, sorted by message_id so the output is
-stable across runs.
-"""
-
 import argparse
 import json
 import logging

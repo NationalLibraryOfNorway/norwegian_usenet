@@ -1,9 +1,5 @@
 """Count messages whose sender is unknown, per archive and newsgroup.
-
-A message has no sender when it carried no From header at all. The mbox
-envelope line is deliberately not used to fill the gap: it is a storage
-artifact, and the library replaces it with a placeholder built from the current
-clock, which would invent senders and differ between runs.
+A message has no sender when it carried no From header at all.
 
 Writes one JSON object per newsgroup that has at least one such message, sorted
 by (archive, newsgroup) so the output is stable across runs.
