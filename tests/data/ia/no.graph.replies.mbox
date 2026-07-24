@@ -1,0 +1,17 @@
+From sender@example.com
+Message-ID: <reply.one@example.no>
+References: <origin.one@example.no>
+
+first reply to the first origin
+
+From sender@example.com
+Message-ID: <reply.two@example.no>
+References: <origin.one@example.no>
+
+second reply to the first origin
+
+From sender@example.com
+Message-ID: <reply.three@example.no>
+References: <origin.one@example.no>
+
+third reply to the first origin

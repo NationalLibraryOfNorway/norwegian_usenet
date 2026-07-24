@@ -1,0 +1,11 @@
+From sender@example.com
+Message-ID: <dated.origin@example.no>
+Date: Wed, 10 Jan 1996 12:00:00 +0000
+
+an origin inside the span
+
+From sender@example.com
+Message-ID: <late.origin@example.no>
+Date: Sat, 01 Jan 2005 12:00:00 +0000
+
+an origin after the span

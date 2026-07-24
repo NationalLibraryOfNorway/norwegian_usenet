@@ -1,0 +1,11 @@
+From sender@example.com
+Message-ID: <cites.ghost.once@example.no>
+References: <ghost.one@example.no>
+
+cites a message nobody kept
+
+From sender@example.com
+Message-ID: <cites.ghosts.twice@example.no>
+References: <ghost.one@example.no> <ghost.two@example.no>
+
+cites the same lost message and a second one

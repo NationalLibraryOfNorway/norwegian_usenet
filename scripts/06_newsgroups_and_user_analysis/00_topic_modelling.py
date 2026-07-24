@@ -42,7 +42,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--output-directory",
         type=Path,
-        default=Path("data/output/06_topic_modelling"),
+        default=Path("data/output/06_newsgroups_and_user_analysis/topic_modelling"),
         help="Directory to save the BERTopic model and topic info",
     )
     parser.add_argument(

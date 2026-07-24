@@ -1,10 +1,3 @@
-"""Counting queries over the message database.
-
-These replace repeated walks of the mbox directories: every count is a GROUP BY
-over the table built in step 02. Restricting an archive to another archive's
-date span is a WHERE clause here, rather than a filtered copy of the data.
-"""
-
 import logging
 import sqlite3
 
