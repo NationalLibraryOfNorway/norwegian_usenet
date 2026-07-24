@@ -25,7 +25,7 @@ no.alt.diskusjoner,no.prat.politikk,1075
 no.www,no.general,1065
 no.marked.data,no.marked,1062
 no.marked,no.marked.data,1009
-no.test,unknown,986
+no.test,unknown,982
 no.stortinget,no.prat.politikk,969
 no.ms-windows,no.pc,954
 no.pc,no.ms-windows,929
@@ -4260,7 +4260,6 @@ no.radio_tv,no.tegnsett,9
 no.radio_tv,no.telepost,9
 no.reiser,no.speider,9
 no.reiser,no.spill,9
-no.samfunn.narkotika,unknown,9
 no.skole.diverse,no.havforskning,9
 no.slekt,no.audio,9
 no.slekt,no.c,9
@@ -7441,7 +7440,6 @@ no.folklore.overtro,no.jus,2
 no.folklore.overtro,no.kjemi,2
 no.folklore.overtro,no.linux,2
 no.folklore.overtro,no.litteratur,2
-no.fritid.slektsforsking.diverse,unknown,2
 no.general,no.alt.radio_tv.irma1000,2
 no.general,no.sources.list,2
 no.general,no.sport.fotball,2
@@ -8218,7 +8216,6 @@ no.folklore.overtro,no.mac,1
 no.folklore.overtro,no.mail.diverse,1
 no.folklore.overtro,no.mail.drift,1
 no.folklore.overtro,no.marked.jobb,1
-no.fritid.spill.rollespill,unknown,1
 no.general,no.folklore.generelt,1
 no.general,no.mswindow,1
 no.general,no.uninett.drift,1

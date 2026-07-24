@@ -15,7 +15,7 @@ no.amiga,unknown,1653
 no.mac,unknown,1648
 no.alt.diskusjoner,unknown,1395
 no.jus,no.general,1146
-no.test,unknown,1133
+no.test,unknown,1129
 no.bil,unknown,1066
 no.linux,unknown,1043
 no.alt.gledesutbrudd,unknown,1032
@@ -1915,7 +1915,6 @@ no.prat.seksualitet,no.religion,9
 no.pressemeldinger.diskusjon,no.pressemeldinger,9
 no.psykologi,no.norsk,9
 no.radio-tv,no.pressemeldinger,9
-no.samfunn.narkotika,unknown,9
 no.skole.diverse,no.ms-windows,9
 no.slekt.programmer,no.pc,9
 no.sport.diverse,no.prat.politikk,9
@@ -3348,7 +3347,6 @@ no.folklore.edb,no.tele,2
 no.folklore.edb,no.www,2
 no.folklore.generelt,no.hobby.diverse,2
 no.folklore.generelt,no.marked,2
-no.fritid.slektsforsking.diverse,unknown,2
 no.general,no.eunet.diverse,2
 no.general,no.marked.bil,2
 no.general,no.speider,2
@@ -3920,7 +3918,6 @@ no.folklore.overtro,no.it.emacs,1
 no.folklore.overtro,no.it.os.os2,1
 no.folklore.overtro,no.jus,1
 no.folklore.overtro,no.kjemi,1
-no.fritid.spill.rollespill,unknown,1
 no.general,no.eunet.drift,1
 no.general,no.folklore.generelt,1
 no.general,no.prat.aksjer,1
