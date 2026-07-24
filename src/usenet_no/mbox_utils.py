@@ -6,7 +6,7 @@ import mailbox
 import logging
 import re
 from pathlib import Path
-from typing import Iterable, Iterator
+from typing import Collection, Iterable, Iterator
 
 _MESSAGE_ID_PATTERN = re.compile(r"<[^>]+>")
 
@@ -131,6 +131,38 @@ def get_message_bodies(mbox_file: Path) -> set[str]:
         if body:
             bodies.add(body)
     return bodies
+
+
+def get_message_bodies_at_positions(
+    mbox_file: Path,
+    positions: Collection[int],
+    expected_message_count: int | None = None,
+) -> dict[int, str]:
+    """Return the body of the message at each 0-based position in the file's message order.
+
+    mailbox.mbox assigns keys 0..n-1 in file order, so each wanted message is
+    read directly instead of parsing the whole file. When
+    `expected_message_count` is given, the file's message count is checked
+    against it, so a caller that computed the positions elsewhere (e.g. from
+    database row ids) notices when the file does not match.
+    """
+    mbox = mailbox.mbox(str(mbox_file), factory=message_factory)
+    message_count = len(mbox)
+    if expected_message_count is not None and message_count != expected_message_count:
+        raise ValueError(
+            f"{mbox_file} holds {message_count} messages, expected {expected_message_count}"
+        )
+
+    out_of_range = [position for position in positions if position >= message_count]
+    if out_of_range:
+        raise ValueError(
+            f"{mbox_file} holds {message_count} messages,"
+            f" so it has no message at positions {sorted(out_of_range)}"
+        )
+
+    return {
+        position: get_message_body(mbox[position]) for position in sorted(positions)
+    }
 
 
 def get_messages_date_field(mbox_file: Path) -> Iterator[str | None]:

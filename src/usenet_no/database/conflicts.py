@@ -17,6 +17,8 @@ import logging
 import sqlite3
 from collections import defaultdict
 from dataclasses import dataclass, field
+from itertools import groupby
+from operator import itemgetter
 
 logger = logging.getLogger(__name__)
 
@@ -38,6 +40,17 @@ class AcrossArchiveConflict:
     message_id_hash: str
     num_distinct_bodies: int
     newsgroups_per_archive: dict[str, list[str]] = field(default_factory=dict)
+
+
+@dataclass
+class NewsgroupBodyConflict:
+    """One Message-ID whose copies in one newsgroup never agree on a body across archives."""
+
+    newsgroup: str
+    message_id_hash: str
+    # One message row id per distinct body per archive, so the bodies of a
+    # conflict can be looked up without touching redundant identical copies.
+    row_ids_per_archive: dict[str, list[int]] = field(default_factory=dict)
 
 
 def _fetch_rows_by_message_id_hash(
@@ -129,3 +142,48 @@ def find_across_archive_conflicts(
             )
 
     return sorted(conflicts, key=lambda conflict: conflict.message_id_hash)
+
+
+def find_newsgroup_body_conflicts(
+    connection: sqlite3.Connection,
+) -> list[NewsgroupBodyConflict]:
+    """Find, per newsgroup, message ids whose copies in the two archives never share a body.
+
+    The per-newsgroup counterpart of `find_across_archive_conflicts`, with the
+    same definition of a conflict: within one newsgroup, a message id conflicts
+    only when its copies in the two archives have no body in common. Each
+    conflict carries one message row id per distinct body per archive.
+
+    Returned sorted by (newsgroup, message_id_hash) so reruns produce identical
+    output.
+    """
+    rows = connection.execute(
+        "SELECT newsgroup, message_id_hash, archive, body_hash, MIN(id)"
+        " FROM messages"
+        " WHERE message_id_hash IS NOT NULL"
+        " GROUP BY newsgroup, message_id_hash, archive, body_hash"
+        " ORDER BY newsgroup, message_id_hash, archive, body_hash"
+    )
+
+    conflicts = []
+    for (newsgroup, message_id_hash), id_rows in groupby(rows, key=itemgetter(0, 1)):
+        hashes_by_archive: dict[str, set[str | None]] = defaultdict(set)
+        row_ids_by_archive: dict[str, list[int]] = defaultdict(list)
+        for _, _, archive, body_hash, row_id in id_rows:
+            hashes_by_archive[archive].add(body_hash)
+            row_ids_by_archive[archive].append(row_id)
+
+        if len(hashes_by_archive) < 2:
+            continue
+        if set.intersection(*hashes_by_archive.values()):
+            continue
+
+        conflicts.append(
+            NewsgroupBodyConflict(
+                newsgroup=newsgroup,
+                message_id_hash=message_id_hash,
+                row_ids_per_archive=dict(sorted(row_ids_by_archive.items())),
+            )
+        )
+
+    return conflicts
