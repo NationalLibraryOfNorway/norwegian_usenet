@@ -61,6 +61,11 @@ if __name__ == "__main__":
         ),
         help="Path to per-newsgroup CSV output file for the date-filtered IA archive comparison",
     )
+    parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="If flagged, will overwrite existing files instead of skipping",
+    )
     args = parser.parse_args()
     logging.basicConfig(level=logging.INFO)
     logger.info("Args: %s", args)
@@ -77,17 +82,30 @@ if __name__ == "__main__":
             args.date_filtered_csv_output_file,
         ),
     ]:
-        results = compare_message_ids(connection, ia_date_span=ia_date_span)
+        if output_file.exists() and not args.overwrite:
+            logger.info(
+                "Existing file found at %s; use --overwrite to regenerate", output_file
+            )
+        else:
+            results = compare_message_ids(connection, ia_date_span=ia_date_span)
 
-        logger.info("=== ia%s vs nb ===", " (date filtered)" if ia_date_span else "")
-        for key, value in results.items():
-            logger.info("%-35s %d", key, value)
+            logger.info(
+                "=== ia%s vs nb ===", " (date filtered)" if ia_date_span else ""
+            )
+            for key, value in results.items():
+                logger.info("%-35s %d", key, value)
 
-        output_file.write_text(json.dumps(results, indent=2))
-        logger.info("Wrote results to %s", output_file)
+            output_file.write_text(json.dumps(results, indent=2))
+            logger.info("Wrote results to %s", output_file)
 
-        rows = compare_message_ids_per_group(connection, ia_date_span=ia_date_span)
-        export_id_comparison_to_csv(rows, csv_output_file)
-        logger.info("Wrote %d rows to %s", len(rows), csv_output_file)
+        if csv_output_file.exists() and not args.overwrite:
+            logger.info(
+                "Existing file found at %s; use --overwrite to regenerate",
+                csv_output_file,
+            )
+        else:
+            rows = compare_message_ids_per_group(connection, ia_date_span=ia_date_span)
+            export_id_comparison_to_csv(rows, csv_output_file)
+            logger.info("Wrote %d rows to %s", len(rows), csv_output_file)
 
     connection.close()

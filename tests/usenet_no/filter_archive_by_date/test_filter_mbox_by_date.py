@@ -20,13 +20,14 @@ def test_keeps_messages_within_date_range(mbox_data, tmp_path):
     assert kept == 1
 
 
-def test_keeps_messages_with_unknown_date(mbox_data, tmp_path):
+def test_excludes_messages_with_unknown_date(mbox_data, tmp_path):
     source = mbox_data / "ia/no.unknown.and.outside.span.mbox"
     out = tmp_path / "out.mbox"
 
-    kept, _total = filter_mbox_by_date(source, out, *SPAN)
+    kept, total = filter_mbox_by_date(source, out, *SPAN)
 
-    assert kept == 1
+    assert total == 2
+    assert kept == 0
 
 
 def test_skips_if_output_exists(mbox_data, tmp_path):

@@ -1,6 +1,6 @@
 # Step 03: counting messages and users in each archive
 
-Every script here reads `data/output/02_build_database/usenet.db`. Where a statistic is reported for the date filtered IA archive, that is a `WHERE` clause restricting IA to the NB date span, not a separate copy of the data.
+Every script here reads `data/output/02_build_database/usenet.db`. Messages whose date could not be parsed are excluded from the date filtered statistics.
 
 - [01_count_messages_per_group.py](01_count_messages_per_group.py) counts messages per newsgroup for each of IA, date filtered IA and NB archives. Creates `data/output/03_statistics_per_archive/messages_per_group_ia.csv`, `data/output/03_statistics_per_archive/messages_per_group_ia_date_filtered.csv`  and `data/output/03_statistics_per_archive/messages_per_group_nb.csv`
 - [02_count_duplicate_messages.py](02_count_duplicate_messages.py) finds *true duplicates*: messages stored more than once in the same mbox file with both the same Message-ID and the same body. Every copy is its own row in the database, so these are rows sharing archive, newsgroup, hashed Message-ID and hashed body. Creates `data/output/03_statistics_per_archive/duplicate_messages_per_group.jsonl`, with one row per duplicated Message-ID (`source_archive`, `newsgroup`, `hashed_message_id`, `count`), where `count` is the total number of copies present.

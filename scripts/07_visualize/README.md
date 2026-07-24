@@ -2,6 +2,11 @@
 
 These scripts need the plotting libraries in the optional `viz` dependency group, which is not installed by default. Install it with `uv sync --group viz`.
 
+To run graph plotting scripts with the default selection from embedding and topic modelling scripts, append this to run command:
+```
+--selection no.religion no.bil no.musikk no.slekt no.litteratur no.prat.politikk
+```
+
 - [00_newsgroup_tree.py](00_newsgroup_tree.py) draws the nested newsgroup structure of each archive as an ASCII tree, reading `data/output/03_statistics_per_archive/messages_per_group_ia.csv` and `data/output/03_statistics_per_archive/messages_per_group_nb.csv` (from step 03). Prints to stdout.
 - [00_newsgroup_tree_gif.py](00_newsgroup_tree_gif.py) draws the same trees as scrolling animations. Creates `data/output/07_visualize/newsgroup_tree_gif/newsgroup_tree_ia.gif` and `data/output/07_visualize/newsgroup_tree_gif/newsgroup_tree_nb.gif`
 - [00_visualize_embeddings.py](00_visualize_embeddings.py) plots the UMAP embeddings from step 05 as an interactive Plotly scatter plot, coloured by newsgroup and shaped by archive. Opens in a browser.

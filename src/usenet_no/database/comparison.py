@@ -130,7 +130,7 @@ def _compare_hashes_per_group(
     if ia_date_span is None:
         clause, span_parameters = "", ()
     else:
-        clause = " AND (archive = ? OR date IS NULL OR date BETWEEN ? AND ?)"
+        clause = " AND (archive = ? OR date BETWEEN ? AND ?)"
         span_parameters = (NB_ARCHIVE, *ia_date_span)
 
     rows = connection.execute(

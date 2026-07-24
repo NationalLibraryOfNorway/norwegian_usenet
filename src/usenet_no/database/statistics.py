@@ -91,14 +91,12 @@ def count_messages_per_group(
     archive: str,
     date_span: tuple[str, str] | None = None,
 ) -> dict[str, int]:
-    """Count messages per newsgroup in one archive, newest ordering aside.
+    """Count messages per newsgroup in one archive.
 
-    When `date_span` is given, only messages inside it are counted, plus every
-    message whose date could not be parsed. Keeping the unparseable ones matches
-    how the date-filtered archive was built on disk: a message is only dropped
-    when it is known to fall outside the span.
+    When `date_span` is given, only messages inside it are counted; messages
+    whose date can not be parsed are dropped.
 
-    Returned sorted by newsgroup so reruns produce identical output.
+    Returns sorted by newsgroup so reruns produce identical output.
     """
     clause, span_parameters = date_span_clause(date_span)
     rows = connection.execute(
