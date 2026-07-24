@@ -4,10 +4,8 @@ import logging
 from pathlib import Path
 
 from usenet_no.database import connect
-from usenet_no.database.replacement_chars import (
-    NewsgroupReplacementCharCounts,
-    count_replacement_char_conflicts,
-)
+from usenet_no.database.replacement_chars import count_replacement_char_conflicts
+from usenet_no.replacement_chars import NewsgroupReplacementCharCounts
 
 logger = logging.getLogger(__name__)
 

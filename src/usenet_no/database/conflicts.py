@@ -20,6 +20,8 @@ from dataclasses import dataclass, field
 from itertools import groupby
 from operator import itemgetter
 
+from usenet_no.database.core import load_id_spans
+
 logger = logging.getLogger(__name__)
 
 
@@ -187,3 +189,18 @@ def find_newsgroup_body_conflicts(
         )
 
     return conflicts
+
+
+def load_conflicts_and_id_spans(
+    connection: sqlite3.Connection,
+) -> tuple[list[NewsgroupBodyConflict], dict[tuple[str, str], tuple[int, int]]]:
+    """Read everything a positional body lookup of the conflicts needs from the database.
+
+    Bundles `find_newsgroup_body_conflicts` with the id spans that map its row
+    ids to mbox file positions, so that the mbox-reading side (see
+    `usenet_no.replacement_chars`) does not need a connection at all.
+    """
+    conflicts = find_newsgroup_body_conflicts(connection)
+    id_spans = load_id_spans(connection)
+    logger.info("Found %d body conflicts", len(conflicts))
+    return conflicts, id_spans

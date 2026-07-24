@@ -147,6 +147,30 @@ def date_span_clause(
     return f" AND {column} BETWEEN ? AND ?", date_span
 
 
+def load_id_spans(
+    connection: sqlite3.Connection,
+) -> dict[tuple[str, str], tuple[int, int]]:
+    """Map each (archive, newsgroup) to its (lowest row id, message count).
+
+    The build inserts one mbox file at a time with contiguous row ids in file
+    order, so within one (archive, newsgroup) a message's position in its mbox
+    file is `id - lowest row id`. Raises when a span is not contiguous, since a
+    positional lookup depends on row ids following file order without gaps.
+    """
+    spans = {}
+    for archive, newsgroup, min_id, max_id, count in connection.execute(
+        "SELECT archive, newsgroup, MIN(id), MAX(id), COUNT(*)"
+        " FROM messages GROUP BY archive, newsgroup"
+    ):
+        if max_id - min_id + 1 != count:
+            raise ValueError(
+                f"Row ids of ({archive}, {newsgroup}) are not contiguous:"
+                f" {count} rows span ids {min_id}..{max_id}"
+            )
+        spans[(archive, newsgroup)] = (min_id, count)
+    return spans
+
+
 def connect(database_file: Path) -> sqlite3.Connection:
     connection = sqlite3.connect(database_file)
     connection.execute("PRAGMA foreign_keys = ON")
