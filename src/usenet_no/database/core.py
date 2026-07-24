@@ -135,8 +135,8 @@ def date_span_clause(
 ) -> tuple[str, tuple]:
     """Build the WHERE fragment restricting messages to a date span.
 
-    Messages whose date could not be parsed are kept: a message is only dropped
-    when it is known to fall outside the span. This matches how the
+    Messages whose date could not be parsed (stored as NULL) are dropped: only
+    messages known to fall inside the span are kept. This matches how the
     date-filtered archive was built on disk.
 
     `column` names the date column, so the fragment can be used in a join where
@@ -144,7 +144,7 @@ def date_span_clause(
     """
     if date_span is None:
         return "", ()
-    return f" AND ({column} IS NULL OR {column} BETWEEN ? AND ?)", date_span
+    return f" AND {column} BETWEEN ? AND ?", date_span
 
 
 def connect(database_file: Path) -> sqlite3.Connection:

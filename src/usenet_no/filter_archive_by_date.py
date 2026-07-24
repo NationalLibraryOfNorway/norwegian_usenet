@@ -24,7 +24,7 @@ def filter_mbox_by_date(
     overwrite: bool = False,
 ) -> tuple[int, int]:
     """Copy messages from mbox_file to output_file, keeping only those within [start_date, end_date].
-    Messages with unparseable dates are always kept.
+    Messages with unparseable dates are excluded.
 
     Returns (kept, total).
     """
@@ -41,7 +41,7 @@ def filter_mbox_by_date(
     for key, message in mbox_in.items():
         date_str = parse_and_normalize_date_field(message.get("Date", None))
         if (
-            date_str == "unknown" or start_date <= date_str <= end_date
+            date_str != "unknown" and start_date <= date_str <= end_date
         ):  # ISO 8601 sorts lexicographically
             kept_texts.append(mbox_in.get_bytes(key).decode("utf-8", errors="replace"))
 

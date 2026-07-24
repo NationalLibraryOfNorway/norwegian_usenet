@@ -34,16 +34,16 @@ def test_date_filtering_excludes_messages_outside_the_span(
     assert counts == {"no.dates.around.span": 1}
 
 
-def test_date_filtering_keeps_messages_with_unparseable_dates(
+def test_date_filtering_excludes_messages_with_unparseable_dates(
     mbox_data, database, load_archives
 ):
-    """Matches how the date-filtered archive was built: only drop known misses."""
+    """Matches how the date-filtered archive was built: unknown dates are dropped."""
     mbox_file = mbox_data / "ia/no.unparseable.and.late.mbox"
     connection = load_archives(database, [(mbox_file, IA_ARCHIVE)])
 
     counts = count_messages_per_group(connection, IA_ARCHIVE, date_span=SPAN)
 
-    assert counts == {"no.unparseable.and.late": 2}
+    assert counts == {"no.unparseable.and.late": 1}
 
 
 def test_counts_are_sorted_by_newsgroup(mbox_data, database, load_archives):
