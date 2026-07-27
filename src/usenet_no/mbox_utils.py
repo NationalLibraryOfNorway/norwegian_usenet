@@ -56,10 +56,10 @@ def write_mbox(messages: Iterable[str], outfile: Path, append: bool = False) -> 
 
 
 def ensure_mbox_envelope(text: str) -> str:
+    """Prefix an mbox "From " delimiter line if the text lacks one."""
     if not text.startswith("From "):
-        match = re.search(r"^From:[ \t]*(.*)", text, re.MULTILINE)
-        sender = match.group(1).strip() if match else ""
-        return f"From {sender}\n" + text
+        # Placeholder sender for the mbox "From " delimiter line
+        return "From MAILER-DAEMON\n" + text
     return text
 
 

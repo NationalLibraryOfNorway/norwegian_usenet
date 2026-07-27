@@ -2,7 +2,6 @@ import mailbox
 
 from usenet_no.mbox_utils import ensure_mbox_envelope
 
-
 MESSAGE_WITHOUT_ENVELOPE = """\
 From: sender@example.com
 Subject: Test message
@@ -26,9 +25,9 @@ def test_adds_from_line_when_missing(tmp_path):
     assert len(list(mbox)) == 1
 
 
-def test_uses_from_header_value_in_envelope():
+def test_uses_placeholder_sender_not_from_header():
     result = ensure_mbox_envelope(MESSAGE_WITHOUT_ENVELOPE)
-    assert result.startswith("From sender@example.com\n")
+    assert result.startswith("From MAILER-DAEMON\n")
 
 
 def test_does_not_add_from_line_when_already_present(tmp_path):
