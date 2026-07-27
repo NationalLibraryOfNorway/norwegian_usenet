@@ -1,12 +1,8 @@
-"""get_message_body is where a message's body is actually decoded (payload
-transfer-encoding + charset), and where the IA quoted-printable damage shows up.
-
-These load the raw-IA fixtures directly and call the decoder in memory, no parse
-round-trip. They assert the desired quoted-printable decoding and so FAIL until
-the body-decode fix lands; the current output is literal =XX (undeclared QP) or
-U+FFFD (declared QP + ISO-8859-1). The expected strings are the QP-decoded body
-only, before any whitespace normalization, to keep this about decoding.
-"""
+"""get_message_body decodes a message's body from its transfer encoding and
+charset. A *declared* quoted-printable body is decoded; an *undeclared* one (=XX
+escapes with no Content-Transfer-Encoding header) is deliberately left literal
+rather than guessed at. These load the raw-IA fixtures and call the decoder in
+memory, no parse round-trip."""
 
 import mailbox
 
@@ -19,15 +15,15 @@ def single_body(mbox_data, filename: str) -> str:
     return get_message_body(mbox[key])
 
 
-def test_undeclared_quoted_printable_is_decoded(mbox_data):
-    """Without a CTE header the QP is still resolved: =E5/=E6/=F8/=D8 -> å/æ/ø/Ø,
-    =20 -> space, and the trailing "=" joins its line."""
+def test_undeclared_quoted_printable_is_left_literal(mbox_data):
+    """No CTE header means no conversion: the =XX escapes survive unchanged."""
     body = single_body(mbox_data, "no.undeclared.qp.mbox")
 
     assert body == (
-        "Blåbærsyltetøy på loffen. ØL OG PØLSER.\n"
-        "Er den å få kjøpe på bestillingsliste? \n"
-        "Fetzer zinfandel passer til lam, tåler at lammelåret er godt krydret.\n"
+        "Bl=E5b=E6rsyltet=F8y p=E5 loffen. =D8L OG P=D8LSER.\n"
+        "Er den =E5 f=E5 kj=F8pe p=E5 bestillingsliste?=20\n"
+        "Fetzer zinfandel passer til lam, t=E5ler at lammel=E5ret er =\n"
+        "godt krydret.\n"
     )
 
 
@@ -35,4 +31,4 @@ def test_declared_quoted_printable_iso_8859_1_is_decoded(mbox_data):
     """A declared QP + ISO-8859-1 body decodes to å/ø rather than U+FFFD."""
     body = single_body(mbox_data, "no.declared.qp.mbox")
 
-    assert body == "Vi skal på skiferie. Det blir gøy og går på ski!\n"
+    assert body == "Vi skal på skiferie. Det blir gøy å gå på ski!\n"

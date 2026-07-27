@@ -1,12 +1,12 @@
+import logging
+import mailbox
+import re
+from collections.abc import Collection, Iterable, Iterator
 from email import policy
 from email.parser import BytesParser
-from tqdm import tqdm
-
-import mailbox
-import logging
-import re
 from pathlib import Path
-from typing import Collection, Iterable, Iterator
+
+from tqdm import tqdm
 
 _MESSAGE_ID_PATTERN = re.compile(r"<[^>]+>")
 
@@ -99,19 +99,51 @@ def get_messages_from_field(
             yield ""
 
 
+def _decode_bytes(payload: bytes, charset: str | None) -> str:
+    """Decode body bytes, preferring UTF-8 and falling back to the declared charset.
+
+    Both archives are largely UTF-8 on disk, so valid UTF-8 is read as UTF-8.
+    Only bytes that are not valid UTF-8 (the raw 8-bit / Latin-1 bodies IA)
+    fall back to the declared charset, then Latin-1.
+    """
+    try:
+        return payload.decode("utf-8")
+    except UnicodeDecodeError:
+        pass
+    if charset:
+        try:
+            return payload.decode(charset, errors="replace")
+        except LookupError:
+            pass
+    return payload.decode("latin-1", errors="replace")
+
+
+def _decode_mbox_message(part: mailbox.mboxMessage) -> str:
+    """Decode one message or part's body bytes to text.
+
+    A declared quoted-printable or base64 body is reversed by get_payload, then
+    the bytes are decoded by `_decode_bytes`. Undeclared quoted-printable (=XX
+    escapes with no Content-Transfer-Encoding header) is deliberately left as-is
+    rather than guessed at, to avoid mis-decoding text that only looks like it;
+    usenet_no.quoted_printable is used to count those messages, not convert them.
+    """
+    payload = part.get_payload(decode=True)
+    if not payload:
+        return ""
+
+    return _decode_bytes(payload, part.get_content_charset())
+
+
 def get_message_body(message: mailbox.mboxMessage) -> str:
     if message.is_multipart():
         parts = []
         for part in message.walk():
             if part.get_content_type() == "text/plain":
-                payload = part.get_payload(decode=True)
-                if payload:
-                    parts.append(payload.decode("utf-8", errors="replace").strip())
-        body = "\n".join(parts)
-    else:
-        payload = message.get_payload(decode=True)
-        body = payload.decode("utf-8", errors="replace") if payload else ""
-    return body
+                decoded = _decode_mbox_message(part)
+                if decoded:
+                    parts.append(decoded.strip())
+        return "\n".join(parts)
+    return _decode_mbox_message(message)
 
 
 def get_message_bodies(mbox_file: Path) -> set[str]:
