@@ -8,6 +8,7 @@ by (archive, newsgroup) so the output is stable across runs.
 import argparse
 import json
 import logging
+import sys
 from collections import Counter
 from pathlib import Path
 
@@ -19,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Count messages with no From header, per archive and newsgroup"
+        description="Count messages with no From: header, per archive and newsgroup"
     )
     parser.add_argument(
         "--database-file",
@@ -50,7 +51,7 @@ if __name__ == "__main__":
             "Output file already exists: %s. Use --overwrite to regenerate.",
             args.output_file,
         )
-        exit(0)
+        sys.exit(0)
 
     connection = connect(args.database_file)
     rows = count_messages_without_sender(connection)

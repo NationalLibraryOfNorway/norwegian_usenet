@@ -1,7 +1,7 @@
 import logging
 import mailbox
+from collections.abc import Iterator
 from pathlib import Path
-from typing import Iterator
 
 import cchardet as chardet
 
@@ -25,7 +25,7 @@ def detect_encoding(mbox_file: Path) -> str:
 def iter_raw_messages(mbox_file: Path) -> Iterator[bytes]:
     """Yield each message in an mbox file as its raw, undecoded bytes."""
     mbox_in = mailbox.mbox(str(mbox_file), factory=message_factory)
-    for key in mbox_in.keys():
+    for key in mbox_in:
         yield mbox_in.get_bytes(key)
 
 
