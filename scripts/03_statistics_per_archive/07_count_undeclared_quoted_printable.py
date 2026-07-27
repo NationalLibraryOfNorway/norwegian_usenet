@@ -13,6 +13,7 @@ import argparse
 import csv
 import logging
 import mailbox
+import sys
 from pathlib import Path
 
 from tqdm import tqdm
@@ -80,7 +81,7 @@ if __name__ == "__main__":
             "Output file already exists: %s. Use --overwrite to regenerate.",
             args.output_file,
         )
-        exit(0)
+        sys.exit(0)
 
     rows = count_undeclared_qp_per_group(args.ia_directory, args.min_escapes)
 

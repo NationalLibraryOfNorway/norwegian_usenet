@@ -1,6 +1,7 @@
 import argparse
 import json
 import logging
+import sys
 from collections import Counter
 from pathlib import Path
 
@@ -43,7 +44,7 @@ if __name__ == "__main__":
             "Output file already exists: %s. Use --overwrite to regenerate.",
             args.output_file,
         )
-        exit(0)
+        sys.exit(0)
 
     connection = connect(args.database_file)
     conflicts = find_within_archive_conflicts(connection)
