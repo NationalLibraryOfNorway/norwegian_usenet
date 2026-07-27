@@ -42,7 +42,7 @@ no.embnet,78,379,23
 no.eunet.diverse,105,160,7
 no.eunet.drift,217,391,1
 no.eunet.hjelp,259,594,2
-no.film,9052,12167,239
+no.film,9052,12166,239
 no.folklore.edb,367,155,0
 no.folklore.generelt,41,17,0
 no.folklore.overtro,216,13,0
@@ -61,13 +61,13 @@ no.kultur.fritid.friluftsliv,202,0,0
 no.linux,13156,15967,213
 no.lisp,463,498,5
 no.litteratur,3178,3888,56
-no.mac,17325,21585,298
+no.mac,17325,21583,298
 no.mail.diverse,1302,1933,28
 no.mail.drift,339,568,1
-no.marked,18152,24954,738
+no.marked,18153,24952,737
 no.marked.bil,1886,1530,1
 no.marked.bolig,704,694,1
-no.marked.data,26942,21029,1072
+no.marked.data,26943,21029,1071
 no.marked.diskusjon,222,76,0
 no.marked.jobb,2728,3439,84
 no.media,1910,122,0
@@ -118,7 +118,7 @@ no.speider,1020,1424,25
 no.spill,10422,11903,213
 no.spill.rollespill,1411,1010,0
 no.spill.sjakk,389,267,1
-no.sport.diverse,4218,6101,128
+no.sport.diverse,4218,6100,128
 no.sport.fotball,1696,2321,0
 no.sport.orientering,365,63,0
 no.sport.volleyball,469,156,0
@@ -131,7 +131,7 @@ no.sykkel,5497,3822,131
 no.tegnsett,262,411,3
 no.tele,7118,5614,47
 no.telepost,161,899,19
-no.test,18889,3096,57
+no.test,18891,3098,55
 no.tex,536,224,0
 no.tungregning,110,92,0
 no.typografi,504,294,5

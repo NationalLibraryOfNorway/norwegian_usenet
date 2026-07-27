@@ -1,0 +1,19 @@
+From sender@example.com
+Message-ID: <damaged@example.no>
+
+Blåbærsyltetøy på loffen. ØL OG PØLSER.
+
+From sender@example.com
+Message-ID: <damaged-and-rewritten@example.no>
+
+Ønsker fortsatt syltetøy
+
+From sender@example.com
+Message-ID: <rewritten@example.no>
+
+hello
+
+From sender@example.com
+Message-ID: <identical@example.no>
+
+same in both archives

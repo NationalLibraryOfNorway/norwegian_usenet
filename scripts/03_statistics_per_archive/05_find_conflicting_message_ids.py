@@ -1,17 +1,7 @@
-"""Find Message-IDs that carry more than one distinct body within a single archive.
-
-An archive holding two versions of the same posting cannot be deduplicated on
-Message-ID without losing one of them, so these are counted before the database
-is reduced to one row per message. Conflicts *between* the two archives are a
-different question, handled in step 04.
-
-Writes one JSON object per conflict, sorted by (archive, message_id) so the
-output is stable across runs.
-"""
-
 import argparse
 import json
 import logging
+import sys
 from collections import Counter
 from pathlib import Path
 
@@ -23,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Find message ids carrying several bodies within one archive"
+        description="Find message ids carrying several distinct message bodies within one archive"
     )
     parser.add_argument(
         "--database-file",
@@ -54,7 +44,7 @@ if __name__ == "__main__":
             "Output file already exists: %s. Use --overwrite to regenerate.",
             args.output_file,
         )
-        exit(0)
+        sys.exit(0)
 
     connection = connect(args.database_file)
     conflicts = find_within_archive_conflicts(connection)

@@ -1,0 +1,24 @@
+From sender@example.com
+Message-ID: <padding@example.no>
+
+padding so conflict positions are not zero
+
+From sender@example.com
+Message-ID: <damaged@example.no>
+
+Bl�b�rsyltet�y p� loffen. �L OG P�LSER.
+
+From sender@example.com
+Message-ID: <damaged-and-rewritten@example.no>
+
+�nsker noe helt annet
+
+From sender@example.com
+Message-ID: <rewritten@example.no>
+
+goodbye
+
+From sender@example.com
+Message-ID: <identical@example.no>
+
+same in both archives

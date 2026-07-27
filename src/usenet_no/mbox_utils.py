@@ -1,12 +1,12 @@
+import logging
+import mailbox
+import re
+from collections.abc import Collection, Iterable, Iterator
 from email import policy
 from email.parser import BytesParser
-from tqdm import tqdm
-
-import mailbox
-import logging
-import re
 from pathlib import Path
-from typing import Iterable, Iterator
+
+from tqdm import tqdm
 
 _MESSAGE_ID_PATTERN = re.compile(r"<[^>]+>")
 
@@ -56,10 +56,10 @@ def write_mbox(messages: Iterable[str], outfile: Path, append: bool = False) -> 
 
 
 def ensure_mbox_envelope(text: str) -> str:
+    """Prefix an mbox "From " delimiter line if the text lacks one."""
     if not text.startswith("From "):
-        match = re.search(r"^From:[ \t]*(.*)", text, re.MULTILINE)
-        sender = match.group(1).strip() if match else ""
-        return f"From {sender}\n" + text
+        # Placeholder sender for the mbox "From " delimiter line
+        return "From MAILER-DAEMON\n" + text
     return text
 
 
@@ -99,19 +99,51 @@ def get_messages_from_field(
             yield ""
 
 
+def _decode_bytes(payload: bytes, charset: str | None) -> str:
+    """Decode body bytes, preferring UTF-8 and falling back to the declared charset.
+
+    Both archives are largely UTF-8 on disk, so valid UTF-8 is read as UTF-8.
+    Only bytes that are not valid UTF-8 (the raw 8-bit / Latin-1 bodies IA)
+    fall back to the declared charset, then Latin-1.
+    """
+    try:
+        return payload.decode("utf-8")
+    except UnicodeDecodeError:
+        pass
+    if charset:
+        try:
+            return payload.decode(charset, errors="replace")
+        except LookupError:
+            pass
+    return payload.decode("latin-1", errors="replace")
+
+
+def _decode_mbox_message(part: mailbox.mboxMessage) -> str:
+    """Decode one message or part's body bytes to text.
+
+    A declared quoted-printable or base64 body is reversed by get_payload, then
+    the bytes are decoded by `_decode_bytes`. Undeclared quoted-printable (=XX
+    escapes with no Content-Transfer-Encoding header) is deliberately left as-is
+    rather than guessed at, to avoid mis-decoding text that only looks like it;
+    usenet_no.quoted_printable is used to count those messages, not convert them.
+    """
+    payload = part.get_payload(decode=True)
+    if not payload:
+        return ""
+
+    return _decode_bytes(payload, part.get_content_charset())
+
+
 def get_message_body(message: mailbox.mboxMessage) -> str:
     if message.is_multipart():
         parts = []
         for part in message.walk():
             if part.get_content_type() == "text/plain":
-                payload = part.get_payload(decode=True)
-                if payload:
-                    parts.append(payload.decode("utf-8", errors="replace").strip())
-        body = "\n".join(parts)
-    else:
-        payload = message.get_payload(decode=True)
-        body = payload.decode("utf-8", errors="replace") if payload else ""
-    return body
+                decoded = _decode_mbox_message(part)
+                if decoded:
+                    parts.append(decoded.strip())
+        return "\n".join(parts)
+    return _decode_mbox_message(message)
 
 
 def get_message_bodies(mbox_file: Path) -> set[str]:
@@ -131,6 +163,38 @@ def get_message_bodies(mbox_file: Path) -> set[str]:
         if body:
             bodies.add(body)
     return bodies
+
+
+def get_message_bodies_at_positions(
+    mbox_file: Path,
+    positions: Collection[int],
+    expected_message_count: int | None = None,
+) -> dict[int, str]:
+    """Return the body of the message at each 0-based position in the file's message order.
+
+    mailbox.mbox assigns keys 0..n-1 in file order, so each wanted message is
+    read directly instead of parsing the whole file. When
+    `expected_message_count` is given, the file's message count is checked
+    against it, so a caller that computed the positions elsewhere (e.g. from
+    database row ids) notices when the file does not match.
+    """
+    mbox = mailbox.mbox(str(mbox_file), factory=message_factory)
+    message_count = len(mbox)
+    if expected_message_count is not None and message_count != expected_message_count:
+        raise ValueError(
+            f"{mbox_file} holds {message_count} messages, expected {expected_message_count}"
+        )
+
+    out_of_range = [position for position in positions if position >= message_count]
+    if out_of_range:
+        raise ValueError(
+            f"{mbox_file} holds {message_count} messages,"
+            f" so it has no message at positions {sorted(out_of_range)}"
+        )
+
+    return {
+        position: get_message_body(mbox[position]) for position in sorted(positions)
+    }
 
 
 def get_messages_date_field(mbox_file: Path) -> Iterator[str | None]:

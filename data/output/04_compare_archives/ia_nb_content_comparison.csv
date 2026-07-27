@@ -24,7 +24,7 @@ no.alt.gullkorn.d,399,0,0
 no.alt.hjemmesider,49106,0,0
 no.alt.hjemmesider.frontpage,2883,0,0
 no.alt.hundebitt,150,0,0
-no.alt.hunder,100128,0,0
+no.alt.hunder,100129,0,0
 no.alt.irc-treff,1381,1015,1
 no.alt.irctreff,0,488,0
 no.alt.jenteprat,9145,0,0
@@ -94,7 +94,7 @@ no.eunet.drift,220,391,1
 no.eunet.hjelp,262,594,2
 no.fag.diverse,20822,0,0
 no.fag.filosofi,22819,0,0
-no.fag.jus,70380,0,0
+no.fag.jus,70381,0,0
 no.fag.jus.it,6733,0,0
 no.fag.kjemi,6099,0,0
 no.fag.landbruk,9445,0,0
@@ -106,12 +106,12 @@ no.fag.spraak.diverse,49557,0,0
 no.fag.spraak.fagord,4277,0,0
 no.fag.spraak.strid,5385,0,0
 no.fag.typografi,2986,0,0
-no.film,21638,12162,244
+no.film,21638,12161,244
 no.folklore.edb,775,155,0
 no.folklore.generelt,118,17,0
 no.folklore.overtro,513,13,0
 no.fritid.akvarium,3440,0,0
-no.fritid.bolig,43979,0,0
+no.fritid.bolig,43980,0,0
 no.fritid.diverse,2856,0,0
 no.fritid.dykking,18474,0,0
 no.fritid.dyr.diverse,5485,0,0
@@ -161,7 +161,7 @@ no.it.os.unix.diverse,9136,0,0
 no.it.os.unix.linux.diverse,121396,0,0
 no.it.os.unix.linux.nettverk,12243,0,0
 no.it.programmering.asp,6186,0,0
-no.it.programmering.c,9028,0,0
+no.it.programmering.c,9029,0,0
 no.it.programmering.c++,8931,0,0
 no.it.programmering.delphi,11253,0,0
 no.it.programmering.diverse,8978,0,0
@@ -202,7 +202,7 @@ no.kultur.fritid.friluftsliv,1114,0,0
 no.kultur.genre.sf,3241,0,0
 no.kultur.humor,13452,0,0
 no.kultur.litteratur.diverse,11130,0,0
-no.kultur.musikk.diverse,75783,0,0
+no.kultur.musikk.diverse,75784,0,0
 no.kultur.musikk.gitar,13959,0,0
 no.kultur.musikk.klassisk,1891,0,0
 no.kultur.musikk.korps,7726,0,0
@@ -213,15 +213,15 @@ no.litteratur,6897,3887,57
 no.lokal.drammen,3598,0,0
 no.lokal.oslo,600,0,0
 no.lokal.ringerike,150,0,0
-no.mac,42666,21582,301
+no.mac,42667,21580,301
 no.mail.diverse,1928,1932,29
 no.mail.drift,551,568,1
-no.marked,45019,24940,752
+no.marked,45021,24938,751
 no.marked.bil,9111,1529,2
 no.marked.bolig,2259,694,1
-no.marked.data,74369,21020,1081
+no.marked.data,74370,21020,1080
 no.marked.diskusjon,951,76,0
-no.marked.jobb,5280,3438,85
+no.marked.jobb,5281,3438,85
 no.media,2353,122,0
 no.medisin,8717,1481,0
 no.ms-windows,28957,8175,17
@@ -292,7 +292,7 @@ no.speider,1556,1424,25
 no.spill,18337,11900,216
 no.spill.rollespill,2363,1010,0
 no.spill.sjakk,839,267,1
-no.sport.diverse,10410,6101,128
+no.sport.diverse,10410,6100,128
 no.sport.fotball,180339,2321,0
 no.sport.hockey,697,0,0
 no.sport.kampkunst,1786,0,0
@@ -306,7 +306,7 @@ no.stortinget,5349,2549,6
 no.student.nett,699,400,8
 no.student.samfund,380,228,4
 no.svar,183,84,0
-no.sykkel,11267,3822,131
+no.sykkel,11268,3822,131
 no.tegnsett,337,411,3
 no.teknologi.audio,41890,0,0
 no.teknologi.bil,178029,0,0
@@ -317,7 +317,7 @@ no.teknologi.satellitt-tv,6486,0,0
 no.teknologi.video,27024,0,0
 no.tele,13749,5613,48
 no.telepost,176,899,19
-no.test,69957,3037,116
+no.test,69987,3037,116
 no.tex,1580,224,0
 no.tungregning,136,92,0
 no.typografi,905,294,5
@@ -328,7 +328,7 @@ no.uninett.hjelp,107,74,4
 no.uninett.katalog,61,30,0
 no.uninett.skole,1118,801,13
 no.unix,7750,3814,101
-no.usenet.admin,19683,0,0
+no.usenet.admin,19684,0,0
 no.usenet.informasjon,234,0,0
 no.velkommen,442,0,0
 no.video,7571,507,0
