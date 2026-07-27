@@ -1,0 +1,9 @@
+From sender@example.com
+Message-ID: <trailing-whitespace@example.no>
+Subject: hilsen
+
+Hei og hallo.   
+Dette er en test.	
+
+Med vennlig hilsen 
+Ola

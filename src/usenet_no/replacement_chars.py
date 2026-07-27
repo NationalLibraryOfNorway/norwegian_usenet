@@ -23,6 +23,7 @@ from tqdm import tqdm
 from usenet_no.database.conflicts import NewsgroupBodyConflict
 from usenet_no.database.core import IA_ARCHIVE, NB_ARCHIVE
 from usenet_no.mbox_utils import get_message_bodies_at_positions
+from usenet_no.text_normalization import normalize_whitespace
 
 REPLACEMENT_CHAR = "\N{REPLACEMENT CHARACTER}"
 NORWEGIAN_CHARS = "æøåÆØÅ"
@@ -43,22 +44,13 @@ class NewsgroupReplacementCharCounts:
     equal_with_char_replacement: int
 
 
-def _normalize_whitespace(text: str) -> str:
-    """Collapse every run of whitespace to a single space and strip the ends.
-
-    Folds away the differences that come from the two archives reflowing or
-    re-wrapping the same text: trailing spaces, CRLF vs LF, blank-line runs.
-    """
-    return " ".join(text.split())
-
-
 def bodies_equal_with_char_replacement(nb_body: str, ia_body: str) -> bool:
     """True when the bodies agree once æ/ø/å/Æ/Ø/Å (NB) and U+FFFD (IA) become "_".
 
     Whitespace is normalized on both sides first, so a difference in wrapping or
     line endings does not count as a disagreement.
     """
-    return _normalize_whitespace(nb_body.translate(_NB_TABLE)) == _normalize_whitespace(
+    return normalize_whitespace(nb_body.translate(_NB_TABLE)) == normalize_whitespace(
         ia_body.translate(_IA_TABLE)
     )
 
