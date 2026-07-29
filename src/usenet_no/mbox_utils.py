@@ -1,16 +1,11 @@
-import logging
 import mailbox
 import re
-from collections.abc import Collection, Iterable, Iterator
+from collections.abc import Collection, Iterable
 from email import policy
 from email.parser import BytesParser
 from pathlib import Path
 
-from tqdm import tqdm
-
 _MESSAGE_ID_PATTERN = re.compile(r"<[^>]+>")
-
-logger = logging.getLogger(__name__)
 
 
 def parse_message_id(raw: str | None) -> str | None:
@@ -68,37 +63,6 @@ def get_from_field(message: mailbox.mboxMessage) -> str | None:
     return message["From"]
 
 
-def get_messages_from_field(
-    mbox_file: Path, show_progress: bool = True
-) -> Iterator[str | None]:
-    """Yield the From header of every message in an mbox file.
-
-    Yields None for messages that carry no From header.
-    """
-    mbox = mailbox.mbox(str(mbox_file), factory=message_factory)
-    for message in tqdm(
-        mbox,
-        desc=f"Getting From field from each message in {mbox_file}",
-        disable=not show_progress,
-    ):
-        try:
-            message_from = get_from_field(message)
-            yield message_from
-        except IndexError:
-            logger.debug(
-                "IndexError when accessing message From field (From field is probably '=?ISO-8859-15?Q??=')"
-            )
-            logger.debug("message: %s", message)
-            yield ""
-
-        except Exception as e:
-            logger.warning(
-                "Other exception when accessing message from field: %s %s", type(e), e
-            )
-            logger.debug("message: %s", message)
-            yield ""
-
-
 def _decode_bytes(payload: bytes, charset: str | None) -> str:
     """Decode body bytes, preferring UTF-8 and falling back to the declared charset.
 
@@ -142,22 +106,6 @@ def get_message_body(message: mailbox.mboxMessage) -> str:
     return _decode_mbox_message(message)
 
 
-def get_message_bodies(mbox_file: Path) -> set[str]:
-    """Returns the set of unique message bodies in an mbox file, excluding headers.
-
-    Assumes all message payloads are UTF-8 on disk, regardless of the charset
-    declared in Content-Type headers, which holds for the utf_8_data directories
-    both parsers in `usenet_no.archives` write.
-    """
-    mbox = mailbox.mbox(str(mbox_file), factory=message_factory)
-    bodies = set()
-    for message in mbox:
-        body = get_message_body(message=message)
-        if body:
-            bodies.add(body)
-    return bodies
-
-
 def get_message_bodies_at_positions(
     mbox_file: Path,
     positions: Collection[int],
@@ -187,10 +135,3 @@ def get_message_bodies_at_positions(
     return {
         position: get_message_body(mbox[position]) for position in sorted(positions)
     }
-
-
-def get_messages_date_field(mbox_file: Path) -> Iterator[str | None]:
-    mbox = mailbox.mbox(str(mbox_file), factory=message_factory)
-    for message in mbox:
-        date_field = message.get("Date", None)
-        yield date_field
