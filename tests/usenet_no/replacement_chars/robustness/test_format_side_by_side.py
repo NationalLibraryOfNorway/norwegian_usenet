@@ -1,4 +1,4 @@
-from usenet_no.replacement_char_robustness import format_side_by_side
+from usenet_no.replacement_chars.robustness import format_side_by_side
 
 LEFT = "Blåbærsyltetøy på loffen, og øl og pølser til alle som vil ha."
 RIGHT = LEFT.translate(

@@ -4,7 +4,7 @@ import shutil
 import sys
 from pathlib import Path
 
-from usenet_no.replacement_char_robustness import (
+from usenet_no.replacement_chars.robustness import (
     PairSimilarity,
     correlate_with_similarity,
     format_side_by_side,

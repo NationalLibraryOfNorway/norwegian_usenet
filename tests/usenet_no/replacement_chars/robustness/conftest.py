@@ -7,7 +7,7 @@ belonging together.
 
 import pytest
 
-from usenet_no.replacement_char_robustness import PairSimilarity
+from usenet_no.replacement_chars.robustness import PairSimilarity
 from usenet_no.replacement_chars import REPLACEMENT_CHAR, ReplacementCharPair
 
 

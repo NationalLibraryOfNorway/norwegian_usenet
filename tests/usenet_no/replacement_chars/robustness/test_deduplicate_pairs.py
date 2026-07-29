@@ -1,6 +1,6 @@
 from collections import Counter
 
-from usenet_no.replacement_char_robustness import deduplicate_pairs
+from usenet_no.replacement_chars.robustness import deduplicate_pairs
 
 
 def test_a_crossposted_message_is_kept_once(make_pair):

@@ -3,7 +3,10 @@ spans are built by hand, pointing into the sample mbox files by position."""
 
 from usenet_no.database import IA_ARCHIVE, NB_ARCHIVE
 from usenet_no.database.conflicts import NewsgroupBodyConflict
-from usenet_no.replacement_chars import REPLACEMENT_CHAR, iter_replacement_char_pairs
+from usenet_no.replacement_chars.pairs import (
+    REPLACEMENT_CHAR,
+    iter_replacement_char_pairs,
+)
 
 NEWSGROUP = "no.replacement.chars"
 

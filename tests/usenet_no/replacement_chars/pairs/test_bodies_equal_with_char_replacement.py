@@ -1,4 +1,4 @@
-from usenet_no.replacement_chars import bodies_equal_with_char_replacement
+from usenet_no.replacement_chars.pairs import bodies_equal_with_char_replacement
 
 
 def test_norwegian_chars_against_replacement_chars_are_equal():

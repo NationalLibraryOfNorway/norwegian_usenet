@@ -2,7 +2,7 @@ from collections import Counter
 
 import pytest
 
-from usenet_no.replacement_char_robustness import sample_pairs
+from usenet_no.replacement_chars.robustness import sample_pairs
 
 
 @pytest.fixture

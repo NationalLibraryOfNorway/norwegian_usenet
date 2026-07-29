@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from usenet_no.replacement_char_robustness import PERCENTILES, summarize_similarities
+from usenet_no.replacement_chars.robustness import PERCENTILES, summarize_similarities
 
 
 def test_describes_the_distribution():

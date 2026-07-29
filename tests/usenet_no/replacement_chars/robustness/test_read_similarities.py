@@ -1,6 +1,6 @@
 import pytest
 
-from usenet_no.replacement_char_robustness import read_similarities
+from usenet_no.replacement_chars.robustness import read_similarities
 
 CSV_TEXT = """\
 newsgroup,message_id_hash,replacement_char_count,nb_body_length,matched_similarity,shuffled_similarity

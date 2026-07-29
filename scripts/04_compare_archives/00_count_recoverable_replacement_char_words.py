@@ -6,7 +6,7 @@ import sys
 from dataclasses import asdict
 from pathlib import Path
 
-from usenet_no.replacement_char_recovery import (
+from usenet_no.replacement_chars.recovery import (
     RankedReplacementWord,
     build_norwegian_vocabulary_index,
     compute_recovery_statistics,

@@ -1,6 +1,6 @@
 from collections import Counter
 
-from usenet_no.replacement_char_recovery import (
+from usenet_no.replacement_chars.recovery import (
     build_norwegian_vocabulary_index,
     most_common_replacement_words,
 )

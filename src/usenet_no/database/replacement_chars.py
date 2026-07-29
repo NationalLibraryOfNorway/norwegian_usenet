@@ -2,8 +2,8 @@
 
 Reads the body conflicts from the database (see
 `usenet_no.database.conflicts.load_conflicts_and_id_spans`) and hands them to
-`usenet_no.replacement_chars`, which reads the body texts from the mbox files
-and does the counting, or returns the matching body pairs.
+`usenet_no.replacement_chars.pairs`, which reads the body texts from the mbox
+files and does the counting, or returns the matching body pairs.
 """
 
 import sqlite3
@@ -11,7 +11,7 @@ from collections.abc import Iterator
 from pathlib import Path
 
 from usenet_no.database.conflicts import load_conflicts_and_id_spans
-from usenet_no.replacement_chars import (
+from usenet_no.replacement_chars.pairs import (
     NewsgroupReplacementCharCounts,
     ReplacementCharPair,
     count_conflicts_in_mbox_files,

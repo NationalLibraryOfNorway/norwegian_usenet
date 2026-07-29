@@ -9,7 +9,7 @@ from pathlib import Path
 import numpy as np
 from sentence_transformers import SentenceTransformer
 
-from usenet_no.replacement_char_robustness import (
+from usenet_no.replacement_chars.robustness import (
     RobustnessSummary,
     evaluate_pairs,
     read_pairs,

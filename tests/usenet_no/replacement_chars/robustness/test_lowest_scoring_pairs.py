@@ -1,6 +1,6 @@
 import pytest
 
-from usenet_no.replacement_char_robustness import lowest_scoring_pairs
+from usenet_no.replacement_chars.robustness import lowest_scoring_pairs
 
 SCORES = [0.95, 0.42, 0.68, 0.55, 0.99]
 

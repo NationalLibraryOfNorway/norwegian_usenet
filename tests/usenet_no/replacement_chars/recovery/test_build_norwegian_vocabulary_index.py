@@ -1,4 +1,4 @@
-from usenet_no.replacement_char_recovery import build_norwegian_vocabulary_index
+from usenet_no.replacement_chars.recovery import build_norwegian_vocabulary_index
 
 REPLACEMENT_CHAR = "\N{REPLACEMENT CHARACTER}"
 

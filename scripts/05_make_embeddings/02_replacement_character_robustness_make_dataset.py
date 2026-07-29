@@ -5,7 +5,7 @@ from pathlib import Path
 
 from usenet_no.database import connect
 from usenet_no.database.replacement_chars import load_replacement_char_pairs
-from usenet_no.replacement_char_robustness import (
+from usenet_no.replacement_chars.robustness import (
     deduplicate_pairs,
     sample_pairs,
     write_pairs,

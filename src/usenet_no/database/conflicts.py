@@ -198,7 +198,7 @@ def load_conflicts_and_id_spans(
 
     Bundles `find_newsgroup_body_conflicts` with the id spans that map its row
     ids to mbox file positions, so that the mbox-reading side (see
-    `usenet_no.replacement_chars`) does not need a connection at all.
+    `usenet_no.replacement_chars.pairs`) does not need a connection at all.
     """
     conflicts = find_newsgroup_body_conflicts(connection)
     id_spans = load_id_spans(connection)

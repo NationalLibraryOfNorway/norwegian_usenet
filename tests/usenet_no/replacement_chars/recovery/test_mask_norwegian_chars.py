@@ -1,4 +1,4 @@
-from usenet_no.replacement_char_recovery import mask_norwegian_chars
+from usenet_no.replacement_chars.recovery import mask_norwegian_chars
 
 REPLACEMENT_CHAR = "\N{REPLACEMENT CHARACTER}"
 

@@ -1,6 +1,6 @@
 import json
 
-from usenet_no.replacement_char_robustness import read_pairs, write_pairs
+from usenet_no.replacement_chars.robustness import read_pairs, write_pairs
 
 
 def test_pairs_survive_a_write_and_read(tmp_path, pairs):

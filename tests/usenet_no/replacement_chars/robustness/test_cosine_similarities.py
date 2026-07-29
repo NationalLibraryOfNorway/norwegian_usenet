@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from usenet_no.replacement_char_robustness import cosine_similarities
+from usenet_no.replacement_chars.robustness import cosine_similarities
 
 
 def test_identical_rows_score_one():

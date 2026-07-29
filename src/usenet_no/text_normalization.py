@@ -1,8 +1,8 @@
 """Whitespace normalization shared by the archive comparison and, in future, parsing.
 
-Promoted out of `usenet_no.replacement_chars` so that the normalization applied
-when comparing bodies and the normalization applied when parsing an archive can
-be the same function rather than two definitions that might drift.
+Promoted out of `usenet_no.replacement_chars.pairs` so that the normalization
+applied when comparing bodies and the normalization applied when parsing an
+archive can be the same function rather than two definitions that might drift.
 """
 
 

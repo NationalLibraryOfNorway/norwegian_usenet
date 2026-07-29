@@ -11,7 +11,7 @@ NB body and U+FFFD in the IA body are all replaced with "_".
 The same read gives the pairs themselves: `iter_replacement_char_pairs` yields
 the damaged IA body together with the intact NB body it matches, whitespace
 normalized so that U+FFFD is all that separates the two texts. That is what
-`usenet_no.replacement_char_robustness` measures embedding models on.
+`usenet_no.replacement_chars.robustness` measures embedding models on.
 
 The conflicts and their id spans come from the database, but that read is kept
 out of this module: `usenet_no.database.replacement_chars` fetches them and
@@ -272,7 +272,7 @@ def iter_replacement_char_pairs(
 
     Yielded rather than returned as a list, because the whole archive holds
     hundreds of thousands of these and a caller that samples them (see
-    `usenet_no.replacement_char_robustness.sample_pairs`) then never holds more
+    `usenet_no.replacement_chars.robustness.sample_pairs`) then never holds more
     than one newsgroup's body texts at a time.
     """
     for _, conflict_bodies in _iter_conflict_bodies_per_newsgroup(

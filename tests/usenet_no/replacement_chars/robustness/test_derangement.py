@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from usenet_no.replacement_char_robustness import derangement
+from usenet_no.replacement_chars.robustness import derangement
 
 SIZES = [2, 3, 5, 50, 999]
 

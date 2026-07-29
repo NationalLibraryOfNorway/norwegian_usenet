@@ -29,7 +29,7 @@ from pathlib import Path
 from tqdm import tqdm
 
 from usenet_no.mbox_utils import get_message_body, message_factory
-from usenet_no.replacement_chars import NORWEGIAN_CHARS, REPLACEMENT_CHAR
+from usenet_no.replacement_chars.pairs import NORWEGIAN_CHARS, REPLACEMENT_CHAR
 
 _MASK_TABLE = str.maketrans({char: REPLACEMENT_CHAR for char in NORWEGIAN_CHARS})
 

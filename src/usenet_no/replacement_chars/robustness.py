@@ -1,7 +1,7 @@
 """Measuring how much U+FFFD damage in the IA bodies moves an embedding model.
 
-The evaluation set is built by `usenet_no.replacement_chars`: pairs of bodies
-that are the same posting in the two archives, where the IA copy lost some of
+The evaluation set is built by `usenet_no.replacement_chars.pairs`: pairs of
+bodies that are the same posting in the two archives, where the IA copy lost
 æ/ø/å/Æ/Ø/Å to the replacement character U+FFFD and the NB copy did not. A
 model that is robust to the damage puts the two copies of a pair in nearly the
 same place, so the cosine similarity of their embeddings is the measurement.
@@ -35,7 +35,7 @@ from pathlib import Path
 import numpy as np
 from sentence_transformers import SentenceTransformer
 
-from usenet_no.replacement_chars import ReplacementCharPair
+from usenet_no.replacement_chars.pairs import ReplacementCharPair
 
 logger = logging.getLogger(__name__)
 

@@ -1,4 +1,4 @@
-from usenet_no.replacement_char_recovery import count_replacement_words
+from usenet_no.replacement_chars.recovery import count_replacement_words
 
 REPLACEMENT_CHAR = "\N{REPLACEMENT CHARACTER}"
 
