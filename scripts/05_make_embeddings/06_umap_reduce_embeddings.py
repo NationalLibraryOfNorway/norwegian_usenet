@@ -7,7 +7,6 @@ import umap
 
 from usenet_no.embed_messages import load_embeddings_and_docs
 
-
 logger = logging.getLogger(__name__)
 
 

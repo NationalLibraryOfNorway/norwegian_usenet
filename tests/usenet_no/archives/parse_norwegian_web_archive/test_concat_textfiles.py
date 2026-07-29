@@ -7,12 +7,11 @@ append (not overwrite) and only skip files that pre-existed before the current r
 
 import mailbox
 
-from usenet_no.mbox_utils import message_factory
 from usenet_no.archives.parse_norwegian_web_archive import (
     concat_textfiles,
     correct_stem,
 )
-
+from usenet_no.mbox_utils import message_factory
 
 MESSAGE_TEMPLATE = """\
 From: {sender}

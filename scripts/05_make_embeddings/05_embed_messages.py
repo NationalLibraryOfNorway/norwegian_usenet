@@ -3,9 +3,9 @@ import logging
 from pathlib import Path
 
 from sentence_transformers import SentenceTransformer
+from tqdm import tqdm
 
 from usenet_no.embed_messages import embed_mbox_file
-from tqdm import tqdm
 
 logger = logging.getLogger(__name__)
 

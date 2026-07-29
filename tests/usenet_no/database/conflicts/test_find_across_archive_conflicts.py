@@ -1,8 +1,8 @@
+from usenet_no.database import IA_ARCHIVE, NB_ARCHIVE
 from usenet_no.database.conflicts import (
     find_across_archive_conflicts,
     find_within_archive_conflicts,
 )
-from usenet_no.database import IA_ARCHIVE, NB_ARCHIVE
 from usenet_no.hash import make_hash
 
 

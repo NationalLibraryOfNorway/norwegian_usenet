@@ -1,7 +1,7 @@
-from datetime import datetime
-from email.utils import parsedate_to_datetime
 import logging
 import re
+from datetime import datetime
+from email.utils import parsedate_to_datetime
 
 logger = logging.getLogger(__name__)
 

@@ -7,8 +7,8 @@ The fix is to use keep_default_na=False when reading the mapping CSVs.
 """
 
 import io
-import pandas as pd
 
+import pandas as pd
 
 NA_STRINGS = ["n/a", "N/A", "NA", "null", "NULL", "None", "nan", "NaN"]
 

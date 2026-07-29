@@ -1,5 +1,5 @@
-from usenet_no.database.replacement_chars import count_replacement_char_conflicts
 from usenet_no.database import IA_ARCHIVE, NB_ARCHIVE
+from usenet_no.database.replacement_chars import count_replacement_char_conflicts
 
 
 def test_counts_conflicts_per_newsgroup(mbox_data, database, load_archives):

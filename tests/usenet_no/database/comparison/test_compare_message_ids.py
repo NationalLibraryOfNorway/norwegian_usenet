@@ -1,5 +1,5 @@
-from usenet_no.database.comparison import compare_message_ids
 from usenet_no.database import IA_ARCHIVE, NB_ARCHIVE
+from usenet_no.database.comparison import compare_message_ids
 
 SPAN = ("1996-01-06", "1996-01-20")
 

@@ -19,8 +19,8 @@ import pandas as pd
 
 from usenet_no.database import IA_ARCHIVE, NB_ARCHIVE, connect
 from usenet_no.database.overlap import (
-    NewsgroupOverlap,
     ArchiveDatespan,
+    NewsgroupOverlap,
     build_user_newsgroup_matrix,
     find_newsgroups_per_user,
     pairwise_jaccard,

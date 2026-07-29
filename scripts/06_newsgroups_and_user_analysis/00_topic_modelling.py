@@ -4,7 +4,6 @@ from pathlib import Path
 
 from bertopic import BERTopic
 
-
 from usenet_no.embed_messages import load_embeddings_and_docs
 from usenet_no.topic_modelling import make_run_tag
 
