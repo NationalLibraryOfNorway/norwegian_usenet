@@ -1,4 +1,5 @@
 import argparse
+import csv
 import json
 import logging
 import sys
@@ -6,13 +7,25 @@ from dataclasses import asdict
 from pathlib import Path
 
 from usenet_no.replacement_char_recovery import (
+    RankedReplacementWord,
     build_norwegian_vocabulary_index,
     compute_recovery_statistics,
     count_replacement_words,
     iter_message_bodies,
+    most_common_replacement_words,
 )
 
 logger = logging.getLogger(__name__)
+
+
+def write_top_words(words: list[RankedReplacementWord], output_file: Path) -> None:
+    with output_file.open(mode="w", newline="", encoding="utf-8") as file:
+        writer = csv.writer(file)
+        writer.writerow(["word", "occurrences", "category", "candidates"])
+        writer.writerows(
+            (word.word, word.occurrences, word.category, " | ".join(word.candidates))
+            for word in words
+        )
 
 
 if __name__ == "__main__":
@@ -39,6 +52,20 @@ if __name__ == "__main__":
         type=Path,
         default=Path("data/output/04_compare_archives/replacement_char_recovery.json"),
         help="Path to JSON output file",
+    )
+    parser.add_argument(
+        "--top-words-file",
+        type=Path,
+        default=Path("data/output/04_compare_archives/top_words.csv"),
+        help="If set, also write the most frequent IA U+FFFD words with their"
+        " NB candidates to this CSV for inspection. Contains raw words that may"
+        " hold personal information, so do not commit it.",
+    )
+    parser.add_argument(
+        "--top-n",
+        type=int,
+        default=100,
+        help="How many of the most frequent words to write with --top-words-file",
     )
     parser.add_argument(
         "--overwrite",
@@ -75,3 +102,13 @@ if __name__ == "__main__":
 
     logger.info("Wrote statistics to %s", args.output_file)
     logger.info("Statistics: %s", asdict(statistics))
+
+    if args.top_words_file is not None:
+        top_words = most_common_replacement_words(
+            ia_word_counts, vocabulary_index, args.top_n
+        )
+        args.top_words_file.parent.mkdir(parents=True, exist_ok=True)
+        write_top_words(top_words, args.top_words_file)
+        logger.info(
+            "Wrote %d most frequent words to %s", len(top_words), args.top_words_file
+        )

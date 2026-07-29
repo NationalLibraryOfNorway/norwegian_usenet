@@ -48,6 +48,16 @@ class ResolutionCounts:
 
 
 @dataclass
+class RankedReplacementWord:
+    """One corrupted IA word with its frequency, outcome and NB candidates."""
+
+    word: str
+    occurrences: int
+    category: str
+    candidates: list[str]
+
+
+@dataclass
 class RecoveryStatistics:
     """Aggregate counts of the recovery experiment, counted two ways.
 
@@ -111,6 +121,24 @@ def classify_replacement_word(word: str, candidate_counts: dict[str, int]) -> st
     if candidate_count == 1:
         return UNAMBIGUOUS
     return AMBIGUOUS
+
+
+def most_common_replacement_words(
+    ia_word_counts: Counter[str],
+    vocabulary_index: dict[str, set[str]],
+    n: int,
+) -> list[RankedReplacementWord]:
+    """Rank the n most frequent corrupted IA words with their NB candidates."""
+    candidate_counts = {key: len(words) for key, words in vocabulary_index.items()}
+    return [
+        RankedReplacementWord(
+            word=word,
+            occurrences=occurrences,
+            category=classify_replacement_word(word, candidate_counts),
+            candidates=sorted(vocabulary_index.get(mask_norwegian_chars(word), set())),
+        )
+        for word, occurrences in ia_word_counts.most_common(n)
+    ]
 
 
 def compute_recovery_statistics(
