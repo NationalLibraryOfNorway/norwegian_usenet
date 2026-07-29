@@ -35,9 +35,6 @@ viz = [
 ]
 
 
-[project.scripts]
-usenet-no = "usenet_no:main"
-
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
