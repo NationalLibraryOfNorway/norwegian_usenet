@@ -38,7 +38,7 @@ def load_replacement_char_pairs(
     nb_directory: Path,
     show_progress: bool = True,
 ) -> Iterator[ReplacementCharPair]:
-    """Read the messages with conflicts from the database"""
+    """Read the per-newsgroup conflicts from the database and pair their bodies."""
     conflicts, id_spans = load_conflicts_and_id_spans(connection)
     return iter_replacement_char_pairs(
         conflicts, id_spans, ia_directory, nb_directory, show_progress=show_progress

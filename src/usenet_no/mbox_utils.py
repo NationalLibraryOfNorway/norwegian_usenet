@@ -71,9 +71,9 @@ def get_from_field(message: mailbox.mboxMessage) -> str | None:
 def get_messages_from_field(
     mbox_file: Path, show_progress: bool = True
 ) -> Iterator[str | None]:
-    """Iterates over every message in mbox file and yields the value in the From field of every message.
+    """Yield the From header of every message in an mbox file.
 
-    Yields None for messages that carry no From header, i.e. whose sender is unknown.
+    Yields None for messages that carry no From header.
     """
     mbox = mailbox.mbox(str(mbox_file), factory=message_factory)
     for message in tqdm(
@@ -102,9 +102,8 @@ def get_messages_from_field(
 def _decode_bytes(payload: bytes, charset: str | None) -> str:
     """Decode body bytes, preferring UTF-8 and falling back to the declared charset.
 
-    Both archives are largely UTF-8 on disk, so valid UTF-8 is read as UTF-8.
-    Only bytes that are not valid UTF-8 (the raw 8-bit / Latin-1 bodies IA)
-    fall back to the declared charset, then Latin-1.
+    Both archives are largely UTF-8 on disk. Bytes that are not valid UTF-8 fall
+    back to the declared charset, then to Latin-1.
     """
     try:
         return payload.decode("utf-8")
@@ -122,10 +121,7 @@ def _decode_mbox_message(part: mailbox.mboxMessage) -> str:
     """Decode one message or part's body bytes to text.
 
     A declared quoted-printable or base64 body is reversed by get_payload, then
-    the bytes are decoded by `_decode_bytes`. Undeclared quoted-printable (=XX
-    escapes with no Content-Transfer-Encoding header) is deliberately left as-is
-    rather than guessed at, to avoid mis-decoding text that only looks like it;
-    usenet_no.quoted_printable is used to count those messages, not convert them.
+    the bytes are decoded by `_decode_bytes`.
     """
     payload = part.get_payload(decode=True)
     if not payload:
@@ -149,13 +145,9 @@ def get_message_body(message: mailbox.mboxMessage) -> str:
 def get_message_bodies(mbox_file: Path) -> set[str]:
     """Returns the set of unique message bodies in an mbox file, excluding headers.
 
-    Assumes all message payloads are UTF-8 encoded on disk, regardless of the
-    charset declared in Content-Type headers. This holds for both data sources:
-    - NB (data/input/nb/utf_8_data): archives/parse_norwegian_web_archive.py
-      decodes each file with chardet and writes as UTF-8 via write_mbox.
-    - IA (data/input/internet_archive/utf_8_data):
-      archives/parse_internet_archive.py detects encoding with chardet and
-      writes each message as UTF-8 via write_mbox.
+    Assumes all message payloads are UTF-8 on disk, regardless of the charset
+    declared in Content-Type headers, which holds for the utf_8_data directories
+    both parsers in `usenet_no.archives` write.
     """
     mbox = mailbox.mbox(str(mbox_file), factory=message_factory)
     bodies = set()
@@ -174,10 +166,9 @@ def get_message_bodies_at_positions(
     """Return the body of the message at each 0-based position in the file's message order.
 
     mailbox.mbox assigns keys 0..n-1 in file order, so each wanted message is
-    read directly instead of parsing the whole file. When
-    `expected_message_count` is given, the file's message count is checked
-    against it, so a caller that computed the positions elsewhere (e.g. from
-    database row ids) notices when the file does not match.
+    read directly instead of parsing the whole file. `expected_message_count`
+    checks the file's message count, so a caller that computed the positions
+    elsewhere (e.g. from database row ids) notices when the file does not match.
     """
     mbox = mailbox.mbox(str(mbox_file), factory=message_factory)
     message_count = len(mbox)

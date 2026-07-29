@@ -29,8 +29,7 @@ ArchiveDatespan = tuple[str, tuple[str, str] | None]
 class NewsgroupOverlap(NamedTuple):
     """One pair of newsgroups and how many users they have in common.
 
-    The field names are what the pair table is written out under, so a reader of
-    the CSV sees the same names as a reader of this module.
+    The field names are the pair table's CSV column names.
     """
 
     newsgroup_a: str
@@ -47,14 +46,9 @@ def find_newsgroups_per_user(
     """Find every newsgroup each user posted in, over one or more archives.
 
     Returns one (email_hash, newsgroup) pair per newsgroup a user posted in.
-    Messages with no sender, and the few senders whose From header carried no
-    address, have no email_hash and are left out.
-
-    A newsgroup of the same name in two archives is one newsgroup here, and a
-    message held by both archives makes no difference, since the pair it belongs
-    to is already there.
-
-    Returned sorted by (email_hash, newsgroup) so reruns produce identical output.
+    Senders with no email_hash (no sender at all, or a From header carrying no
+    address) are left out. A newsgroup of the same name in two archives is one
+    newsgroup here. Sorted by (email_hash, newsgroup).
     """
     conditions = []
     parameters: list[str] = []
@@ -79,11 +73,9 @@ def build_user_newsgroup_matrix(
 ) -> tuple[csr_matrix, list[str], list[str]]:
     """Lay (user, newsgroup) pairs out as a sparse users x newsgroups matrix.
 
-    Cells are one where the user posted in the newsgroup and zero where not.
-
-    Returns the matrix together with the row and column labels: the hashed email
-    of the user in row i, and the name of the newsgroup in column j. Both are
-    sorted, so the same pairs always give the same matrix.
+    Cells are one where the user posted in the newsgroup. Returns the matrix
+    with its row and column labels: hashed emails and newsgroup names, both
+    sorted.
     """
     users = sorted({email_hash for email_hash, _group in newsgroups_per_user})
     newsgroups = sorted({group for _email_hash, group in newsgroups_per_user})
@@ -123,9 +115,8 @@ def pairwise_jaccard(
     """Jaccard overlap between the user sets of every pair of newsgroups.
 
     Takes the matrix and labels from build_user_newsgroup_matrix: the score is
-    |A and B| / |A or B| over the two newsgroups' sets of users.
-
-    Returns one NewsgroupOverlap per pair sorted by descending overlap and then by name.
+    |A and B| / |A or B| over the two newsgroups' sets of users. One
+    NewsgroupOverlap per pair, sorted by descending overlap, then by name.
     """
     # Every intersection at once. matrix.T is newsgroups x users, so the product is
     # newsgroups x newsgroups, and each cell (i, j) is the number of users

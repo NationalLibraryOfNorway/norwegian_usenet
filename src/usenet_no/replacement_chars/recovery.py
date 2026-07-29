@@ -1,16 +1,13 @@
 """Counting how many U+FFFD (�) words in IA can be recovered from the NB vocabulary.
 
 The IA data lost the Norwegian characters æ, ø and å to the Unicode replacement
-character U+FFFD. This module measures, without repairing anything, how much of
-that loss is recoverable from the NB archive alone.
+character U+FFFD. This module counts, without repairing anything, how much of
+that loss the NB archive alone could resolve.
 
-The idea is a single inverted index keyed on a *masked* word: every æ/ø/å/Æ/Ø/Å
-is replaced with U+FFFD, so a correct NB word and its corrupted IA copy collapse
-to the same key. Because an IA word already carries U+FFFD where its Norwegian
-characters were lost, masking makes the two archives directly comparable.
-
-For each masked key the index holds the set of distinct NB words that produce
-it, so a corrupted IA word is:
+An inverted index is keyed on a *masked* word: every æ/ø/å/Æ/Ø/Å is replaced
+with U+FFFD, so a correct NB word and its corrupted IA copy collapse to the same
+key. For each key the index holds the set of distinct NB words that produce it,
+so a corrupted IA word is:
 
 - *unambiguous* when its key maps to exactly one NB word,
 - *ambiguous* when its key maps to several (e.g. ``f�r`` -> ``får``/``før``),
@@ -62,8 +59,7 @@ class RecoveryStatistics:
     """Aggregate counts of the recovery experiment, counted two ways.
 
     ``by_distinct_word`` counts each distinct IA word once; ``by_occurrence``
-    weights each by how often it occurs, so it reflects how much of the actual
-    corrupted text is recoverable.
+    weights each by how often it occurs.
     """
 
     nb_distinct_norwegian_words: int

@@ -135,12 +135,9 @@ def date_span_clause(
 ) -> tuple[str, tuple]:
     """Build the WHERE fragment restricting messages to a date span.
 
-    Messages whose date could not be parsed (stored as NULL) are dropped: only
-    messages known to fall inside the span are kept. This matches how the
-    date-filtered archive was built on disk.
-
-    `column` names the date column, so the fragment can be used in a join where
-    it has to be qualified.
+    Messages whose date could not be parsed (stored as NULL) are dropped, which
+    matches how the date-filtered archive was built on disk. `column` names the
+    date column, for use in a join where it has to be qualified.
     """
     if date_span is None:
         return "", ()
@@ -195,10 +192,8 @@ def extract_message(
     """Pull the stored fields out of a single message.
 
     Emails are lowercased so that address variants collapse to one user; names
-    keep their case, where it is meaningful.
-
-    Names, emails and message ids are kept both in plain text and hashed: the
-    hashes go into the shared database, the plain text into the private one.
+    keep their case. Names, emails and message ids come back both in plain text
+    and hashed, for the private and the shared database respectively.
     """
     try:
         from_field = get_from_field(message)
@@ -250,10 +245,9 @@ UserKey = tuple[str | None, str | None]
 def load_user_ids(private_connection: sqlite3.Connection) -> dict[UserKey, int]:
     """Read the existing users into a lookup, so inserts can reuse their ids.
 
-    Reads the private database, since that is where the plain text (name,
-    email) pairs that identify a user live. Senders repeat across millions of
-    messages, so the lookup is kept in memory for the whole load rather than
-    queried per message.
+    Reads the private database, since that is where the plain text (name, email)
+    pairs that identify a user live. Kept in memory for the whole load rather
+    than queried per message, as senders repeat across millions of messages.
     """
     return {
         (name, email): user_id

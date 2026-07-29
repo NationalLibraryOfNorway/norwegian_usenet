@@ -34,8 +34,7 @@ UNKNOWN_NEWSGROUP = "unknown"
 class ReferenceEdge(NamedTuple):
     """One directed edge, under whichever weighting produced it.
 
-    The field names are what the edge list is written out under, so a reader of
-    the CSV sees the same names as a reader of this module.
+    The field names are the edge list's CSV column names.
     """
 
     from_newsgroup: str
@@ -124,10 +123,8 @@ def count_references(
     """Weigh each edge by the number of references running along it.
 
     Every distinct (message, referenced id) pair adds one, so a message cited
-    by five hundred messages pulls five hundred onto the edge.
-
-    Returned sorted by descending weight and then by the pair of names, so
-    reruns produce identical output.
+    by five hundred messages pulls five hundred onto the edge. Sorted by
+    descending weight, then by the pair of names.
     """
     return _count_edges(connection, archive_datespans, "COUNT(*)")
 
@@ -139,10 +136,8 @@ def count_referenced_messages(
 
     Every referenced id adds one however many messages cite it, so a message
     cited by five hundred messages pulls one onto the edge. Unresolved ids are
-    distinct ids too: two references to the same lost message weigh one.
-
-    Returned sorted by descending weight and then by the pair of names, so
-    reruns produce identical output.
+    distinct ids too: two references to the same lost message weigh one. Sorted
+    by descending weight, then by the pair of names.
     """
     return _count_edges(
         connection,
