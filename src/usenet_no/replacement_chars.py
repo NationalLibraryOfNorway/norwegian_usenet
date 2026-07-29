@@ -8,11 +8,17 @@ their body texts are read from the mbox files to count how many conflicts have
 an IA body containing U+FFFD, and how many become equal once æ/ø/å/Æ/Ø/Å in the
 NB body and U+FFFD in the IA body are all replaced with "_".
 
+The same read gives the pairs themselves: `iter_replacement_char_pairs` yields
+the damaged IA body together with the intact NB body it matches, whitespace
+normalized so that U+FFFD is all that separates the two texts. That is what
+`usenet_no.replacement_char_robustness` measures embedding models on.
+
 The conflicts and their id spans come from the database, but that read is kept
 out of this module: `usenet_no.database.replacement_chars` fetches them and
 calls in here, so this module only reads mbox files and compares text.
 """
 
+from collections.abc import Iterator
 from dataclasses import dataclass
 from itertools import groupby
 from operator import attrgetter
@@ -42,6 +48,32 @@ class NewsgroupReplacementCharCounts:
     message_body_conflict: int
     ia_contains_replacement_char: int
     equal_with_char_replacement: int
+
+
+@dataclass
+class ReplacementCharPair:
+    """One damaged IA body and the intact NB body it matches after char replacement.
+
+    The two bodies are the same posting: they differ only in that the IA copy
+    lost some of æ/ø/å/Æ/Ø/Å to U+FFFD, which is what makes the pair usable as
+    a fixed point for measuring how much an embedding model moves when the
+    Norwegian characters are gone.
+
+    Both bodies are stored whitespace-normalized, the same way
+    `bodies_equal_with_char_replacement` compares them. The archives wrap and
+    space the same posting differently, and left in, that difference would be
+    measured together with the U+FFFD damage instead of only the damage.
+    """
+
+    newsgroup: str
+    message_id_hash: str
+    nb_body: str
+    ia_body: str
+    replacement_char_count: int
+
+
+# One conflict with the distinct bodies its copies hold in NB and in IA
+ConflictBodies = tuple[NewsgroupBodyConflict, list[str], list[str]]
 
 
 def bodies_equal_with_char_replacement(nb_body: str, ia_body: str) -> bool:
@@ -88,14 +120,14 @@ def _conflict_bodies_in_archive(
     ]
 
 
-def _replacement_char_counts_for_newsgroup(
+def _conflict_bodies_for_newsgroup(
     newsgroup: str,
     newsgroup_conflicts: list[NewsgroupBodyConflict],
     id_spans: IdSpans,
     ia_directory: Path,
     nb_directory: Path,
-) -> NewsgroupReplacementCharCounts:
-    """Read one newsgroup's conflict bodies from its two mbox files and count them."""
+) -> list[ConflictBodies]:
+    """Read one newsgroup's conflict bodies from its two mbox files."""
     bodies_by_row_id = {
         archive: _load_conflict_bodies(
             newsgroup_conflicts,
@@ -108,20 +140,58 @@ def _replacement_char_counts_for_newsgroup(
             (NB_ARCHIVE, nb_directory),
         )
     }
-    conflict_bodies = [
+    return [
         (
+            conflict,
             _conflict_bodies_in_archive(conflict, NB_ARCHIVE, bodies_by_row_id),
             _conflict_bodies_in_archive(conflict, IA_ARCHIVE, bodies_by_row_id),
         )
         for conflict in newsgroup_conflicts
     ]
 
+
+def _iter_conflict_bodies_per_newsgroup(
+    conflicts: list[NewsgroupBodyConflict],
+    id_spans: IdSpans,
+    ia_directory: Path,
+    nb_directory: Path,
+    show_progress: bool,
+) -> Iterator[tuple[str, list[ConflictBodies]]]:
+    """Yield each newsgroup with the bodies of its conflicts, one mbox pair at a time.
+
+    `conflicts` must be sorted by newsgroup, as
+    `find_newsgroup_body_conflicts` returns them. Newsgroups without any
+    conflict never come up.
+    """
+    conflicts_by_newsgroup = [
+        (newsgroup, list(newsgroup_conflicts))
+        for newsgroup, newsgroup_conflicts in groupby(
+            conflicts, key=attrgetter("newsgroup")
+        )
+    ]
+    for newsgroup, newsgroup_conflicts in tqdm(
+        conflicts_by_newsgroup,
+        desc="Reading conflict bodies per newsgroup",
+        disable=not show_progress,
+    ):
+        yield (
+            newsgroup,
+            _conflict_bodies_for_newsgroup(
+                newsgroup, newsgroup_conflicts, id_spans, ia_directory, nb_directory
+            ),
+        )
+
+
+def _counts_for_newsgroup(
+    newsgroup: str, conflict_bodies: list[ConflictBodies]
+) -> NewsgroupReplacementCharCounts:
+    """Count one newsgroup's conflicts by their U+FFFD involvement."""
     return NewsgroupReplacementCharCounts(
         newsgroup=newsgroup,
-        message_body_conflict=len(newsgroup_conflicts),
+        message_body_conflict=len(conflict_bodies),
         ia_contains_replacement_char=sum(
             any(REPLACEMENT_CHAR in ia_body for ia_body in ia_bodies)
-            for _, ia_bodies in conflict_bodies
+            for _, _, ia_bodies in conflict_bodies
         ),
         equal_with_char_replacement=sum(
             any(
@@ -129,9 +199,36 @@ def _replacement_char_counts_for_newsgroup(
                 for nb_body in nb_bodies
                 for ia_body in ia_bodies
             )
-            for nb_bodies, ia_bodies in conflict_bodies
+            for _, nb_bodies, ia_bodies in conflict_bodies
         ),
     )
+
+
+def _first_pair_for_conflict(
+    conflict_bodies: ConflictBodies,
+) -> ReplacementCharPair | None:
+    """The conflict's first NB/IA body pair that differs only in U+FFFD, if any.
+
+    A conflict holds one body per distinct version per archive, so in principle
+    several combinations can match. Only the first is kept, so that one
+    conflicting message id contributes one pair, matching how
+    `_counts_for_newsgroup` counts it once.
+    """
+    conflict, nb_bodies, ia_bodies = conflict_bodies
+    for ia_body in ia_bodies:
+        if REPLACEMENT_CHAR not in ia_body:
+            continue
+        for nb_body in nb_bodies:
+            if bodies_equal_with_char_replacement(nb_body, ia_body):
+                normalized_ia_body = normalize_whitespace(ia_body)
+                return ReplacementCharPair(
+                    newsgroup=conflict.newsgroup,
+                    message_id_hash=conflict.message_id_hash,
+                    nb_body=normalize_whitespace(nb_body),
+                    ia_body=normalized_ia_body,
+                    replacement_char_count=normalized_ia_body.count(REPLACEMENT_CHAR),
+                )
+    return None
 
 
 def count_conflicts_in_mbox_files(
@@ -148,19 +245,39 @@ def count_conflicts_in_mbox_files(
     conflict are left out. Within a conflict, the checks hold when any pair of
     the distinct IA and NB bodies satisfies them.
     """
-    conflicts_by_newsgroup = [
-        (newsgroup, list(newsgroup_conflicts))
-        for newsgroup, newsgroup_conflicts in groupby(
-            conflicts, key=attrgetter("newsgroup")
-        )
-    ]
     return [
-        _replacement_char_counts_for_newsgroup(
-            newsgroup, newsgroup_conflicts, id_spans, ia_directory, nb_directory
-        )
-        for newsgroup, newsgroup_conflicts in tqdm(
-            conflicts_by_newsgroup,
-            desc="Reading conflict bodies per newsgroup",
-            disable=not show_progress,
+        _counts_for_newsgroup(newsgroup, conflict_bodies)
+        for newsgroup, conflict_bodies in _iter_conflict_bodies_per_newsgroup(
+            conflicts, id_spans, ia_directory, nb_directory, show_progress
         )
     ]
+
+
+def iter_replacement_char_pairs(
+    conflicts: list[NewsgroupBodyConflict],
+    id_spans: IdSpans,
+    ia_directory: Path,
+    nb_directory: Path,
+    show_progress: bool = True,
+) -> Iterator[ReplacementCharPair]:
+    """Yield the body pairs whose only disagreement is U+FFFD in the IA copy.
+
+    These are exactly the conflicts counted in
+    `NewsgroupReplacementCharCounts.equal_with_char_replacement`, yielded with
+    their two body texts instead of as a count, so one pair comes out per
+    conflicting message id. The bodies come back whitespace-normalized, so that
+    the two texts of a pair are the same characters apart from the U+FFFD.
+    `conflicts` must be sorted by newsgroup, and the pairs follow that same
+    order.
+
+    Yielded rather than returned as a list, because the whole archive holds
+    hundreds of thousands of these and a caller that samples them (see
+    `usenet_no.replacement_char_robustness.sample_pairs`) then never holds more
+    than one newsgroup's body texts at a time.
+    """
+    for _, conflict_bodies in _iter_conflict_bodies_per_newsgroup(
+        conflicts, id_spans, ia_directory, nb_directory, show_progress
+    ):
+        for pair in map(_first_pair_for_conflict, conflict_bodies):
+            if pair is not None:
+                yield pair
