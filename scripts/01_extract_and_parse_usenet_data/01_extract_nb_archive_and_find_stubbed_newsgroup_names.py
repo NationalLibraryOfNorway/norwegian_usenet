@@ -20,7 +20,7 @@ import csv
 import logging
 from pathlib import Path
 
-from usenet_no.parse_norwegian_web_archive import (
+from usenet_no.archives.parse_norwegian_web_archive import (
     extract_tarfiles,
     find_newsgroups_parent_dir,
 )
@@ -40,9 +40,9 @@ def collect_directory_paths(root: Path) -> set[DirectoryPath]:
     """Collect the path of every directory below root, as lowercased name parts.
 
     Newsgroup names are built from these directory names (see
-    parse_norwegian_web_archive.concat_textfiles), and lowercased there too, so
-    lowercasing here lets names from the uppercase-only KZ2001-0147 CD be
-    compared with the other sources'.
+    archives.parse_norwegian_web_archive.concat_textfiles), and lowercased there
+    too, so lowercasing here lets names from the uppercase-only KZ2001-0147 CD
+    be compared with the other sources'.
     """
     return {
         tuple(part.lower() for part in directory.relative_to(root).parts)

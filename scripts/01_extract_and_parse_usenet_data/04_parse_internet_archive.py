@@ -7,7 +7,7 @@ from zipfile import ZipFile
 
 from tqdm import tqdm
 
-from usenet_no.parse_internet_archive import process_mbox_file
+from usenet_no.archives.parse_internet_archive import process_mbox_file
 
 logger = logging.getLogger(__name__)
 

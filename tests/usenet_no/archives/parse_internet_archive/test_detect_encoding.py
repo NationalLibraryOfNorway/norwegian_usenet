@@ -5,7 +5,7 @@ raises UnicodeDecodeError, which it does not for Latin-1. Both pass; the second
 documents the surprising case, which a future encoding fix may revisit.
 """
 
-from usenet_no.parse_internet_archive import detect_encoding
+from usenet_no.archives.parse_internet_archive import detect_encoding
 
 
 def test_utf8_file_detected_as_utf8(tmp_path):

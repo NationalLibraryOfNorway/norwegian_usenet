@@ -4,7 +4,7 @@ from pathlib import Path
 
 from tqdm import tqdm
 
-from usenet_no.parse_norwegian_web_archive import (
+from usenet_no.archives.parse_norwegian_web_archive import (
     concat_textfiles,
     correct_stem,
     find_newsgroups_parent_dir,

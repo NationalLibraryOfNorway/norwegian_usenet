@@ -5,7 +5,11 @@ from pathlib import Path
 
 from tqdm import tqdm
 
-from usenet_no.scrape_internet_archive import download_zip, get_page_data, get_urls
+from usenet_no.archives.scrape_internet_archive import (
+    download_zip,
+    get_page_data,
+    get_urls,
+)
 
 logger = logging.getLogger(__name__)
 

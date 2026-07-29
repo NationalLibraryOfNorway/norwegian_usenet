@@ -2,7 +2,7 @@
 raw bytes plus a charset in, text out. It decodes with a single charset and does
 not resolve any Content-Transfer-Encoding."""
 
-from usenet_no.parse_internet_archive import decode_message_text
+from usenet_no.archives.parse_internet_archive import decode_message_text
 
 
 def test_decodes_latin1_bytes():

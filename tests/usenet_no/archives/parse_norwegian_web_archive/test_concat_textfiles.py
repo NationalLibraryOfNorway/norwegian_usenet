@@ -1,4 +1,4 @@
-"""Tests for concat_textfiles in usenet_no.parse_norwegian_web_archive.
+"""Tests for concat_textfiles in usenet_no.archives.parse_norwegian_web_archive.
 
 The key behavior under test is multi-archive accumulation: multiple tar archives
 can contribute messages to the same newsgroup output file, so the function must
@@ -8,7 +8,10 @@ append (not overwrite) and only skip files that pre-existed before the current r
 import mailbox
 
 from usenet_no.mbox_utils import message_factory
-from usenet_no.parse_norwegian_web_archive import concat_textfiles, correct_stem
+from usenet_no.archives.parse_norwegian_web_archive import (
+    concat_textfiles,
+    correct_stem,
+)
 
 
 MESSAGE_TEMPLATE = """\
