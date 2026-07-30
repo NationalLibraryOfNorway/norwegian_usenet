@@ -4,8 +4,13 @@ from pathlib import Path
 
 from tqdm import tqdm
 
-from usenet_no.archives.parse_norwegian_web_archive import (
-    concat_textfiles,
+from usenet_no.archives.encoding import (
+    FileEncodings,
+    source_key,
+    write_file_encodings,
+)
+from usenet_no.archives.parse_nb_archive import (
+    build_mbox_files_from_single_message_textfiles,
     correct_stem,
     find_newsgroups_parent_dir,
     load_newsgroup_corrections,
@@ -33,7 +38,13 @@ if __name__ == "__main__":
     parser.add_argument(
         "--overwrite",
         action="store_true",
-        help="Clear output directory and regenerate all mbox files instead of skipping existing",
+        help="Clear the output directory and regenerate all mbox files",
+    )
+    parser.add_argument(
+        "--encodings-file",
+        type=Path,
+        default=Path("data/input/nb/encodings.json"),
+        help="Path to JSON file storing the encoding detected per source message file",
     )
     parser.add_argument(
         "--newsgroup-corrections",
@@ -49,13 +60,21 @@ if __name__ == "__main__":
     corrections = load_newsgroup_corrections(args.newsgroup_corrections)
     logger.info("Loaded %d newsgroup name corrections", len(corrections))
 
+    # Every newsgroup is spread across the tar archives and appended to one mbox
+    # file, so a run writes the whole output directory or none of it.
     args.output_directory.mkdir(exist_ok=True, parents=True)
-    if args.overwrite:
-        for f in args.output_directory.iterdir():
-            f.unlink()
-        logger.info("Cleared output directory %s", args.output_directory)
+    existing = list(args.output_directory.iterdir())
+    if existing and not args.overwrite:
+        parser.error(
+            f"{args.output_directory} already holds {len(existing)} files;"
+            " pass --overwrite to regenerate them"
+        )
+    for f in existing:
+        f.unlink()
+    if existing:
+        logger.info("Cleared %d files from %s", len(existing), args.output_directory)
 
-    pre_existing = {f.name for f in args.output_directory.iterdir()}
+    encodings: FileEncodings = {}
 
     directories = [d for d in args.unzipped_dir.iterdir() if d.is_dir()]
     for directory in tqdm(directories, desc="Processing tar archives"):
@@ -69,9 +88,16 @@ if __name__ == "__main__":
             if not newsgroup_dir.is_dir():
                 continue
             stem = correct_stem(f"no.{newsgroup_dir.name.lower()}", corrections)
-            concat_textfiles(
+            detected = build_mbox_files_from_single_message_textfiles(
                 newsgroup_dir=newsgroup_dir,
                 outfile=args.output_directory / f"{stem}.mbox",
-                pre_existing=pre_existing,
                 corrections=corrections,
             )
+            encodings.update(
+                {
+                    source_key(message_file, args.unzipped_dir): encoding
+                    for message_file, encoding in detected.items()
+                }
+            )
+
+    write_file_encodings(encodings, args.encodings_file)

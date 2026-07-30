@@ -30,11 +30,13 @@ data/
 │   │   ├── zipped_data/        # Downloaded .zip files from archive.org (scripts/01_extract_and_parse_usenet_data/03_scrape_internet_archive.py)
 │   │   ├── unzipped_data/      # Extracted .mbox files (scripts/01_extract_and_parse_usenet_data/04_parse_internet_archive.py)
 │   │   ├── utf_8_data/         # UTF-8 encoded .mbox files (scripts/01_extract_and_parse_usenet_data/04_parse_internet_archive.py)
+│   │   ├── encodings.json      # Encoding detected per file in unzipped_data (scripts/01_extract_and_parse_usenet_data/04_parse_internet_archive.py)
 │   │   └── date_filtered/      # IA messages filtered to the NB date span (scripts/05_make_embeddings/01_filter_internet_archive_by_date.py)
 │   └── nb/
 │       ├── zipped_data/        # .tar files from the National Library (loaded from multiple CDs)
 │       ├── unzipped_data/      # Extracted message files (scripts/01_extract_and_parse_usenet_data/01_extract_nb_archive_and_find_stubbed_newsgroup_names.py)
-│       └── utf_8_data/         # Concatenated .mbox files, UTF-8 encoded (scripts/01_extract_and_parse_usenet_data/02_parse_nb_archive.py)
+│       ├── utf_8_data/         # Concatenated .mbox files, UTF-8 encoded (scripts/01_extract_and_parse_usenet_data/02_parse_nb_archive.py)
+│       └── encodings.json      # Encoding detected per file in unzipped_data (scripts/01_extract_and_parse_usenet_data/02_parse_nb_archive.py)
 └── output/                     # Script outputs, one subdirectory per script group
     ├── 01_extract_and_parse_usenet_data/
     ├── 02_build_database/

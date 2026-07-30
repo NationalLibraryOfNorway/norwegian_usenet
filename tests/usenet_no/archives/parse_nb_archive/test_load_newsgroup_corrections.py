@@ -1,4 +1,4 @@
-from usenet_no.archives.parse_norwegian_web_archive import load_newsgroup_corrections
+from usenet_no.archives.parse_nb_archive import load_newsgroup_corrections
 
 
 def test_reads_the_csv_into_a_mapping(tmp_path):
