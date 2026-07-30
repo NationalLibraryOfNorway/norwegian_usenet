@@ -93,8 +93,8 @@ def write_messages_to_mbox(
         text, encoding = detect_and_decode_file(message_file)
         messages.append(text)
         encodings[message_file] = encoding
-    message_count = write_mbox(messages, outfile, append=True)
-    logger.info("Wrote %d textfiles to %s", message_count, outfile)
+    write_mbox(messages, outfile, append=True)
+    logger.info("Wrote %d textfiles to %s", len(messages), outfile)
     return encodings
 
 

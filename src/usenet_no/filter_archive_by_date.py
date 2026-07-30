@@ -53,6 +53,6 @@ def filter_mbox_by_date(
         )
         return 0, total
 
-    kept = write_mbox(kept_texts, output_file)
-    logger.info("%s: kept %d / %d", mbox_file.name, kept, total)
-    return kept, total
+    write_mbox(kept_texts, output_file)
+    logger.info("%s: kept %d / %d", mbox_file.name, len(kept_texts), total)
+    return len(kept_texts), total
