@@ -1,10 +1,10 @@
 import csv
 import logging
 import tarfile
+from collections.abc import Iterable, Iterator
 from pathlib import Path
 
-import cchardet as chardet
-
+from usenet_no.archives.encoding import detect_and_decode_file
 from usenet_no.mbox_utils import write_mbox
 
 logger = logging.getLogger(__name__)
@@ -62,59 +62,61 @@ def find_newsgroups_parent_dir(directory: Path) -> Path:
             return find_newsgroups_parent_dir(e)
 
 
-def read_text(text_file: Path) -> str:
-    """Read text from a textfile that may not be utf-8 encoded."""
-    detection = chardet.detect(text_file.read_bytes())
-    encoding = detection.get("encoding")
-    if encoding in {"VISCII", "EUC-TW", None}:
-        logger.debug(
-            "Detected encoding %s for file %s. Trying to decode with latin-1",
-            encoding,
-            text_file,
-        )
-        logger.debug("bytes: %s", text_file.read_bytes())
-        encoding = "latin-1"
+def iter_newsgroup_sources(
+    newsgroup_dir: Path, stem: str, corrections: dict[str, str] | None = None
+) -> Iterator[tuple[str, list[Path]]]:
+    """Yield (mbox stem, message files) for newsgroup_dir and every subgroup below it.
 
-    return text_file.read_bytes().decode(encoding, errors="backslashreplace")
-
-
-def concat_textfiles(
-    newsgroup_dir: Path,
-    outfile: Path,
-    pre_existing: set[str],
-    corrections: dict[str, str] | None = None,
-) -> None:
-    """Read all message files in newsgroup_dir and append them to outfile.
-
-    pre_existing is the set of output filenames that existed before this run started.
-    Files in pre_existing are skipped so incremental re-runs don't double-append,
-    while files created during the current run are appended to (supporting multiple
-    tar archives contributing to the same newsgroup output file).
-
-    corrections maps cut-off mbox file stems to the stem to write instead (see
+    corrections maps cut-off mbox file stems to the stem to yield instead (see
     load_newsgroup_corrections), so messages from a cut-off directory land in
     the same output file as the sources that carry the full name. The caller
-    corrects the stem of the top-level outfile itself, with correct_stem.
+    corrects the top-level stem itself, with correct_stem.
     """
-    logger.debug("Running concat textfiles in %s (outfile: %s)", newsgroup_dir, outfile)
-    messages = []
+    message_files = []
     for each in sorted(newsgroup_dir.iterdir()):
         if each.is_dir():
-            sub_stem = correct_stem(
-                f"{outfile.stem}.{each.name.lower()}", corrections or {}
-            )
-            concat_textfiles(
-                each,
-                outfile=outfile.parent / f"{sub_stem}.mbox",
-                pre_existing=pre_existing,
-                corrections=corrections,
-            )
+            sub_stem = correct_stem(f"{stem}.{each.name.lower()}", corrections or {})
+            yield from iter_newsgroup_sources(each, sub_stem, corrections)
         else:
-            messages.append(read_text(each))
+            message_files.append(each)
+    if message_files:
+        yield stem, message_files
 
-    if messages:
-        if outfile.name in pre_existing:
-            logger.info("Skipping %s (already exists from previous run)", outfile.name)
-            return
-        count = write_mbox(messages, outfile, append=True)
-        logger.info("Wrote %d textfiles to %s", count, outfile)
+
+def write_messages_to_mbox(
+    message_files: Iterable[Path], outfile: Path
+) -> dict[Path, str]:
+    """Decode message files and append them to outfile, returning the encoding of each."""
+    encodings = {}
+    messages = []
+    for message_file in message_files:
+        text, encoding = detect_and_decode_file(message_file)
+        messages.append(text)
+        encodings[message_file] = encoding
+    message_count = write_mbox(messages, outfile, append=True)
+    logger.info("Wrote %d textfiles to %s", message_count, outfile)
+    return encodings
+
+
+def build_mbox_files_from_single_message_textfiles(
+    newsgroup_dir: Path,
+    outfile: Path,
+    corrections: dict[str, str] | None = None,
+) -> dict[Path, str]:
+    """Write newsgroup_dir and its subgroups to mbox files, one per newsgroup.
+
+    Returns the encoding detected for each message file written. Output files are
+    appended to, since several tar archives can carry the same newsgroup.
+    """
+    logger.debug(
+        "Running build_mbox_files_from_single_message_textfiles in %s (outfile: %s)",
+        newsgroup_dir,
+        outfile,
+    )
+    encodings: dict[Path, str] = {}
+    for stem, message_files in iter_newsgroup_sources(
+        newsgroup_dir, outfile.stem, corrections
+    ):
+        target = outfile.parent / f"{stem}.mbox"
+        encodings.update(write_messages_to_mbox(message_files, target))
+    return encodings

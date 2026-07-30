@@ -1,4 +1,4 @@
-from usenet_no.archives.parse_norwegian_web_archive import correct_stem
+from usenet_no.archives.parse_nb_archive import correct_stem
 
 
 def test_corrects_a_cut_off_stem():
