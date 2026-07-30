@@ -58,10 +58,7 @@ class NewsgroupBodyConflict:
 def _fetch_rows_by_message_id_hash(
     connection: sqlite3.Connection,
 ) -> dict[str, list[tuple[str, str, str | None]]]:
-    """Map each hashed message id to its (archive, newsgroup, body_hash) rows.
-
-    Rows come back ordered so that the grouping below is reproducible.
-    """
+    """Map each hashed message id to its (archive, newsgroup, body_hash) rows."""
     rows_by_message_id_hash: dict[str, list[tuple[str, str, str | None]]] = defaultdict(
         list
     )
@@ -94,7 +91,7 @@ def find_within_archive_conflicts(
 ) -> list[WithinArchiveConflict]:
     """Find message ids that carry more than one body inside a single archive.
 
-    Returned sorted by (archive, message_id_hash) so reruns produce identical output.
+    Sorted by (archive, message_id_hash).
     """
     conflicts: list[WithinArchiveConflict] = []
 
@@ -122,10 +119,8 @@ def find_across_archive_conflicts(
     """Find message ids held by both archives whose copies never share a body.
 
     A message id counts as conflicting only when the archives have no body in
-    common: if one version matches, the message did survive intact in both, even
-    where one archive also holds an extra variant.
-
-    Returned sorted by message_id_hash so reruns produce identical output.
+    common, so an id whose copies match on one version is not a conflict even
+    where one archive also holds an extra variant. Sorted by message_id_hash.
     """
     conflicts: list[AcrossArchiveConflict] = []
 
@@ -152,12 +147,8 @@ def find_newsgroup_body_conflicts(
     """Find, per newsgroup, message ids whose copies in the two archives never share a body.
 
     The per-newsgroup counterpart of `find_across_archive_conflicts`, with the
-    same definition of a conflict: within one newsgroup, a message id conflicts
-    only when its copies in the two archives have no body in common. Each
-    conflict carries one message row id per distinct body per archive.
-
-    Returned sorted by (newsgroup, message_id_hash) so reruns produce identical
-    output.
+    same definition of a conflict. Each conflict carries one message row id per
+    distinct body per archive. Sorted by (newsgroup, message_id_hash).
     """
     rows = connection.execute(
         "SELECT newsgroup, message_id_hash, archive, body_hash, MIN(id)"
@@ -194,11 +185,10 @@ def find_newsgroup_body_conflicts(
 def load_conflicts_and_id_spans(
     connection: sqlite3.Connection,
 ) -> tuple[list[NewsgroupBodyConflict], dict[tuple[str, str], tuple[int, int]]]:
-    """Read everything a positional body lookup of the conflicts needs from the database.
+    """Read the body conflicts together with the id spans that place their row ids.
 
-    Bundles `find_newsgroup_body_conflicts` with the id spans that map its row
-    ids to mbox file positions, so that the mbox-reading side (see
-    `usenet_no.replacement_chars`) does not need a connection at all.
+    Bundled so the mbox-reading side (`usenet_no.replacement_chars.pairs`) needs
+    no connection of its own.
     """
     conflicts = find_newsgroup_body_conflicts(connection)
     id_spans = load_id_spans(connection)

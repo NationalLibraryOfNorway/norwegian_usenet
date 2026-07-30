@@ -4,9 +4,9 @@ from pathlib import Path
 
 import numpy as np
 import plotly.graph_objects as go
+from viz import hsl_to_hex
 
 from usenet_no.embed_messages import load_embeddings_and_docs
-from viz import hsl_to_hex
 
 logger = logging.getLogger(__name__)
 

@@ -189,9 +189,13 @@ hidden
 
 data/output/05_make_embeddings/*
 !data/output/05_make_embeddings/newsgroups_for_selection.jsonl
+!data/output/05_make_embeddings/replacement_char_robustness
+
 data/output/**/topic_modelling/
 
-# SQLite database with unhashed columns
+
+# SQLite databases, too large to share over git (scripts/02_build_database.py rebuilds them)
+usenet.db
 usenet_private.db
 
 

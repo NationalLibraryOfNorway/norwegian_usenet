@@ -29,15 +29,11 @@ def find_true_duplicates(connection: sqlite3.Connection) -> list[DuplicateMessag
     """Find message ids stored more than once with the same body in one mbox file.
 
     Messages without a Message-ID are skipped: without an id we cannot tell a
-    redundant copy from two genuinely identical postings.
-
-    Copies are grouped by (message_id_hash, body_hash) so that two versions of
-    a posting are not mistaken for duplicates of each other. Where an id does
-    have several bodies, `count` covers every copy belonging to a repeated
-    body.
-
-    Returned sorted by (archive, newsgroup, message_id_hash) so reruns produce
-    identical output.
+    redundant copy from two genuinely identical postings. Copies are grouped by
+    (message_id_hash, body_hash), so two versions of a posting are not mistaken
+    for duplicates of each other; where an id does have several bodies, `count`
+    covers every copy belonging to a repeated body. Sorted by (archive,
+    newsgroup, message_id_hash).
     """
     rows = connection.execute(
         "SELECT archive, newsgroup, message_id_hash, SUM(copies)"

@@ -1,995 +1,333 @@
 {
-    "no.ai": {
-        "encoding": "utf-8"
-    },
-    "no.alkohol": {
-        "encoding": "utf-8"
-    },
-    "no.alt.activeworlds": {
-        "encoding": "utf-8"
-    },
-    "no.alt.amiga": {
-        "encoding": "utf-8"
-    },
-    "no.alt.arkiv": {
-        "encoding": "utf-8"
-    },
-    "no.alt.bekymringer": {
-        "encoding": "utf-8"
-    },
-    "no.alt.bilprat": {
-        "encoding": "utf-8"
-    },
-    "no.alt.bilstereo": {
-        "encoding": "utf-8"
-    },
-    "no.alt.config": {
-        "encoding": "utf-8"
-    },
-    "no.alt.diskusjoner": {
-        "encoding": "UTF-8"
-    },
-    "no.alt.diskusjoner.usa": {
-        "encoding": "utf-8"
-    },
-    "no.alt.ekspartnere": {
-        "encoding": "utf-8"
-    },
-    "no.alt.fan.de-lillos": {
-        "encoding": "utf-8"
-    },
-    "no.alt.flame": {
-        "encoding": "utf-8"
-    },
-    "no.alt.fritid.hytteliv": {
-        "encoding": "utf-8"
-    },
-    "no.alt.frustrasjoner": {
-        "encoding": "utf-8"
-    },
-    "no.alt.geek.pludring": {
-        "encoding": "utf-8"
-    },
-    "no.alt.gledesutbrudd": {
-        "encoding": "UTF-8"
-    },
-    "no.alt.god.jul": {
-        "encoding": "utf-8"
-    },
-    "no.alt.gratulerer": {
-        "encoding": "utf-8"
-    },
-    "no.alt.gullkorn": {
-        "encoding": "utf-8"
-    },
-    "no.alt.gullkorn.d": {
-        "encoding": "utf-8"
-    },
-    "no.alt.hjemmesider": {
-        "encoding": "utf-8"
-    },
-    "no.alt.hjemmesider.frontpage": {
-        "encoding": "utf-8"
-    },
-    "no.alt.hundebitt": {
-        "encoding": "utf-8"
-    },
-    "no.alt.hunder": {
-        "encoding": "UTF-8"
-    },
-    "no.alt.irc-treff": {
-        "encoding": "utf-8"
-    },
-    "no.alt.jenteprat": {
-        "encoding": "utf-8"
-    },
-    "no.alt.karlsen+spangelid": {
-        "encoding": "utf-8"
-    },
-    "no.alt.katter": {
-        "encoding": "utf-8"
-    },
-    "no.alt.maktmisbruk.psykopati": {
-        "encoding": "utf-8"
-    },
-    "no.alt.marked.seksualitet": {
-        "encoding": "utf-8"
-    },
-    "no.alt.mat": {
-        "encoding": "UTF-8"
-    },
-    "no.alt.mat.drikke": {
-        "encoding": "utf-8"
-    },
-    "no.alt.motorsykler": {
-        "encoding": "utf-8"
-    },
-    "no.alt.news-treff": {
-        "encoding": "UTF-8"
-    },
-    "no.alt.pludring": {
-        "encoding": "UTF-8"
-    },
-    "no.alt.pludring.intens": {
-        "encoding": "utf-8"
-    },
-    "no.alt.pompel-og-pilt": {
-        "encoding": "utf-8"
-    },
-    "no.alt.radio-tv.irma-1000": {
-        "encoding": "utf-8"
-    },
-    "no.alt.rykter": {
-        "encoding": "utf-8"
-    },
-    "no.alt.sjokolade": {
-        "encoding": "utf-8"
-    },
-    "no.alt.tegneserier": {
-        "encoding": "UTF-8"
-    },
-    "no.alt.tegneserier.samlerforum": {
-        "encoding": "utf-8"
-    },
-    "no.alt.troll": {
-        "encoding": "utf-8"
-    },
-    "no.alt.undring": {
-        "encoding": "UTF-8"
-    },
-    "no.amiga": {
-        "encoding": "utf-8"
-    },
-    "no.annonser.audio-video": {
-        "encoding": "UTF-8"
-    },
-    "no.annonser.bil": {
-        "encoding": "utf-8"
-    },
-    "no.annonser.bolig": {
-        "encoding": "utf-8"
-    },
-    "no.annonser.diskusjon": {
-        "encoding": "utf-8"
-    },
-    "no.annonser.diverse": {
-        "encoding": "UTF-8"
-    },
-    "no.annonser.dyr": {
-        "encoding": "utf-8"
-    },
-    "no.annonser.foreldre+barn": {
-        "encoding": "utf-8"
-    },
-    "no.annonser.foto": {
-        "encoding": "utf-8"
-    },
-    "no.annonser.friluftsliv": {
-        "encoding": "utf-8"
-    },
-    "no.annonser.it.diverse": {
-        "encoding": "utf-8"
-    },
-    "no.annonser.it.maskinvare.diverse": {
-        "encoding": "utf-8"
-    },
-    "no.annonser.it.nettilbydere": {
-        "encoding": "utf-8"
-    },
-    "no.annonser.it.nettverk": {
-        "encoding": "utf-8"
-    },
-    "no.annonser.it.programvare.diverse": {
-        "encoding": "utf-8"
-    },
-    "no.annonser.it.telekom": {
-        "encoding": "utf-8"
-    },
-    "no.annonser.it.unix": {
-        "encoding": "utf-8"
-    },
-    "no.annonser.jobb.onskes": {
-        "encoding": "utf-8"
-    },
-    "no.annonser.jobb.selvstendig": {
-        "encoding": "utf-8"
-    },
-    "no.annonser.jobb.tilbys": {
-        "encoding": "utf-8"
-    },
-    "no.annonser.kontakt.diverse": {
-        "encoding": "utf-8"
-    },
-    "no.annonser.maritim": {
-        "encoding": "utf-8"
-    },
-    "no.annonser.motorsykkel": {
-        "encoding": "utf-8"
-    },
-    "no.annonser.musikk": {
-        "encoding": "utf-8"
-    },
-    "no.annonser.spill.data": {
-        "encoding": "utf-8"
-    },
-    "no.annonser.spill.diverse": {
-        "encoding": "utf-8"
-    },
-    "no.annonser.spill.tv": {
-        "encoding": "utf-8"
-    },
-    "no.annonser.sykkel": {
-        "encoding": "utf-8"
-    },
-    "no.audio": {
-        "encoding": "utf-8"
-    },
-    "no.bibsys": {
-        "encoding": "utf-8"
-    },
-    "no.bil": {
-        "encoding": "utf-8"
-    },
-    "no.biz": {
-        "encoding": "utf-8"
-    },
-    "no.biz.annonser": {
-        "encoding": "utf-8"
-    },
-    "no.biz.annonser.data": {
-        "encoding": "utf-8"
-    },
-    "no.biz.diskusjoner": {
-        "encoding": "utf-8"
-    },
-    "no.biz.nettilbydere": {
-        "encoding": "utf-8"
-    },
-    "no.bolig": {
-        "encoding": "utf-8"
-    },
-    "no.c": {
-        "encoding": "utf-8"
-    },
-    "no.ef": {
-        "encoding": "utf-8"
-    },
-    "no.elektronikk": {
-        "encoding": "utf-8"
-    },
-    "no.embnet": {
-        "encoding": "utf-8"
-    },
-    "no.eunet.diverse": {
-        "encoding": "utf-8"
-    },
-    "no.eunet.drift": {
-        "encoding": "utf-8"
-    },
-    "no.eunet.hjelp": {
-        "encoding": "utf-8"
-    },
-    "no.fag.diverse": {
-        "encoding": "utf-8"
-    },
-    "no.fag.filosofi": {
-        "encoding": "utf-8"
-    },
-    "no.fag.jus": {
-        "encoding": "utf-8"
-    },
-    "no.fag.jus.it": {
-        "encoding": "utf-8"
-    },
-    "no.fag.kjemi": {
-        "encoding": "utf-8"
-    },
-    "no.fag.landbruk": {
-        "encoding": "utf-8"
-    },
-    "no.fag.medisin.diverse": {
-        "encoding": "utf-8"
-    },
-    "no.fag.psykologi.generell": {
-        "encoding": "utf-8"
-    },
-    "no.fag.samfunnsvitenskap": {
-        "encoding": "UTF-8"
-    },
-    "no.fag.sjukepleie": {
-        "encoding": "utf-8"
-    },
-    "no.fag.spraak.diverse": {
-        "encoding": "UTF-8"
-    },
-    "no.fag.spraak.fagord": {
-        "encoding": "UTF-8"
-    },
-    "no.fag.spraak.strid": {
-        "encoding": "utf-8"
-    },
-    "no.fag.typografi": {
-        "encoding": "utf-8"
-    },
-    "no.film": {
-        "encoding": "UTF-8"
-    },
-    "no.folklore.edb": {
-        "encoding": "utf-8"
-    },
-    "no.folklore.generelt": {
-        "encoding": "utf-8"
-    },
-    "no.folklore.overtro": {
-        "encoding": "utf-8"
-    },
-    "no.fritid.akvarium": {
-        "encoding": "utf-8"
-    },
-    "no.fritid.bolig": {
-        "encoding": "utf-8"
-    },
-    "no.fritid.diverse": {
-        "encoding": "utf-8"
-    },
-    "no.fritid.dykking": {
-        "encoding": "utf-8"
-    },
-    "no.fritid.dyr.diverse": {
-        "encoding": "utf-8"
-    },
-    "no.fritid.fiske": {
-        "encoding": "utf-8"
-    },
-    "no.fritid.foto": {
-        "encoding": "utf-8"
-    },
-    "no.fritid.friluftsliv": {
-        "encoding": "utf-8"
-    },
-    "no.fritid.hage": {
-        "encoding": "utf-8"
-    },
-    "no.fritid.hobbyverksted": {
-        "encoding": "utf-8"
-    },
-    "no.fritid.jakt": {
-        "encoding": "utf-8"
-    },
-    "no.fritid.maritim": {
-        "encoding": "UTF-8"
-    },
-    "no.fritid.modellhobby": {
-        "encoding": "utf-8"
-    },
-    "no.fritid.reiser": {
-        "encoding": "UTF-8"
-    },
-    "no.fritid.slektsforsking.diverse": {
-        "encoding": "utf-8"
-    },
-    "no.fritid.slektsforsking.etterlysing": {
-        "encoding": "UTF-8"
-    },
-    "no.fritid.slektsforsking.it": {
-        "encoding": "utf-8"
-    },
-    "no.fritid.speiding": {
-        "encoding": "utf-8"
-    },
-    "no.fritid.spill.data": {
-        "encoding": "utf-8"
-    },
-    "no.fritid.spill.diverse": {
-        "encoding": "utf-8"
-    },
-    "no.fritid.spill.rollespill": {
-        "encoding": "UTF-8"
-    },
-    "no.fritid.spill.sjakk": {
-        "encoding": "utf-8"
-    },
-    "no.fritid.sykkel": {
-        "encoding": "utf-8"
-    },
-    "no.general": {
-        "encoding": "UTF-8"
-    },
-    "no.havforskning": {
-        "encoding": "utf-8"
-    },
-    "no.hobby.diverse": {
-        "encoding": "utf-8"
-    },
-    "no.irc": {
-        "encoding": "utf-8"
-    },
-    "no.it.data.xml": {
-        "encoding": "utf-8"
-    },
-    "no.it.database.diverse": {
-        "encoding": "utf-8"
-    },
-    "no.it.diverse": {
-        "encoding": "UTF-8"
-    },
-    "no.it.emacs": {
-        "encoding": "utf-8"
-    },
-    "no.it.grafikk.diverse": {
-        "encoding": "utf-8"
-    },
-    "no.it.maskinvare.diverse": {
-        "encoding": "utf-8"
-    },
-    "no.it.maskinvare.grafikkort": {
-        "encoding": "utf-8"
-    },
-    "no.it.maskinvare.overklokking": {
-        "encoding": "utf-8"
-    },
-    "no.it.maskinvare.pda": {
-        "encoding": "utf-8"
-    },
-    "no.it.nettverk": {
-        "encoding": "utf-8"
-    },
-    "no.it.nostalgi": {
-        "encoding": "utf-8"
-    },
-    "no.it.os.amiga.diverse": {
-        "encoding": "utf-8"
-    },
-    "no.it.os.amiga.maskinvare": {
-        "encoding": "utf-8"
-    },
-    "no.it.os.amiga.programvare": {
-        "encoding": "utf-8"
-    },
-    "no.it.os.beos": {
-        "encoding": "utf-8"
-    },
-    "no.it.os.mac.diverse": {
-        "encoding": "utf-8"
-    },
-    "no.it.os.ms-windows.diverse": {
-        "encoding": "utf-8"
-    },
-    "no.it.os.ms-windows.nettverk": {
-        "encoding": "utf-8"
-    },
-    "no.it.os.ms-windows.nt": {
-        "encoding": "utf-8"
-    },
-    "no.it.os.os2": {
-        "encoding": "utf-8"
-    },
-    "no.it.os.unix.diverse": {
-        "encoding": "utf-8"
-    },
-    "no.it.os.unix.linux.diverse": {
-        "encoding": "UTF-8"
-    },
-    "no.it.os.unix.linux.nettverk": {
-        "encoding": "utf-8"
-    },
-    "no.it.programmering.asp": {
-        "encoding": "UTF-8"
-    },
-    "no.it.programmering.c": {
-        "encoding": "utf-8"
-    },
-    "no.it.programmering.c++": {
-        "encoding": "utf-8"
-    },
-    "no.it.programmering.delphi": {
-        "encoding": "utf-8"
-    },
-    "no.it.programmering.diverse": {
-        "encoding": "utf-8"
-    },
-    "no.it.programmering.dotnet": {
-        "encoding": "utf-8"
-    },
-    "no.it.programmering.java": {
-        "encoding": "utf-8"
-    },
-    "no.it.programmering.javascript": {
-        "encoding": "utf-8"
-    },
-    "no.it.programmering.lisp": {
-        "encoding": "UTF-8"
-    },
-    "no.it.programmering.perl": {
-        "encoding": "utf-8"
-    },
-    "no.it.programmering.php": {
-        "encoding": "utf-8"
-    },
-    "no.it.programmering.python": {
-        "encoding": "utf-8"
-    },
-    "no.it.programmering.visual-basic": {
-        "encoding": "utf-8"
-    },
-    "no.it.programvare.emacs": {
-        "encoding": "UTF-8"
-    },
-    "no.it.programvare.ms-office": {
-        "encoding": "utf-8"
-    },
-    "no.it.programvare.tex": {
-        "encoding": "utf-8"
-    },
-    "no.it.sikkerhet.diverse": {
-        "encoding": "utf-8"
-    },
-    "no.it.sikkerhet.virus": {
-        "encoding": "utf-8"
-    },
-    "no.it.telekom.diverse": {
-        "encoding": "utf-8"
-    },
-    "no.it.telekom.isdn": {
-        "encoding": "utf-8"
-    },
-    "no.it.telekom.mobil": {
-        "encoding": "utf-8"
-    },
-    "no.it.tjenester.irc": {
-        "encoding": "utf-8"
-    },
-    "no.it.tjenester.mail.diverse": {
-        "encoding": "UTF-8"
-    },
-    "no.it.tjenester.nettilbydere": {
-        "encoding": "utf-8"
-    },
-    "no.it.tjenester.news.diverse": {
-        "encoding": "utf-8"
-    },
-    "no.it.tjenester.www.css": {
-        "encoding": "utf-8"
-    },
-    "no.it.tjenester.www.design": {
-        "encoding": "utf-8"
-    },
-    "no.it.tjenester.www.diverse": {
-        "encoding": "utf-8"
-    },
-    "no.it.tjenester.www.html": {
-        "encoding": "utf-8"
-    },
-    "no.it.tjenester.www.programmering": {
-        "encoding": "utf-8"
-    },
-    "no.jus": {
-        "encoding": "utf-8"
-    },
-    "no.kjemi": {
-        "encoding": "utf-8"
-    },
-    "no.kryptografi": {
-        "encoding": "utf-8"
-    },
-    "no.kultur.diverse": {
-        "encoding": "utf-8"
-    },
-    "no.kultur.film": {
-        "encoding": "UTF-8"
-    },
-    "no.kultur.folklore.diverse": {
-        "encoding": "utf-8"
-    },
-    "no.kultur.folklore.overtro": {
-        "encoding": "utf-8"
-    },
-    "no.kultur.folklore.ufo": {
-        "encoding": "utf-8"
-    },
-    "no.kultur.fritid.friluftsliv": {
-        "encoding": "UTF-8"
-    },
-    "no.kultur.genre.sf": {
-        "encoding": "utf-8"
-    },
-    "no.kultur.humor": {
-        "encoding": "UTF-8"
-    },
-    "no.kultur.litteratur.diverse": {
-        "encoding": "utf-8"
-    },
-    "no.kultur.musikk.diverse": {
-        "encoding": "UTF-8"
-    },
-    "no.kultur.musikk.gitar": {
-        "encoding": "utf-8"
-    },
-    "no.kultur.musikk.klassisk": {
-        "encoding": "utf-8"
-    },
-    "no.kultur.musikk.korps": {
-        "encoding": "utf-8"
-    },
-    "no.kultur.musikk.produksjon": {
-        "encoding": "utf-8"
-    },
-    "no.linux": {
-        "encoding": "UTF-8"
-    },
-    "no.lisp": {
-        "encoding": "utf-8"
-    },
-    "no.litteratur": {
-        "encoding": "utf-8"
-    },
-    "no.lokal.drammen": {
-        "encoding": "utf-8"
-    },
-    "no.lokal.oslo": {
-        "encoding": "utf-8"
-    },
-    "no.lokal.ringerike": {
-        "encoding": "utf-8"
-    },
-    "no.mac": {
-        "encoding": "UTF-8"
-    },
-    "no.mail.diverse": {
-        "encoding": "utf-8"
-    },
-    "no.mail.drift": {
-        "encoding": "utf-8"
-    },
-    "no.marked": {
-        "encoding": "UTF-8"
-    },
-    "no.marked.bil": {
-        "encoding": "utf-8"
-    },
-    "no.marked.bolig": {
-        "encoding": "utf-8"
-    },
-    "no.marked.data": {
-        "encoding": "utf-8"
-    },
-    "no.marked.diskusjon": {
-        "encoding": "utf-8"
-    },
-    "no.marked.jobb": {
-        "encoding": "utf-8"
-    },
-    "no.media": {
-        "encoding": "utf-8"
-    },
-    "no.medisin": {
-        "encoding": "utf-8"
-    },
-    "no.ms-windows": {
-        "encoding": "utf-8"
-    },
-    "no.multimedia": {
-        "encoding": "utf-8"
-    },
-    "no.musikk": {
-        "encoding": "utf-8"
-    },
-    "no.musikk.gitar": {
-        "encoding": "utf-8"
-    },
-    "no.musikk.klassisk": {
-        "encoding": "utf-8"
-    },
-    "no.net": {
-        "encoding": "utf-8"
-    },
-    "no.nettvett": {
-        "encoding": "utf-8"
-    },
-    "no.news.diverse": {
-        "encoding": "UTF-8"
-    },
-    "no.news.drift": {
-        "encoding": "utf-8"
-    },
-    "no.norsk": {
-        "encoding": "UTF-8"
-    },
-    "no.norsk.fagord": {
-        "encoding": "utf-8"
-    },
-    "no.nuug": {
-        "encoding": "utf-8"
-    },
-    "no.org.diverse": {
-        "encoding": "utf-8"
-    },
-    "no.org.dnd": {
-        "encoding": "utf-8"
-    },
-    "no.org.efn.diskusjon": {
-        "encoding": "utf-8"
-    },
-    "no.org.efn.nyheter": {
-        "encoding": "utf-8"
-    },
-    "no.org.isoc-no": {
-        "encoding": "utf-8"
-    },
-    "no.org.nobug.diverse": {
-        "encoding": "utf-8"
-    },
-    "no.org.nobug.nytt": {
-        "encoding": "utf-8"
-    },
-    "no.org.nuug": {
-        "encoding": "utf-8"
-    },
-    "no.pc": {
-        "encoding": "UTF-8"
-    },
-    "no.perl": {
-        "encoding": "utf-8"
-    },
-    "no.prat.aksjer": {
-        "encoding": "utf-8"
-    },
-    "no.prat.narkotika": {
-        "encoding": "utf-8"
-    },
-    "no.prat.politikk": {
-        "encoding": "utf-8"
-    },
-    "no.prat.seksualitet": {
-        "encoding": "utf-8"
-    },
-    "no.prat.ufo": {
-        "encoding": "utf-8"
-    },
-    "no.pressemeldinger": {
-        "encoding": "utf-8"
-    },
-    "no.pressemeldinger.diskusjon": {
-        "encoding": "utf-8"
-    },
-    "no.psykologi": {
-        "encoding": "utf-8"
-    },
-    "no.radio-tv": {
-        "encoding": "utf-8"
-    },
-    "no.reiser": {
-        "encoding": "utf-8"
-    },
-    "no.religion": {
-        "encoding": "UTF-8"
-    },
-    "no.samfunn.aksjer": {
-        "encoding": "utf-8"
-    },
-    "no.samfunn.alkohol": {
-        "encoding": "utf-8"
-    },
-    "no.samfunn.diverse": {
-        "encoding": "utf-8"
-    },
-    "no.samfunn.forbruker": {
-        "encoding": "utf-8"
-    },
-    "no.samfunn.foreldre+barn": {
-        "encoding": "utf-8"
-    },
-    "no.samfunn.helse.funksjonshemming.diverse": {
-        "encoding": "utf-8"
-    },
-    "no.samfunn.helse.livsstil": {
-        "encoding": "utf-8"
-    },
-    "no.samfunn.media.diverse": {
-        "encoding": "utf-8"
-    },
-    "no.samfunn.media.radio-tv": {
-        "encoding": "utf-8"
-    },
-    "no.samfunn.media.radio-tv.virkelighets-tv": {
-        "encoding": "utf-8"
-    },
-    "no.samfunn.narkotika": {
-        "encoding": "utf-8"
-    },
-    "no.samfunn.naturvern": {
-        "encoding": "UTF-8"
-    },
-    "no.samfunn.okonomi.diverse": {
-        "encoding": "utf-8"
-    },
-    "no.samfunn.politikk.diverse": {
-        "encoding": "UTF-8"
-    },
-    "no.samfunn.politikk.historie": {
-        "encoding": "utf-8"
-    },
-    "no.samfunn.politikk.innvandring": {
-        "encoding": "utf-8"
-    },
-    "no.samfunn.politikk.utenriks": {
-        "encoding": "UTF-8"
-    },
-    "no.samfunn.politikk.vaapen": {
-        "encoding": "utf-8"
-    },
-    "no.samfunn.religion": {
-        "encoding": "UTF-8"
-    },
-    "no.samfunn.seksualitet": {
-        "encoding": "UTF-8"
-    },
-    "no.samfunn.skole": {
-        "encoding": "utf-8"
-    },
-    "no.samfunn.trafikk": {
-        "encoding": "utf-8"
-    },
-    "no.skole.diverse": {
-        "encoding": "utf-8"
-    },
-    "no.slekt": {
-        "encoding": "UTF-8"
-    },
-    "no.slekt.etterlysning": {
-        "encoding": "utf-8"
-    },
-    "no.slekt.programmer": {
-        "encoding": "utf-8"
-    },
-    "no.sources.list": {
-        "encoding": "utf-8"
-    },
-    "no.sources.wanted": {
-        "encoding": "utf-8"
-    },
-    "no.speider": {
-        "encoding": "utf-8"
-    },
-    "no.spill": {
-        "encoding": "utf-8"
-    },
-    "no.spill.rollespill": {
-        "encoding": "utf-8"
-    },
-    "no.spill.sjakk": {
-        "encoding": "utf-8"
-    },
-    "no.sport.diverse": {
-        "encoding": "utf-8"
-    },
-    "no.sport.fotball": {
-        "encoding": "UTF-8"
-    },
-    "no.sport.hockey": {
-        "encoding": "utf-8"
-    },
-    "no.sport.kampkunst": {
-        "encoding": "utf-8"
-    },
-    "no.sport.motorsport": {
-        "encoding": "utf-8"
-    },
-    "no.sport.orientering": {
-        "encoding": "utf-8"
-    },
-    "no.sport.paintball": {
-        "encoding": "utf-8"
-    },
-    "no.sport.skyting": {
-        "encoding": "utf-8"
-    },
-    "no.sport.volleyball": {
-        "encoding": "utf-8"
-    },
-    "no.standard": {
-        "encoding": "utf-8"
-    },
-    "no.stortinget": {
-        "encoding": "utf-8"
-    },
-    "no.student.nett": {
-        "encoding": "utf-8"
-    },
-    "no.student.samfund": {
-        "encoding": "utf-8"
-    },
-    "no.svar": {
-        "encoding": "utf-8"
-    },
-    "no.sykkel": {
-        "encoding": "utf-8"
-    },
-    "no.tegnsett": {
-        "encoding": "utf-8"
-    },
-    "no.teknologi.audio": {
-        "encoding": "utf-8"
-    },
-    "no.teknologi.bil": {
-        "encoding": "utf-8"
-    },
-    "no.teknologi.diverse": {
-        "encoding": "utf-8"
-    },
-    "no.teknologi.elektronikk": {
-        "encoding": "utf-8"
-    },
-    "no.teknologi.hjemmekino": {
-        "encoding": "utf-8"
-    },
-    "no.teknologi.satellitt-tv": {
-        "encoding": "utf-8"
-    },
-    "no.teknologi.video": {
-        "encoding": "utf-8"
-    },
-    "no.tele": {
-        "encoding": "utf-8"
-    },
-    "no.telepost": {
-        "encoding": "utf-8"
-    },
-    "no.test": {
-        "encoding": "utf-8"
-    },
-    "no.tex": {
-        "encoding": "utf-8"
-    },
-    "no.tungregning": {
-        "encoding": "utf-8"
-    },
-    "no.typografi": {
-        "encoding": "utf-8"
-    },
-    "no.uninett.diverse": {
-        "encoding": "utf-8"
-    },
-    "no.uninett.drift": {
-        "encoding": "utf-8"
-    },
-    "no.uninett.hjelp": {
-        "encoding": "utf-8"
-    },
-    "no.uninett.katalog": {
-        "encoding": "utf-8"
-    },
-    "no.uninett.skole": {
-        "encoding": "utf-8"
-    },
-    "no.unix": {
-        "encoding": "utf-8"
-    },
-    "no.usenet.admin": {
-        "encoding": "utf-8"
-    },
-    "no.usenet.informasjon": {
-        "encoding": "utf-8"
-    },
-    "no.velkommen": {
-        "encoding": "utf-8"
-    },
-    "no.video": {
-        "encoding": "utf-8"
-    },
-    "no.vit.diverse": {
-        "encoding": "utf-8"
-    },
-    "no.vitser": {
-        "encoding": "utf-8"
-    },
-    "no.vr": {
-        "encoding": "utf-8"
-    },
-    "no.www": {
-        "encoding": "utf-8"
-    },
-    "no.x": {
-        "encoding": "utf-8"
-    }
+    "no.ai.mbox": "UTF-8",
+    "no.alkohol.mbox": "UTF-8",
+    "no.alt.activeworlds.mbox": "UTF-8",
+    "no.alt.amiga.mbox": "UTF-8",
+    "no.alt.arkiv.mbox": "UTF-8",
+    "no.alt.bekymringer.mbox": "UTF-8",
+    "no.alt.bilprat.mbox": "UTF-8",
+    "no.alt.bilstereo.mbox": "UTF-8",
+    "no.alt.config.mbox": "UTF-8",
+    "no.alt.diskusjoner.mbox": "UTF-8",
+    "no.alt.diskusjoner.usa.mbox": "UTF-8",
+    "no.alt.ekspartnere.mbox": "UTF-8",
+    "no.alt.fan.de-lillos.mbox": "UTF-8",
+    "no.alt.flame.mbox": "UTF-8",
+    "no.alt.fritid.hytteliv.mbox": "UTF-8",
+    "no.alt.frustrasjoner.mbox": "UTF-8",
+    "no.alt.geek.pludring.mbox": "UTF-8",
+    "no.alt.gledesutbrudd.mbox": "UTF-8",
+    "no.alt.god.jul.mbox": "UTF-8",
+    "no.alt.gratulerer.mbox": "UTF-8",
+    "no.alt.gullkorn.d.mbox": "UTF-8",
+    "no.alt.gullkorn.mbox": "UTF-8",
+    "no.alt.hjemmesider.frontpage.mbox": "UTF-8",
+    "no.alt.hjemmesider.mbox": "UTF-8",
+    "no.alt.hundebitt.mbox": "UTF-8",
+    "no.alt.hunder.mbox": "UTF-8",
+    "no.alt.irc-treff.mbox": "UTF-8",
+    "no.alt.jenteprat.mbox": "UTF-8",
+    "no.alt.karlsen+spangelid.mbox": "UTF-8",
+    "no.alt.katter.mbox": "UTF-8",
+    "no.alt.maktmisbruk.psykopati.mbox": "UTF-8",
+    "no.alt.marked.seksualitet.mbox": "UTF-8",
+    "no.alt.mat.drikke.mbox": "UTF-8",
+    "no.alt.mat.mbox": "UTF-8",
+    "no.alt.motorsykler.mbox": "UTF-8",
+    "no.alt.news-treff.mbox": "UTF-8",
+    "no.alt.pludring.intens.mbox": "UTF-8",
+    "no.alt.pludring.mbox": "UTF-8",
+    "no.alt.pompel-og-pilt.mbox": "UTF-8",
+    "no.alt.radio-tv.irma-1000.mbox": "UTF-8",
+    "no.alt.rykter.mbox": "UTF-8",
+    "no.alt.sjokolade.mbox": "UTF-8",
+    "no.alt.tegneserier.mbox": "UTF-8",
+    "no.alt.tegneserier.samlerforum.mbox": "UTF-8",
+    "no.alt.troll.mbox": "UTF-8",
+    "no.alt.undring.mbox": "UTF-8",
+    "no.amiga.mbox": "UTF-8",
+    "no.annonser.audio-video.mbox": "UTF-8",
+    "no.annonser.bil.mbox": "UTF-8",
+    "no.annonser.bolig.mbox": "UTF-8",
+    "no.annonser.diskusjon.mbox": "UTF-8",
+    "no.annonser.diverse.mbox": "UTF-8",
+    "no.annonser.dyr.mbox": "UTF-8",
+    "no.annonser.foreldre+barn.mbox": "UTF-8",
+    "no.annonser.foto.mbox": "UTF-8",
+    "no.annonser.friluftsliv.mbox": "UTF-8",
+    "no.annonser.it.diverse.mbox": "UTF-8",
+    "no.annonser.it.maskinvare.diverse.mbox": "UTF-8",
+    "no.annonser.it.nettilbydere.mbox": "UTF-8",
+    "no.annonser.it.nettverk.mbox": "UTF-8",
+    "no.annonser.it.programvare.diverse.mbox": "UTF-8",
+    "no.annonser.it.telekom.mbox": "UTF-8",
+    "no.annonser.it.unix.mbox": "UTF-8",
+    "no.annonser.jobb.onskes.mbox": "UTF-8",
+    "no.annonser.jobb.selvstendig.mbox": "UTF-8",
+    "no.annonser.jobb.tilbys.mbox": "UTF-8",
+    "no.annonser.kontakt.diverse.mbox": "UTF-8",
+    "no.annonser.maritim.mbox": "UTF-8",
+    "no.annonser.motorsykkel.mbox": "UTF-8",
+    "no.annonser.musikk.mbox": "UTF-8",
+    "no.annonser.spill.data.mbox": "UTF-8",
+    "no.annonser.spill.diverse.mbox": "UTF-8",
+    "no.annonser.spill.tv.mbox": "UTF-8",
+    "no.annonser.sykkel.mbox": "UTF-8",
+    "no.audio.mbox": "UTF-8",
+    "no.bibsys.mbox": "UTF-8",
+    "no.bil.mbox": "UTF-8",
+    "no.biz.annonser.data.mbox": "UTF-8",
+    "no.biz.annonser.mbox": "UTF-8",
+    "no.biz.diskusjoner.mbox": "UTF-8",
+    "no.biz.mbox": "UTF-8",
+    "no.biz.nettilbydere.mbox": "UTF-8",
+    "no.bolig.mbox": "UTF-8",
+    "no.c.mbox": "UTF-8",
+    "no.ef.mbox": "UTF-8",
+    "no.elektronikk.mbox": "UTF-8",
+    "no.embnet.mbox": "UTF-8",
+    "no.eunet.diverse.mbox": "UTF-8",
+    "no.eunet.drift.mbox": "UTF-8",
+    "no.eunet.hjelp.mbox": "UTF-8",
+    "no.fag.diverse.mbox": "UTF-8",
+    "no.fag.filosofi.mbox": "UTF-8",
+    "no.fag.jus.it.mbox": "UTF-8",
+    "no.fag.jus.mbox": "UTF-8",
+    "no.fag.kjemi.mbox": "UTF-8",
+    "no.fag.landbruk.mbox": "UTF-8",
+    "no.fag.medisin.diverse.mbox": "UTF-8",
+    "no.fag.psykologi.generell.mbox": "UTF-8",
+    "no.fag.samfunnsvitenskap.mbox": "UTF-8",
+    "no.fag.sjukepleie.mbox": "UTF-8",
+    "no.fag.spraak.diverse.mbox": "UTF-8",
+    "no.fag.spraak.fagord.mbox": "UTF-8",
+    "no.fag.spraak.strid.mbox": "UTF-8",
+    "no.fag.typografi.mbox": "UTF-8",
+    "no.film.mbox": "UTF-8",
+    "no.folklore.edb.mbox": "UTF-8",
+    "no.folklore.generelt.mbox": "UTF-8",
+    "no.folklore.overtro.mbox": "UTF-8",
+    "no.fritid.akvarium.mbox": "UTF-8",
+    "no.fritid.bolig.mbox": "UTF-8",
+    "no.fritid.diverse.mbox": "UTF-8",
+    "no.fritid.dykking.mbox": "UTF-8",
+    "no.fritid.dyr.diverse.mbox": "UTF-8",
+    "no.fritid.fiske.mbox": "UTF-8",
+    "no.fritid.foto.mbox": "UTF-8",
+    "no.fritid.friluftsliv.mbox": "UTF-8",
+    "no.fritid.hage.mbox": "UTF-8",
+    "no.fritid.hobbyverksted.mbox": "UTF-8",
+    "no.fritid.jakt.mbox": "UTF-8",
+    "no.fritid.maritim.mbox": "UTF-8",
+    "no.fritid.modellhobby.mbox": "UTF-8",
+    "no.fritid.reiser.mbox": "UTF-8",
+    "no.fritid.slektsforsking.diverse.mbox": "UTF-8",
+    "no.fritid.slektsforsking.etterlysing.mbox": "UTF-8",
+    "no.fritid.slektsforsking.it.mbox": "UTF-8",
+    "no.fritid.speiding.mbox": "UTF-8",
+    "no.fritid.spill.data.mbox": "UTF-8",
+    "no.fritid.spill.diverse.mbox": "UTF-8",
+    "no.fritid.spill.rollespill.mbox": "UTF-8",
+    "no.fritid.spill.sjakk.mbox": "UTF-8",
+    "no.fritid.sykkel.mbox": "UTF-8",
+    "no.general.mbox": "UTF-8",
+    "no.havforskning.mbox": "UTF-8",
+    "no.hobby.diverse.mbox": "UTF-8",
+    "no.irc.mbox": "UTF-8",
+    "no.it.data.xml.mbox": "UTF-8",
+    "no.it.database.diverse.mbox": "UTF-8",
+    "no.it.diverse.mbox": "UTF-8",
+    "no.it.emacs.mbox": "UTF-8",
+    "no.it.grafikk.diverse.mbox": "UTF-8",
+    "no.it.maskinvare.diverse.mbox": "UTF-8",
+    "no.it.maskinvare.grafikkort.mbox": "UTF-8",
+    "no.it.maskinvare.overklokking.mbox": "UTF-8",
+    "no.it.maskinvare.pda.mbox": "UTF-8",
+    "no.it.nettverk.mbox": "UTF-8",
+    "no.it.nostalgi.mbox": "UTF-8",
+    "no.it.os.amiga.diverse.mbox": "UTF-8",
+    "no.it.os.amiga.maskinvare.mbox": "UTF-8",
+    "no.it.os.amiga.programvare.mbox": "UTF-8",
+    "no.it.os.beos.mbox": "UTF-8",
+    "no.it.os.mac.diverse.mbox": "UTF-8",
+    "no.it.os.ms-windows.diverse.mbox": "UTF-8",
+    "no.it.os.ms-windows.nettverk.mbox": "UTF-8",
+    "no.it.os.ms-windows.nt.mbox": "UTF-8",
+    "no.it.os.os2.mbox": "UTF-8",
+    "no.it.os.unix.diverse.mbox": "UTF-8",
+    "no.it.os.unix.linux.diverse.mbox": "UTF-8",
+    "no.it.os.unix.linux.nettverk.mbox": "UTF-8",
+    "no.it.programmering.asp.mbox": "UTF-8",
+    "no.it.programmering.c++.mbox": "UTF-8",
+    "no.it.programmering.c.mbox": "UTF-8",
+    "no.it.programmering.delphi.mbox": "UTF-8",
+    "no.it.programmering.diverse.mbox": "UTF-8",
+    "no.it.programmering.dotnet.mbox": "UTF-8",
+    "no.it.programmering.java.mbox": "UTF-8",
+    "no.it.programmering.javascript.mbox": "UTF-8",
+    "no.it.programmering.lisp.mbox": "UTF-8",
+    "no.it.programmering.perl.mbox": "UTF-8",
+    "no.it.programmering.php.mbox": "UTF-8",
+    "no.it.programmering.python.mbox": "UTF-8",
+    "no.it.programmering.visual-basic.mbox": "UTF-8",
+    "no.it.programvare.emacs.mbox": "UTF-8",
+    "no.it.programvare.ms-office.mbox": "UTF-8",
+    "no.it.programvare.tex.mbox": "UTF-8",
+    "no.it.sikkerhet.diverse.mbox": "UTF-8",
+    "no.it.sikkerhet.virus.mbox": "UTF-8",
+    "no.it.telekom.diverse.mbox": "UTF-8",
+    "no.it.telekom.isdn.mbox": "UTF-8",
+    "no.it.telekom.mobil.mbox": "UTF-8",
+    "no.it.tjenester.irc.mbox": "UTF-8",
+    "no.it.tjenester.mail.diverse.mbox": "UTF-8",
+    "no.it.tjenester.nettilbydere.mbox": "UTF-8",
+    "no.it.tjenester.news.diverse.mbox": "UTF-8",
+    "no.it.tjenester.www.css.mbox": "UTF-8",
+    "no.it.tjenester.www.design.mbox": "UTF-8",
+    "no.it.tjenester.www.diverse.mbox": "UTF-8",
+    "no.it.tjenester.www.html.mbox": "UTF-8",
+    "no.it.tjenester.www.programmering.mbox": "UTF-8",
+    "no.jus.mbox": "UTF-8",
+    "no.kjemi.mbox": "UTF-8",
+    "no.kryptografi.mbox": "UTF-8",
+    "no.kultur.diverse.mbox": "UTF-8",
+    "no.kultur.film.mbox": "UTF-8",
+    "no.kultur.folklore.diverse.mbox": "UTF-8",
+    "no.kultur.folklore.overtro.mbox": "UTF-8",
+    "no.kultur.folklore.ufo.mbox": "UTF-8",
+    "no.kultur.fritid.friluftsliv.mbox": "UTF-8",
+    "no.kultur.genre.sf.mbox": "UTF-8",
+    "no.kultur.humor.mbox": "UTF-8",
+    "no.kultur.litteratur.diverse.mbox": "UTF-8",
+    "no.kultur.musikk.diverse.mbox": "UTF-8",
+    "no.kultur.musikk.gitar.mbox": "UTF-8",
+    "no.kultur.musikk.klassisk.mbox": "UTF-8",
+    "no.kultur.musikk.korps.mbox": "UTF-8",
+    "no.kultur.musikk.produksjon.mbox": "UTF-8",
+    "no.linux.mbox": "UTF-8",
+    "no.lisp.mbox": "UTF-8",
+    "no.litteratur.mbox": "UTF-8",
+    "no.lokal.drammen.mbox": "UTF-8",
+    "no.lokal.oslo.mbox": "UTF-8",
+    "no.lokal.ringerike.mbox": "UTF-8",
+    "no.mac.mbox": "UTF-8",
+    "no.mail.diverse.mbox": "UTF-8",
+    "no.mail.drift.mbox": "UTF-8",
+    "no.marked.bil.mbox": "UTF-8",
+    "no.marked.bolig.mbox": "UTF-8",
+    "no.marked.data.mbox": "UTF-8",
+    "no.marked.diskusjon.mbox": "UTF-8",
+    "no.marked.jobb.mbox": "UTF-8",
+    "no.marked.mbox": "UTF-8",
+    "no.media.mbox": "UTF-8",
+    "no.medisin.mbox": "UTF-8",
+    "no.ms-windows.mbox": "UTF-8",
+    "no.multimedia.mbox": "UTF-8",
+    "no.musikk.gitar.mbox": "UTF-8",
+    "no.musikk.klassisk.mbox": "UTF-8",
+    "no.musikk.mbox": "UTF-8",
+    "no.net.mbox": "UTF-8",
+    "no.nettvett.mbox": "UTF-8",
+    "no.news.diverse.mbox": "UTF-8",
+    "no.news.drift.mbox": "UTF-8",
+    "no.norsk.fagord.mbox": "UTF-8",
+    "no.norsk.mbox": "UTF-8",
+    "no.nuug.mbox": "UTF-8",
+    "no.org.diverse.mbox": "UTF-8",
+    "no.org.dnd.mbox": "UTF-8",
+    "no.org.efn.diskusjon.mbox": "UTF-8",
+    "no.org.efn.nyheter.mbox": "UTF-8",
+    "no.org.isoc-no.mbox": "UTF-8",
+    "no.org.nobug.diverse.mbox": "UTF-8",
+    "no.org.nobug.nytt.mbox": "UTF-8",
+    "no.org.nuug.mbox": "UTF-8",
+    "no.pc.mbox": "UTF-8",
+    "no.perl.mbox": "UTF-8",
+    "no.prat.aksjer.mbox": "UTF-8",
+    "no.prat.narkotika.mbox": "UTF-8",
+    "no.prat.politikk.mbox": "UTF-8",
+    "no.prat.seksualitet.mbox": "UTF-8",
+    "no.prat.ufo.mbox": "UTF-8",
+    "no.pressemeldinger.diskusjon.mbox": "UTF-8",
+    "no.pressemeldinger.mbox": "UTF-8",
+    "no.psykologi.mbox": "UTF-8",
+    "no.radio-tv.mbox": "UTF-8",
+    "no.reiser.mbox": "UTF-8",
+    "no.religion.mbox": "UTF-8",
+    "no.samfunn.aksjer.mbox": "UTF-8",
+    "no.samfunn.alkohol.mbox": "UTF-8",
+    "no.samfunn.diverse.mbox": "UTF-8",
+    "no.samfunn.forbruker.mbox": "UTF-8",
+    "no.samfunn.foreldre+barn.mbox": "UTF-8",
+    "no.samfunn.helse.funksjonshemming.diverse.mbox": "UTF-8",
+    "no.samfunn.helse.livsstil.mbox": "UTF-8",
+    "no.samfunn.media.diverse.mbox": "UTF-8",
+    "no.samfunn.media.radio-tv.mbox": "UTF-8",
+    "no.samfunn.media.radio-tv.virkelighets-tv.mbox": "UTF-8",
+    "no.samfunn.narkotika.mbox": "UTF-8",
+    "no.samfunn.naturvern.mbox": "UTF-8",
+    "no.samfunn.okonomi.diverse.mbox": "UTF-8",
+    "no.samfunn.politikk.diverse.mbox": "UTF-8",
+    "no.samfunn.politikk.historie.mbox": "UTF-8",
+    "no.samfunn.politikk.innvandring.mbox": "UTF-8",
+    "no.samfunn.politikk.utenriks.mbox": "UTF-8",
+    "no.samfunn.politikk.vaapen.mbox": "UTF-8",
+    "no.samfunn.religion.mbox": "UTF-8",
+    "no.samfunn.seksualitet.mbox": "UTF-8",
+    "no.samfunn.skole.mbox": "UTF-8",
+    "no.samfunn.trafikk.mbox": "UTF-8",
+    "no.skole.diverse.mbox": "UTF-8",
+    "no.slekt.etterlysning.mbox": "UTF-8",
+    "no.slekt.mbox": "UTF-8",
+    "no.slekt.programmer.mbox": "UTF-8",
+    "no.sources.list.mbox": "UTF-8",
+    "no.sources.wanted.mbox": "UTF-8",
+    "no.speider.mbox": "UTF-8",
+    "no.spill.mbox": "UTF-8",
+    "no.spill.rollespill.mbox": "UTF-8",
+    "no.spill.sjakk.mbox": "UTF-8",
+    "no.sport.diverse.mbox": "UTF-8",
+    "no.sport.fotball.mbox": "UTF-8",
+    "no.sport.hockey.mbox": "UTF-8",
+    "no.sport.kampkunst.mbox": "UTF-8",
+    "no.sport.motorsport.mbox": "UTF-8",
+    "no.sport.orientering.mbox": "UTF-8",
+    "no.sport.paintball.mbox": "UTF-8",
+    "no.sport.skyting.mbox": "UTF-8",
+    "no.sport.volleyball.mbox": "UTF-8",
+    "no.standard.mbox": "UTF-8",
+    "no.stortinget.mbox": "UTF-8",
+    "no.student.nett.mbox": "UTF-8",
+    "no.student.samfund.mbox": "UTF-8",
+    "no.svar.mbox": "UTF-8",
+    "no.sykkel.mbox": "UTF-8",
+    "no.tegnsett.mbox": "UTF-8",
+    "no.teknologi.audio.mbox": "UTF-8",
+    "no.teknologi.bil.mbox": "UTF-8",
+    "no.teknologi.diverse.mbox": "UTF-8",
+    "no.teknologi.elektronikk.mbox": "UTF-8",
+    "no.teknologi.hjemmekino.mbox": "UTF-8",
+    "no.teknologi.satellitt-tv.mbox": "UTF-8",
+    "no.teknologi.video.mbox": "UTF-8",
+    "no.tele.mbox": "UTF-8",
+    "no.telepost.mbox": "UTF-8",
+    "no.test.mbox": "UTF-8",
+    "no.tex.mbox": "UTF-8",
+    "no.tungregning.mbox": "UTF-8",
+    "no.typografi.mbox": "UTF-8",
+    "no.uninett.diverse.mbox": "UTF-8",
+    "no.uninett.drift.mbox": "UTF-8",
+    "no.uninett.hjelp.mbox": "UTF-8",
+    "no.uninett.katalog.mbox": "UTF-8",
+    "no.uninett.skole.mbox": "UTF-8",
+    "no.unix.mbox": "UTF-8",
+    "no.usenet.admin.mbox": "UTF-8",
+    "no.usenet.informasjon.mbox": "UTF-8",
+    "no.velkommen.mbox": "UTF-8",
+    "no.video.mbox": "UTF-8",
+    "no.vit.diverse.mbox": "UTF-8",
+    "no.vitser.mbox": "UTF-8",
+    "no.vr.mbox": "UTF-8",
+    "no.www.mbox": "UTF-8",
+    "no.x.mbox": "UTF-8"
 }

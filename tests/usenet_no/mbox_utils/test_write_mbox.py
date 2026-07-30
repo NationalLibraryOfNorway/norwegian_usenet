@@ -2,7 +2,6 @@ import mailbox
 
 from usenet_no.mbox_utils import message_factory, write_mbox
 
-
 MESSAGE_A = """\
 From sender@example.com
 From: sender@example.com

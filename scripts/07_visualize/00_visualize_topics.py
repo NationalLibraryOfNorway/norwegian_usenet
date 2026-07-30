@@ -5,10 +5,10 @@ from pathlib import Path
 import numpy as np
 import plotly.graph_objects as go
 from bertopic import BERTopic
+from viz import hsl_to_hex
 
 from usenet_no.embed_messages import load_embeddings_and_docs
 from usenet_no.topic_modelling import make_run_tag
-from viz import hsl_to_hex
 
 logger = logging.getLogger(__name__)
 

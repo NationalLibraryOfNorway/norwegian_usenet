@@ -6,21 +6,19 @@ three NB sources do not have at the same position in the newsgroup tree, but
 that is a true substring of one of their names at that position, was probably
 cut off from that longer name.
 
-Extracts the NB tar archives first, when that has not happened yet, since the
-detection reads the extracted directory tree. Writes the candidate pairs as a
+Extracts the NB tar archives first. Writes the candidate pairs as a
 corrections file, which 02_parse_nb_archive.py reads to merge the cut-off
 newsgroups into their full-name mbox files. The file is meant to be reviewed
-before use, and can carry hand-added rows for renames this heuristic cannot
-find (such as `_` standing in for `-`). Changes nothing in the archive data
-itself.
+before use. Changes nothing in the archive data itself.
 """
 
 import argparse
 import csv
 import logging
+import sys
 from pathlib import Path
 
-from usenet_no.parse_norwegian_web_archive import (
+from usenet_no.archives.parse_nb_archive import (
     extract_tarfiles,
     find_newsgroups_parent_dir,
 )
@@ -40,9 +38,9 @@ def collect_directory_paths(root: Path) -> set[DirectoryPath]:
     """Collect the path of every directory below root, as lowercased name parts.
 
     Newsgroup names are built from these directory names (see
-    parse_norwegian_web_archive.concat_textfiles), and lowercased there too, so
-    lowercasing here lets names from the uppercase-only KZ2001-0147 CD be
-    compared with the other sources'.
+    archives.parse_nb_archive.concat_textfiles), and lowercased there
+    too, so lowercasing here lets names from the uppercase-only KZ2001-0147 CD
+    be compared with the other sources'.
     """
     return {
         tuple(part.lower() for part in directory.relative_to(root).parts)
@@ -113,7 +111,7 @@ if __name__ == "__main__":
             "Corrections file already exists: %s. Use --overwrite to regenerate.",
             args.output_file,
         )
-        exit(0)
+        sys.exit(0)
 
     extract_tarfiles(args.zipped_dir, args.unzipped_dir)
 

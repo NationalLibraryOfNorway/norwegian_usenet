@@ -76,10 +76,8 @@ def compare_message_ids(
     Counts distinct hashed ids in three groups: the ids each archive holds, the
     references one archive cannot resolve on its own but the other can, and the
     "ghost" references that point at a posting neither archive kept, split by
-    which archive cited them.
-
-    When `ia_date_span` is given, only IA is restricted to it; see the module
-    docstring.
+    which archive cited them. When `ia_date_span` is given, only IA is
+    restricted to it.
     """
     _create_id_table(connection, IA_IDS, IA_ARCHIVE, ia_date_span)
     _create_id_table(connection, NB_IDS, NB_ARCHIVE, None)
@@ -159,11 +157,8 @@ def compare_content_per_group(
 
     A newsgroup is counted in distinct bodies, so a posting the archives hold
     several copies of counts once. Messages with an empty body carry no hash and
-    are left out. A newsgroup only one archive has simply gets a zero on the
-    other side.
-
-    When `ia_date_span` is given, only IA is restricted to it; see the module
-    docstring.
+    are left out, and a newsgroup only one archive has gets a zero on the other
+    side. When `ia_date_span` is given, only IA is restricted to it.
     """
     return _compare_hashes_per_group(connection, "body_hash", ia_date_span)
 
@@ -176,9 +171,7 @@ def compare_message_ids_per_group(
     The per-newsgroup breakdown of `compare_message_ids`, counted in distinct
     hashed message ids, so a posting an archive kept several copies of counts
     once. Messages without an id are left out, and a newsgroup only one archive
-    has simply gets a zero on the other side.
-
-    When `ia_date_span` is given, only IA is restricted to it; see the module
-    docstring.
+    has gets a zero on the other side. When `ia_date_span` is given, only IA is
+    restricted to it.
     """
     return _compare_hashes_per_group(connection, "message_id_hash", ia_date_span)

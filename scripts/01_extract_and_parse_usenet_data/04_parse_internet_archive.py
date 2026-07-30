@@ -1,5 +1,4 @@
 import argparse
-import json
 import logging
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
@@ -7,7 +6,13 @@ from zipfile import ZipFile
 
 from tqdm import tqdm
 
-from usenet_no.parse_internet_archive import process_mbox_file
+from usenet_no.archives.encoding import (
+    FileEncodings,
+    load_file_encodings,
+    source_key,
+    write_file_encodings,
+)
+from usenet_no.archives.parse_internet_archive import process_mbox_file
 
 logger = logging.getLogger(__name__)
 
@@ -46,12 +51,7 @@ if __name__ == "__main__":
         "--encodings-file",
         type=Path,
         default=Path("data/input/internet_archive/encodings.json"),
-        help="Path to JSON file storing detected encodings",
-    )
-    parser.add_argument(
-        "--unicode-error-handler",
-        default="backslashreplace",
-        help="Error handling strategy for UnicodeDecodeError",
+        help="Path to JSON file storing the encoding detected per source mbox file",
     )
     parser.add_argument(
         "--overwrite",
@@ -74,16 +74,15 @@ if __name__ == "__main__":
     if num_docs_zipped != num_docs_unzipped:
         unzip_all(args.zipped_data_dir, args.unzipped_data_dir)
 
-    if args.encodings_file.exists() and not args.overwrite:
-        files_encodings = json.load(args.encodings_file.open())
-    else:
-        files_encodings = {}
+    encodings: FileEncodings = (
+        {} if args.overwrite else load_file_encodings(args.encodings_file)
+    )
 
     unzipped_mbox_files = [
         f
         for f in args.unzipped_data_dir.iterdir()
         if not (
-            f.stem in files_encodings
+            source_key(f, args.unzipped_data_dir) in encodings
             and (args.decoded_data_dir / f.name).exists()
             and not args.overwrite
         )
@@ -95,7 +94,6 @@ if __name__ == "__main__":
                 process_mbox_file,
                 mbox_file,
                 args.decoded_data_dir / mbox_file.name,
-                args.unicode_error_handler,
             ): mbox_file
             for mbox_file in unzipped_mbox_files
         }
@@ -104,13 +102,7 @@ if __name__ == "__main__":
             total=len(futures),
             desc=f"Parsing mbox files to {args.decoded_data_dir}",
         ):
-            stem, encoding = future.result()
-            files_encodings[stem] = {"encoding": encoding}
+            mbox_file = futures[future]
+            encodings[source_key(mbox_file, args.unzipped_data_dir)] = future.result()
 
-    with args.encodings_file.open("w+") as f:
-        json.dump(files_encodings, fp=f, indent=4, sort_keys=True)
-    logger.info(
-        "Wrote encodings metadata for %d files to %s",
-        len(files_encodings),
-        args.encodings_file,
-    )
+    write_file_encodings(encodings, args.encodings_file)

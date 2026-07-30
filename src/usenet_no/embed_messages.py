@@ -1,13 +1,12 @@
 import logging
 import mailbox
 from pathlib import Path
-from tqdm import tqdm
 
 import numpy as np
 from sentence_transformers import SentenceTransformer
+from tqdm import tqdm
 
-from usenet_no.mbox_utils import message_factory, get_message_body
-
+from usenet_no.mbox_utils import get_message_body, message_factory
 
 logger = logging.getLogger(__name__)
 
