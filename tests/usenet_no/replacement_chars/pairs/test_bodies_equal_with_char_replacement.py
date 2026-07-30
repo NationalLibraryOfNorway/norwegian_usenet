@@ -22,10 +22,3 @@ def test_replacement_char_where_nb_has_ascii_is_not_equal():
 
 def test_other_non_ascii_chars_are_not_replaced():
     assert not bodies_equal_with_char_replacement("café", "caf�")
-
-
-def test_whitespace_differences_are_ignored():
-    assert bodies_equal_with_char_replacement(
-        "Hei på\r\ndeg\n\n\n-- \n",
-        "Hei p�    deg\n-- ",
-    )

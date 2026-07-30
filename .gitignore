@@ -194,9 +194,10 @@ data/output/05_make_embeddings/*
 data/output/**/topic_modelling/
 
 
-# SQLite databases, too large to share over git (scripts/02_build_database.py rebuilds them)
+# SQLite databases, too big for github
 usenet.db
 usenet_private.db
+usenet_private.db-journal
 
 
 epadd-standalone.jar

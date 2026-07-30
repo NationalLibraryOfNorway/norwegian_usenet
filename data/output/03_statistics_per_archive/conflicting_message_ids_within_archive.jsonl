@@ -5,7 +5,6 @@
 {"archive": "ia", "hashed_message_id": "6c02d3ecf82461a5", "num_distinct_bodies": 2, "newsgroups": ["no.jus", "no.prat.politikk"]}
 {"archive": "ia", "hashed_message_id": "78035ad8dbe7383d", "num_distinct_bodies": 2, "newsgroups": ["no.marked.data"]}
 {"archive": "ia", "hashed_message_id": "7e6039502a7aba08", "num_distinct_bodies": 2, "newsgroups": ["no.general", "no.mac"]}
-{"archive": "ia", "hashed_message_id": "a4b28e7f4ea91eaf", "num_distinct_bodies": 2, "newsgroups": ["no.marked.jobb"]}
 {"archive": "ia", "hashed_message_id": "aad3b827c640b8b8", "num_distinct_bodies": 2, "newsgroups": ["no.general", "no.prat.politikk"]}
 {"archive": "ia", "hashed_message_id": "af6ecf94a4e942a7", "num_distinct_bodies": 2, "newsgroups": ["no.it.diverse"]}
 {"archive": "ia", "hashed_message_id": "b81cf802c6d125c4", "num_distinct_bodies": 2, "newsgroups": ["no.test"]}
@@ -13,7 +12,6 @@
 {"archive": "ia", "hashed_message_id": "e2a5dceb2ac14786", "num_distinct_bodies": 2, "newsgroups": ["no.it.maskinvare.diverse", "no.it.maskinvare.grafikkort"]}
 {"archive": "ia", "hashed_message_id": "e6b4c49b887abb53", "num_distinct_bodies": 2, "newsgroups": ["no.religion"]}
 {"archive": "ia", "hashed_message_id": "efc0e8d8ac1d1a9a", "num_distinct_bodies": 2, "newsgroups": ["no.alt.flame"]}
-{"archive": "ia", "hashed_message_id": "ff50d4aeb94d5e17", "num_distinct_bodies": 2, "newsgroups": ["no.marked", "no.musikk", "no.musikk.gitar", "no.student.samfund"]}
 {"archive": "nb", "hashed_message_id": "34084d341a3fb7e5", "num_distinct_bodies": 2, "newsgroups": ["no.marked"]}
 {"archive": "nb", "hashed_message_id": "acb2f4e6db1b89e6", "num_distinct_bodies": 2, "newsgroups": ["no.litteratur", "no.religion"]}
 {"archive": "nb", "hashed_message_id": "efc0e8d8ac1d1a9a", "num_distinct_bodies": 2, "newsgroups": ["no.alt.flame"]}
