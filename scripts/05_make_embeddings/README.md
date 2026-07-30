@@ -2,7 +2,7 @@
 
 These scripts read the mbox files rather than the database, since embedding needs the message text itself, which the database stores only as a hash.
 
-Scripts `02_` to `04_` pick the embedding model, by measuring how much the U+FFFD (`�`) damage in the IA archive moves a model. They come before the embedding scripts because their answer decides which model those are run with.
+Scripts `02_` to `04_` mesure how robust an embedding model is to the U+FFFD (`�`) damage in the IA archive. They come before the embedding scripts because their answer decides which model those are run with.
 
 - [00_select_newsgroups.py](00_select_newsgroups.py) writes the top 50 newsgroups by combined unique message count, reading `data/output/04_compare_archives/ia_nb_content_comparison_date_filtered.csv` (from step 04) and keeping only groups where both archives contribute unique messages. Creates `data/output/05_make_embeddings/newsgroups_for_selection.jsonl`, meant as candidates when choosing the `--selection` newsgroups for the scripts below.
 - [01_filter_internet_archive_by_date.py](01_filter_internet_archive_by_date.py) filters the IA mbox files to only include messages within the date span of the NB archive (reading `data/output/03_statistics_per_archive/date_count_nb.csv`), and writes them to `data/input/internet_archive/date_filtered`. Messages whose date could not be parsed are excluded.
