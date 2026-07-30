@@ -29,7 +29,6 @@ from tqdm import tqdm
 from usenet_no.database.conflicts import NewsgroupBodyConflict
 from usenet_no.database.core import IA_ARCHIVE, NB_ARCHIVE
 from usenet_no.mbox_utils import get_message_bodies_at_positions
-from usenet_no.text_normalization import normalize_whitespace
 
 REPLACEMENT_CHAR = "\N{REPLACEMENT CHARACTER}"
 NORWEGIAN_CHARS = "æøåÆØÅ"
@@ -57,9 +56,8 @@ class ReplacementCharPair:
     The two bodies are the same posting, differing only in that the IA copy lost
     some of æ/ø/å/Æ/Ø/Å to U+FFFD.
 
-    Both are stored whitespace-normalized, the same way
-    `bodies_equal_with_char_replacement` compares them, since the archives wrap
-    and space the same posting differently.
+    Both are whitespace-normalized, since `get_message_body` normalizes every
+    body it reads and the archives wrap and space the same posting differently.
     """
 
     newsgroup: str
@@ -76,12 +74,10 @@ ConflictBodies = tuple[NewsgroupBodyConflict, list[str], list[str]]
 def bodies_equal_with_char_replacement(nb_body: str, ia_body: str) -> bool:
     """True when the bodies agree once æ/ø/å/Æ/Ø/Å (NB) and U+FFFD (IA) become "_".
 
-    Whitespace is normalized on both sides first, so a difference in wrapping or
-    line endings does not count as a disagreement.
+    Both bodies come from `get_message_body`, which normalizes whitespace, so a
+    difference in wrapping or line endings does not count as a disagreement.
     """
-    return normalize_whitespace(nb_body.translate(_NB_TABLE)) == normalize_whitespace(
-        ia_body.translate(_IA_TABLE)
-    )
+    return nb_body.translate(_NB_TABLE) == ia_body.translate(_IA_TABLE)
 
 
 def _load_conflict_bodies(
@@ -215,13 +211,12 @@ def _first_pair_for_conflict(
             continue
         for nb_body in nb_bodies:
             if bodies_equal_with_char_replacement(nb_body, ia_body):
-                normalized_ia_body = normalize_whitespace(ia_body)
                 return ReplacementCharPair(
                     newsgroup=conflict.newsgroup,
                     message_id_hash=conflict.message_id_hash,
-                    nb_body=normalize_whitespace(nb_body),
-                    ia_body=normalized_ia_body,
-                    replacement_char_count=normalized_ia_body.count(REPLACEMENT_CHAR),
+                    nb_body=nb_body,
+                    ia_body=ia_body,
+                    replacement_char_count=ia_body.count(REPLACEMENT_CHAR),
                 )
     return None
 

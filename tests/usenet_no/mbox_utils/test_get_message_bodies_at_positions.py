@@ -30,13 +30,13 @@ def mbox_file(tmp_path):
 def test_returns_bodies_by_position(mbox_file):
     bodies = get_message_bodies_at_positions(mbox_file, [2, 0])
 
-    assert bodies == {0: "first body\n", 2: "third body\n"}
+    assert bodies == {0: "first body", 2: "third body"}
 
 
 def test_accepts_matching_expected_message_count(mbox_file):
     bodies = get_message_bodies_at_positions(mbox_file, [1], expected_message_count=3)
 
-    assert bodies == {1: "second body\n"}
+    assert bodies == {1: "second body"}
 
 
 def test_raises_on_wrong_expected_message_count(mbox_file):

@@ -8,6 +8,15 @@ from pathlib import Path
 _MESSAGE_ID_PATTERN = re.compile(r"<[^>]+>")
 
 
+def _normalize_whitespace(text: str) -> str:
+    """Collapse every run of whitespace to a single space and strip the ends.
+
+    Folds away the differences that come from the two archives reflowing or
+    re-wrapping the same text: trailing spaces, CRLF vs LF, blank-line runs.
+    """
+    return " ".join(text.split())
+
+
 def parse_message_id(raw: str | None) -> str | None:
     """Extract the bare message-id (with angle brackets) from a Message-ID header value.
 
@@ -91,15 +100,19 @@ def _decode_mbox_message(part: mailbox.mboxMessage) -> str:
 
 
 def get_message_body(message: mailbox.mboxMessage) -> str:
+    """Return the message body as whitespace-normalized text.
+
+    Normalizing here rather than per caller means the body that is hashed into
+    the database, embedded, and compared across archives is the same text.
+    """
     if message.is_multipart():
-        parts = []
-        for part in message.walk():
-            if part.get_content_type() == "text/plain":
-                decoded = _decode_mbox_message(part)
-                if decoded:
-                    parts.append(decoded.strip())
-        return "\n".join(parts)
-    return _decode_mbox_message(message)
+        parts = [
+            _decode_mbox_message(part)
+            for part in message.walk()
+            if part.get_content_type() == "text/plain"
+        ]
+        return _normalize_whitespace(" ".join(parts))
+    return _normalize_whitespace(_decode_mbox_message(message))
 
 
 def get_message_bodies_at_positions(
