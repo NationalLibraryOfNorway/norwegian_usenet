@@ -32,22 +32,18 @@ def message_factory(fp: mailbox._PartialFile) -> mailbox.mboxMessage:
     return mailbox.mboxMessage(utf8_message_parser.parse(fp))
 
 
-def write_mbox(messages: Iterable[str], outfile: Path, append: bool = False) -> int:
+def write_mbox(messages: Iterable[str], outfile: Path, append: bool = False) -> None:
     """Write messages to outfile with consistent normalization.
 
     Each message gets ensure_mbox_envelope applied, trailing whitespace stripped,
     and is separated by a blank line. Written as UTF-8 bytes.
     Use append=True when multiple sources contribute to the same output file.
-    Returns the number of messages written.
     """
-    count = 0
     mode = "ab" if append else "wb"
     with outfile.open(mode) as f:
         for text in messages:
             normalized = ensure_mbox_envelope(text).rstrip() + "\n\n"
             f.write(normalized.encode("utf-8"))
-            count += 1
-    return count
 
 
 def ensure_mbox_envelope(text: str) -> str:
