@@ -9,8 +9,8 @@ and any two different pairs are at least 2*pi/20 radians apart.
 import numpy as np
 import pytest
 
-from usenet_no.replacement_chars.robustness import evaluate_pairs
 from usenet_no.replacement_chars import REPLACEMENT_CHAR
+from usenet_no.replacement_chars.robustness import evaluate_pairs
 
 DAMAGE_ANGLE = 0.1
 NUM_ANGLES = 20

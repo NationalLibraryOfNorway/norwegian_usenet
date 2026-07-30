@@ -3,8 +3,8 @@ import csv
 import logging
 from pathlib import Path
 
-from usenet_no.database.comparison import compare_content_per_group
 from usenet_no.database import NB_ARCHIVE, connect
+from usenet_no.database.comparison import compare_content_per_group
 from usenet_no.database.statistics import get_date_span
 
 logger = logging.getLogger(__name__)

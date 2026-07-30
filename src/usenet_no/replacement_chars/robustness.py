@@ -2,15 +2,12 @@
 
 The evaluation set is built by `usenet_no.replacement_chars.pairs`: pairs of
 bodies that are the same posting in the two archives, where the IA copy lost
-æ/ø/å/Æ/Ø/Å to the replacement character U+FFFD and the NB copy did not. A
-model that is robust to the damage puts the two copies of a pair in nearly the
-same place, so the cosine similarity of their embeddings is the measurement.
+æ/ø/å/Æ/Ø/Å to the replacement character U+FFFD and the NB copy did not. The
+measurement is the cosine similarity between the embeddings of the two copies.
 
-The similarities are read against a floor: the same IA embeddings scored
-against NB embeddings of *other* pairs (a derangement, so no pair keeps its own
-partner). That says what similarity two unrelated messages in this collection
-get from the model, which is what the matched similarities have to be compared
-to.
+A second set of similarities scores the same IA embeddings against NB
+embeddings of *other* pairs (a derangement, so no pair keeps its own partner),
+giving the similarity unrelated messages in this collection get from the model.
 
 A crossposted message conflicts in every newsgroup that carries it, so the same
 body pair is collected several times over: `deduplicate_pairs` reduces those to
@@ -117,13 +114,9 @@ def lowest_scoring_pairs(
 ) -> list[tuple[PairSimilarity, ReplacementCharPair]]:
     """The `num_examples` worst-scoring pairs that score below `max_score`.
 
-    Fewer come back when fewer pairs score that low. Rows whose message id is
-    not in `pairs` are left out with a warning: the two files are then not from
-    the same evaluation set, and pairing them up anyway would show the bodies of
-    one message next to the score of another.
-
-    Sorted by score, worst first, and ties broken by message id so that reruns
-    print the same examples in the same order.
+    Rows whose message id is not in `pairs` are left out with a warning:
+    pairing them up anyway would show the bodies of one message next to the
+    score of another. Sorted by score, worst first, ties broken by message id.
     """
     pairs_by_message_id = {pair.message_id_hash: pair for pair in pairs}
 
@@ -153,11 +146,8 @@ def correlate_with_similarity(
 
     Pearson r over the scored pairs, for the amount of damage (how many
     replacement characters), the length of the message, and the density of the
-    damage (replacement characters per character). Says which of the three the
-    model's loss of similarity follows.
-
-    A measure that never varies, and a set of fewer than two pairs, correlate
-    with nothing: those come back as NaN rather than as a number.
+    damage (replacement characters per character). A measure that never varies,
+    and a set of fewer than two pairs, come back as NaN.
     """
     scores = np.array([row.matched_similarity for row in similarities], dtype=float)
     counts = np.array([row.replacement_char_count for row in similarities], dtype=float)
@@ -193,9 +183,8 @@ def format_side_by_side(
 ) -> str:
     """Lay two texts out in two columns of a combined `width` characters.
 
-    The two bodies of a pair hold the same characters apart from the U+FFFD, so
-    wrapping both columns at the same width puts the same words on the same
-    line on both sides, and the damage is what stands out between them.
+    Both columns wrap at the same width, which puts the same words on the same
+    line on either side of a pair.
     """
     column_width = max((width - len(_COLUMN_SEPARATOR)) // 2, _MIN_COLUMN_WIDTH)
     left_lines = _wrap(left_heading, left_text, column_width)
@@ -221,20 +210,14 @@ def deduplicate_pairs(
 ) -> list[ReplacementCharPair]:
     """Keep one pair per message id, the copy from the smallest newsgroup.
 
-    A crossposted message is held by every newsgroup it was posted to, and
-    conflicts in each of them, so the same body pair comes back once per
-    newsgroup. Keeping every copy would measure that message several times over
-    and weight the evaluation towards whatever gets crossposted.
+    A crossposted message conflicts in every newsgroup that carries it, so the
+    same body pair comes back once per newsgroup, and keeping every copy would
+    measure that message several times over.
 
-    Of the copies, the one kept is from the newsgroup that contributes the
-    fewest pairs, counted over the pairs themselves. That leaves the small
-    newsgroups the messages they do have, rather than emptying them into the
-    large ones that share the same crossposts. Newsgroups contributing equally
-    many pairs are ordered by name, so the choice does not depend on the order
-    the pairs arrive in.
-
-    Returned sorted by (newsgroup, message id hash), the newsgroup being the
-    one the pair was kept under.
+    The copy kept is the one from the newsgroup contributing the fewest pairs,
+    which leaves the small newsgroups the messages they do have rather than
+    emptying them into the large ones that share the same crossposts. Ties are
+    broken by newsgroup name. Sorted by (newsgroup, message id hash).
     """
     pairs = list(pairs)
     pairs_per_newsgroup = Counter(pair.newsgroup for pair in pairs)
@@ -264,15 +247,13 @@ def sample_pairs(
 ) -> list[ReplacementCharPair]:
     """Sample at most `max_pairs` pairs, spread as evenly over the newsgroups as possible.
 
-    Taken one newsgroup at a time in rounds rather than at random from the
-    whole set, so that a sample smaller than the full set is not simply the
-    largest newsgroups: every newsgroup contributes the same number of pairs,
-    give or take one, and the ones with fewer pairs than that contribute all
-    they have. Which pairs a newsgroup contributes, and which newsgroups get
-    the odd extra one, is decided by `seed`.
+    Taken one newsgroup at a time in rounds rather than at random from the whole
+    set, so every newsgroup contributes the same number of pairs give or take
+    one, and those with fewer contribute all they have. `seed` decides which
+    pairs a newsgroup contributes and which newsgroups get the odd extra one.
 
-    `max_pairs` of 0 or less keeps every pair. The sample stays in the order
-    the pairs came in.
+    `max_pairs` of 0 or less keeps every pair. The sample stays in the order the
+    pairs came in.
     """
     if max_pairs <= 0 or len(pairs) <= max_pairs:
         return pairs
@@ -341,8 +322,7 @@ def cosine_similarities(
 def derangement(size: int, seed: int) -> np.ndarray:
     """A permutation of 0..size-1 that leaves no index in place.
 
-    Used to pair every IA body with an NB body that is not its own, so the
-    baseline never accidentally scores a true pair.
+    Pairs every IA body with an NB body that is not its own.
     """
     if size < 2:
         raise ValueError(f"Cannot derange {size} element(s)")
@@ -385,11 +365,7 @@ def evaluate_pairs(
     seed: int = 42,
     encode_kwargs: dict | None = None,
 ) -> tuple[RobustnessSummary, np.ndarray, np.ndarray]:
-    """Score one model on the pairs, returning the summary and both similarity sets.
-
-    The per-pair similarities come back alongside the summary so a caller can
-    write them out next to the pairs they belong to.
-    """
+    """Score one model on the pairs, returning the summary and both similarity sets."""
     nb_embeddings, ia_embeddings = embed_pairs(pairs, model, batch_size, encode_kwargs)
     matched = cosine_similarities(nb_embeddings, ia_embeddings)
     shuffled = shuffled_similarities(nb_embeddings, ia_embeddings, seed)

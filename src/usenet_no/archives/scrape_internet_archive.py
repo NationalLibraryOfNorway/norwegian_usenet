@@ -1,7 +1,7 @@
 import logging
 import time
 from pathlib import Path
-from urllib.parse import urlparse, unquote
+from urllib.parse import unquote, urlparse
 
 import requests
 from bs4 import BeautifulSoup

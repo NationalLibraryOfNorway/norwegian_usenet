@@ -4,6 +4,7 @@ import shutil
 import sys
 from pathlib import Path
 
+from usenet_no.replacement_chars import ReplacementCharPair
 from usenet_no.replacement_chars.robustness import (
     PairSimilarity,
     correlate_with_similarity,
@@ -12,7 +13,6 @@ from usenet_no.replacement_chars.robustness import (
     read_pairs,
     read_similarities,
 )
-from usenet_no.replacement_chars import ReplacementCharPair
 
 logger = logging.getLogger(__name__)
 

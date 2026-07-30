@@ -1,9 +1,9 @@
 """count_conflicts_in_mbox_files needs no database: the conflicts and id spans
 are built by hand, pointing into the sample mbox files by position."""
 
-from usenet_no.replacement_chars.pairs import count_conflicts_in_mbox_files
 from usenet_no.database import IA_ARCHIVE, NB_ARCHIVE
 from usenet_no.database.conflicts import NewsgroupBodyConflict
+from usenet_no.replacement_chars.pairs import count_conflicts_in_mbox_files
 
 NEWSGROUP = "no.replacement.chars"
 

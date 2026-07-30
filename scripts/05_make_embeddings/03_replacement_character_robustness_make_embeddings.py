@@ -9,12 +9,12 @@ from pathlib import Path
 import numpy as np
 from sentence_transformers import SentenceTransformer
 
+from usenet_no.replacement_chars import ReplacementCharPair
 from usenet_no.replacement_chars.robustness import (
     RobustnessSummary,
     evaluate_pairs,
     read_pairs,
 )
-from usenet_no.replacement_chars import ReplacementCharPair
 
 logger = logging.getLogger(__name__)
 

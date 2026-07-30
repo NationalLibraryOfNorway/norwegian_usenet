@@ -1,7 +1,7 @@
 from usenet_no.database import (
     IA_ARCHIVE,
-    ExtractedMessage,
     NB_ARCHIVE,
+    ExtractedMessage,
     extract_messages_from_mbox_file,
     insert_messages,
     load_user_ids,
