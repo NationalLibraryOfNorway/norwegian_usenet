@@ -61,8 +61,7 @@ def test_declared_quoted_printable_iso_8859_1_is_decoded(mbox_data):
 
 
 def test_body_is_whitespace_normalized(mbox_data):
-    """Line breaks and trailing whitespace are collapsed, so the hashed and
-    embedded body does not carry the archive's wrapping."""
+    """Line breaks and trailing whitespace are collapsed."""
     body = single_body(mbox_data, "no.declared.qp.mbox")
 
     assert "\n" not in body

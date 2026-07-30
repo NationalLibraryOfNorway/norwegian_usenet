@@ -100,11 +100,7 @@ def _decode_mbox_message(part: mailbox.mboxMessage) -> str:
 
 
 def get_message_body(message: mailbox.mboxMessage) -> str:
-    """Return the message body as whitespace-normalized text.
-
-    Normalizing here rather than per caller means the body that is hashed into
-    the database, embedded, and compared across archives is the same text.
-    """
+    """Return the message body as whitespace-normalized text."""
     if message.is_multipart():
         parts = [
             _decode_mbox_message(part)

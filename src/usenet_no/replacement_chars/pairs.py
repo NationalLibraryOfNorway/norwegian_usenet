@@ -56,8 +56,8 @@ class ReplacementCharPair:
     The two bodies are the same posting, differing only in that the IA copy lost
     some of æ/ø/å/Æ/Ø/Å to U+FFFD.
 
-    Both are whitespace-normalized, since `get_message_body` normalizes every
-    body it reads and the archives wrap and space the same posting differently.
+    Both are whitespace-normalized, since the archives wrap and space the same
+    posting differently.
     """
 
     newsgroup: str
@@ -72,11 +72,7 @@ ConflictBodies = tuple[NewsgroupBodyConflict, list[str], list[str]]
 
 
 def bodies_equal_with_char_replacement(nb_body: str, ia_body: str) -> bool:
-    """True when the bodies agree once æ/ø/å/Æ/Ø/Å (NB) and U+FFFD (IA) become "_".
-
-    Both bodies come from `get_message_body`, which normalizes whitespace, so a
-    difference in wrapping or line endings does not count as a disagreement.
-    """
+    """True when the bodies agree once æ/ø/å/Æ/Ø/Å (NB) and U+FFFD (IA) become "_"."""
     return nb_body.translate(_NB_TABLE) == ia_body.translate(_IA_TABLE)
 
 

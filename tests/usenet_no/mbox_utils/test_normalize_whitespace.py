@@ -17,7 +17,6 @@ def test_collapses_runs_and_strips_ends():
 
 
 def test_a_parsed_body_arrives_collapsed(mbox_data):
-    """get_message_body applies it, so a parsed body needs no further normalization."""
     mbox = mailbox.mbox(
         str(mbox_data / "ia" / "no.trailing.whitespace.mbox"), factory=message_factory
     )
