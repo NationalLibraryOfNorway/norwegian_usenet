@@ -30,7 +30,7 @@ _IMPLAUSIBLE_ENCODINGS = frozenset({"VISCII", "EUC-TW"})
 _CHUNK_SIZE = 1 << 20
 
 
-def resolve_detected(encoding: str | None, source: object) -> str:
+def _resolve_detected(encoding: str | None, source: object) -> str:
     """Resolve detected encoding (sometimes chardet report implausible encodings for the single-file messages from NB archive)."""
     if encoding is None or encoding in _IMPLAUSIBLE_ENCODINGS:
         logger.debug(
@@ -45,7 +45,7 @@ def resolve_detected(encoding: str | None, source: object) -> str:
 
 def detect_chunk_encoding(raw: bytes) -> str:
     """Detect the encoding of one chunk of bytes held in memory."""
-    return resolve_detected(
+    return _resolve_detected(
         encoding=chardet.detect(raw).get("encoding"), source="<bytes>"
     )
 
@@ -57,7 +57,7 @@ def detect_file_encoding(file: Path) -> str:
         while chunk := stream.read(_CHUNK_SIZE):
             detector.feed(chunk)
     detector.close()
-    return resolve_detected(encoding=detector.result.get("encoding"), source=file)
+    return _resolve_detected(encoding=detector.result.get("encoding"), source=file)
 
 
 def decode_bytes(raw: bytes, encoding: str) -> str:

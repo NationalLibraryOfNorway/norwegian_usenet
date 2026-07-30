@@ -283,7 +283,7 @@ def sample_pairs(
     return [pairs[position] for position in sorted(chosen)]
 
 
-def embed_pairs(
+def _embed_pairs(
     pairs: list[ReplacementCharPair],
     model: SentenceTransformer,
     batch_size: int = 1,
@@ -335,7 +335,7 @@ def derangement(size: int, seed: int) -> np.ndarray:
     return permutation
 
 
-def shuffled_similarities(
+def _shuffled_similarities(
     nb_embeddings: np.ndarray, ia_embeddings: np.ndarray, seed: int
 ) -> np.ndarray:
     """Cosine similarity of each IA body against another pair's NB body."""
@@ -366,9 +366,9 @@ def evaluate_pairs(
     encode_kwargs: dict | None = None,
 ) -> tuple[RobustnessSummary, np.ndarray, np.ndarray]:
     """Score one model on the pairs, returning the summary and both similarity sets."""
-    nb_embeddings, ia_embeddings = embed_pairs(pairs, model, batch_size, encode_kwargs)
+    nb_embeddings, ia_embeddings = _embed_pairs(pairs, model, batch_size, encode_kwargs)
     matched = cosine_similarities(nb_embeddings, ia_embeddings)
-    shuffled = shuffled_similarities(nb_embeddings, ia_embeddings, seed)
+    shuffled = _shuffled_similarities(nb_embeddings, ia_embeddings, seed)
     summary = RobustnessSummary(
         model=model_name,
         num_pairs=len(pairs),
