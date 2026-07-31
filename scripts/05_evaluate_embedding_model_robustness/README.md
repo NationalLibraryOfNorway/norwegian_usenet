@@ -31,3 +31,35 @@ Both weights are 1.0 unless `--matched-weight` and `--shuffled-weight` are passe
 `03_compare_models.py` reports Pearson r between the similarity a pair scored and three measures of that pair: the number of replacement characters in it, the length of the message, and the density of the damage (replacement characters per character).
 
 Pearson r is a number between -1 and +1 saying how closely two measurements move together along a straight line. At +1 one rises exactly as the other rises, at -1 one falls exactly as the other rises, and at 0 knowing one says nothing about the other. It is a direction and a tightness, not an amount: r says nothing about how much similarity is lost per replacement character, only how consistently the two move together. It also only sees straight-line relationships, so a real but curved relationship shows up as a weak r, and it is reported here as one number over all the pairs, which a small group of outlying pairs can pull on.
+
+## Results
+We ran evaluation of the following models:
+  - codefuse-ai/F2LLM-v2-0.6B
+  - intfloat/multilingual-e5-large-instruct
+  - jinaai/jina-embeddings-v5-text-nano
+  - NbAiLab/nb-sbert-v2-base
+  - nicher92/saga-embed_v1
+  - Qwen/Qwen3-Embedding-0.6B
+
+on the same subset of 5000 pairs. 
+
+For `jinaai/jina-embeddings-v5-text-nano`, 02_make_embeddings.py was run with `--task clustering`  
+For `nicher92/saga-embed_v1`,  02_make_embeddings.py was run with `--prompt-prefix "task: clustering | query: "`
+
+The overall best model was `codefuse-ai/F2LLM-v2-0.6B`:
+
+``` 
+####################################################################################################
+Weighted score, 1 × matched mean − 1 × shuffled mean
+####################################################################################################
+  1. codefuse-ai/F2LLM-v2-0.6B                +0.7243  (matched 0.9701, shuffled 0.2458, 5000 pairs)
+  2. Qwen/Qwen3-Embedding-0.6B                +0.7073  (matched 0.9791, shuffled 0.2718, 5000 pairs)
+  3. NbAiLab/nb-sbert-v2-base                 +0.6653  (matched 0.9846, shuffled 0.3193, 5000 pairs)
+  4. jinaai/jina-embeddings-v5-text-nano      +0.4388  (matched 0.9944, shuffled 0.5557, 5000 pairs)
+  5. nicher92/saga-embed_v1                   +0.3440  (matched 0.9804, shuffled 0.6364, 5000 pairs)
+  6. intfloat/multilingual-e5-large-instruct  +0.1541  (matched 0.9905, shuffled 0.8364, 5000 pairs)
+
+Best weighted score: codefuse-ai/F2LLM-v2-0.6B (+0.7243)
+``` 
+
+See the full output of 03_compare_models.py at [data/output/05_evaluate_embedding_model_robustness/model_comparison.txt](../../data/output/05_evaluate_embedding_model_robustness/model_comparison.txt)
