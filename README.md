@@ -119,7 +119,6 @@ This runs the hooks defined in `.pre-commit-config.yaml` on every commit.
 
 ### Tests
 Tests mirror the directory structure in `src/`, with one file per function being tested.
-At the deepest level, a `.py` file in `src/` corresponds to a directory in `tests/`, with one `test_<function_name>.py` file per function in that source file.
 
 Run tests:
 ```
