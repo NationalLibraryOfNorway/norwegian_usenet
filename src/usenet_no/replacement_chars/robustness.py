@@ -75,6 +75,14 @@ class PairSimilarity:
     shuffled_similarity: float
 
 
+@dataclass
+class ModelRun:
+    """Both output files of one model run, read back."""
+
+    summary: RobustnessSummary
+    similarities: list[PairSimilarity]
+
+
 def write_pairs(pairs: list[ReplacementCharPair], output_file: Path) -> None:
     """Write the pairs as JSONL, one pair per line."""
     with output_file.open(mode="w", encoding="utf-8") as file:
@@ -104,6 +112,65 @@ def read_similarities(input_file: Path) -> list[PairSimilarity]:
             )
             for row in csv.DictReader(file)
         ]
+
+
+def read_summary(input_file: Path) -> RobustnessSummary:
+    """Read back the summary JSON a model run writes out."""
+    summary = json.loads(input_file.read_text(encoding="utf-8"))
+    return RobustnessSummary(
+        model=summary["model"],
+        num_pairs=summary["num_pairs"],
+        matched=SimilarityStatistics(**summary["matched"]),
+        shuffled=SimilarityStatistics(**summary["shuffled"]),
+    )
+
+
+def read_model_runs(directory: Path) -> list[ModelRun]:
+    """Read every model run under `directory`, in model name order.
+
+    A run is a directory holding both a `summary.json` and a `similarities.csv`;
+    one holding only a summary is left out with a warning.
+    """
+    runs = []
+    for summary_file in sorted(directory.glob("**/summary.json")):
+        similarities_file = summary_file.with_name("similarities.csv")
+        if not similarities_file.exists():
+            logger.warning(
+                "No %s next to %s, skipping it", similarities_file.name, summary_file
+            )
+            continue
+        runs.append(
+            ModelRun(
+                summary=read_summary(summary_file),
+                similarities=read_similarities(similarities_file),
+            )
+        )
+    return sorted(runs, key=lambda run: run.summary.model)
+
+
+def weighted_score(
+    summary: RobustnessSummary,
+    matched_weight: float = 1.0,
+    shuffled_weight: float = 1.0,
+) -> float:
+    """The weighted mean matched similarity less the weighted mean shuffled one."""
+    return (
+        matched_weight * summary.matched.mean - shuffled_weight * summary.shuffled.mean
+    )
+
+
+def rank_by_weighted_score(
+    runs: Iterable[ModelRun],
+    matched_weight: float = 1.0,
+    shuffled_weight: float = 1.0,
+) -> list[tuple[ModelRun, float]]:
+    """The runs with their weighted score, best first, ties broken by model name."""
+    scored = [
+        (run, weighted_score(run.summary, matched_weight, shuffled_weight))
+        for run in runs
+    ]
+    scored.sort(key=lambda scored_run: (-scored_run[1], scored_run[0].summary.model))
+    return scored
 
 
 def lowest_scoring_pairs(
@@ -288,15 +355,24 @@ def _embed_pairs(
     model: SentenceTransformer,
     batch_size: int = 1,
     encode_kwargs: dict | None = None,
+    prompt_prefix: str = "",
 ) -> tuple[np.ndarray, np.ndarray]:
-    """Embed the NB and the IA side of every pair, in one encode call each."""
+    """Embed the NB and the IA side of every pair, in one encode call each.
+
+    `prompt_prefix` is put in front of both bodies of a pair, for models that
+    ask for the text to be passed in a set form.
+    """
     kwargs = {"batch_size": batch_size, "show_progress_bar": True} | (
         encode_kwargs or {}
     )
     logger.info("Embedding %d NB bodies", len(pairs))
-    nb_embeddings = model.encode([pair.nb_body for pair in pairs], **kwargs)
+    nb_embeddings = model.encode(
+        [prompt_prefix + pair.nb_body for pair in pairs], **kwargs
+    )
     logger.info("Embedding %d IA bodies", len(pairs))
-    ia_embeddings = model.encode([pair.ia_body for pair in pairs], **kwargs)
+    ia_embeddings = model.encode(
+        [prompt_prefix + pair.ia_body for pair in pairs], **kwargs
+    )
     return np.asarray(nb_embeddings), np.asarray(ia_embeddings)
 
 
@@ -364,9 +440,12 @@ def evaluate_pairs(
     batch_size: int = 1,
     seed: int = 42,
     encode_kwargs: dict | None = None,
+    prompt_prefix: str = "",
 ) -> tuple[RobustnessSummary, np.ndarray, np.ndarray]:
     """Score one model on the pairs, returning the summary and both similarity sets."""
-    nb_embeddings, ia_embeddings = _embed_pairs(pairs, model, batch_size, encode_kwargs)
+    nb_embeddings, ia_embeddings = _embed_pairs(
+        pairs, model, batch_size, encode_kwargs, prompt_prefix
+    )
     matched = cosine_similarities(nb_embeddings, ia_embeddings)
     shuffled = _shuffled_similarities(nb_embeddings, ia_embeddings, seed)
     summary = RobustnessSummary(

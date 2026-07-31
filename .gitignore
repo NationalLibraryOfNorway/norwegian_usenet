@@ -187,9 +187,10 @@ utf_8_data_old
 date_filtered
 hidden
 
-data/output/05_make_embeddings/*
-!data/output/05_make_embeddings/newsgroups_for_selection.jsonl
-!data/output/05_make_embeddings/replacement_char_robustness
+data/output/05_evaluate_embedding_model_robustness/replacement_char_eval_pairs.jsonl
+
+data/output/06_make_embeddings/*
+!data/output/06_make_embeddings/newsgroups_for_selection.jsonl
 
 data/output/**/topic_modelling/
 

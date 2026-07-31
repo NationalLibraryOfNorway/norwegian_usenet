@@ -21,9 +21,11 @@ class AngleEncoder:
 
     def __init__(self):
         self.encode_calls = []
+        self.encoded_bodies = []
 
     def encode(self, bodies, **kwargs):
         self.encode_calls.append(kwargs)
+        self.encoded_bodies.append(list(bodies))
         return np.array([self._vector(body) for body in bodies])
 
     def _vector(self, body):
@@ -83,3 +85,28 @@ def test_encode_kwargs_reach_the_model(pairs):
         model.encode_calls
         == [{"batch_size": 8, "show_progress_bar": True, "task": "clustering"}] * 2
     )
+
+
+def test_bodies_are_encoded_as_they_are_without_a_prompt_prefix(pairs):
+    model = AngleEncoder()
+
+    evaluate_pairs(pairs, model, model_name="test-model")
+
+    nb_bodies, ia_bodies = model.encoded_bodies
+    assert nb_bodies == [pair.nb_body for pair in pairs]
+    assert ia_bodies == [pair.ia_body for pair in pairs]
+
+
+def test_prompt_prefix_is_put_in_front_of_both_bodies_of_every_pair(pairs):
+    model = AngleEncoder()
+
+    evaluate_pairs(
+        pairs,
+        model,
+        model_name="test-model",
+        prompt_prefix="task: clustering | query: ",
+    )
+
+    nb_bodies, ia_bodies = model.encoded_bodies
+    assert nb_bodies == ["task: clustering | query: " + pair.nb_body for pair in pairs]
+    assert ia_bodies == ["task: clustering | query: " + pair.ia_body for pair in pairs]
