@@ -32,4 +32,4 @@ The pairs currently in [cut_off_newsgroup_names.csv](../../data/output/01_extrac
 
 ## Encodings
 
-Neither archive declares its encoding, so both parse scripts detect it with chardet (`usenet_no.archives.encoding`) and fall back to latin-1 when nothing is detected. Both detect one encoding per file in `unzipped_data`; the IA files are one mbox per newsgroup, the NB files one message each. Both scripts write what they detected to `encodings.json` next to the archive's data directories, keyed by the source file's path under `unzipped_data`.
+Neither archive declares its encoding, so both parse scripts detect it with chardet (`usenet_no.archives.encoding`) and fall back to latin-1 when nothing is detected, or when the detected encoding is one chardet is known to misreport on the short NB message files (VISCII, EUC-TW). Both detect one encoding per file in `unzipped_data`; the IA files are one mbox per newsgroup, the NB files one message each. Both scripts write what they detected to `encodings.json` next to the archive's data directories, keyed by the source file's path under `unzipped_data`.
