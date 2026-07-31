@@ -2,6 +2,7 @@ import argparse
 import logging
 from pathlib import Path
 
+import torch
 from sentence_transformers import SentenceTransformer
 from tqdm import tqdm
 
@@ -15,7 +16,7 @@ logging.getLogger("httpx").setLevel(logging.WARNING)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Embed messages from selected newsgroups in IA and NB archives"
+        description="Embed messages from selected newsgroups in IA and NB archives with a Jina embedding model"
     )
     parser.add_argument(
         "--ia-directory",
@@ -32,7 +33,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--output-directory",
         type=Path,
-        default=Path("data/output/05_make_embeddings"),
+        default=Path("data/output/06_make_embeddings"),
         help="Directory to save embedding files",
     )
     parser.add_argument(
@@ -51,8 +52,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--model",
         type=str,
-        default="codefuse-ai/F2LLM-v2-0.6B",
-        help="SentenceTransformer model to use for embeddings",
+        default="jinaai/jina-embeddings-v5-text-nano",
+        help="Jina SentenceTransformer model to use for embeddings",
     )
     parser.add_argument(
         "--batch-size",
@@ -61,7 +62,6 @@ if __name__ == "__main__":
         metavar="N",
         help="Batch size for encoding",
     )
-
     parser.add_argument(
         "--overwrite",
         action="store_true",
@@ -73,33 +73,35 @@ if __name__ == "__main__":
     model_output_dir = args.output_directory / args.model
     model_output_dir.mkdir(parents=True, exist_ok=True)
 
-    logger.info("Loading model %s", args.model)
-    model = SentenceTransformer(args.model, trust_remote_code=True)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    logger.info("Loading model %s on %s", args.model, device)
+    model = SentenceTransformer(
+        args.model,
+        trust_remote_code=True,
+        device=device,
+        # bfloat16 is recommended for the model on GPU, but is slow on CPU
+        model_kwargs={"dtype": torch.bfloat16} if device.type == "cuda" else {},
+    )
 
     for newsgroup in tqdm(args.selection, desc="Embedding messages in mbox files"):
         nb_mbox_file = args.nb_directory / f"{newsgroup}.mbox"
-        if nb_mbox_file.exists():
-            embed_mbox_file(
-                nb_mbox_file,
-                "nb",
-                model,
-                model_output_dir,
-                args.overwrite,
-                args.batch_size,
-            )
-        else:
-            logger.warning("%s does not exist, can't embed messages", nb_mbox_file)
+        embed_mbox_file(
+            nb_mbox_file,
+            "nb",
+            model,
+            model_output_dir,
+            args.overwrite,
+            args.batch_size,
+            encode_kwargs={"task": "clustering"},
+        )
 
         ia_mbox_file = args.ia_directory / f"{newsgroup}.mbox"
-
-        if ia_mbox_file.exists():
-            embed_mbox_file(
-                ia_mbox_file,
-                "ia",
-                model,
-                model_output_dir,
-                args.overwrite,
-                args.batch_size,
-            )
-        else:
-            logger.warning("%s does not exist, can't embed messages", ia_mbox_file)
+        embed_mbox_file(
+            ia_mbox_file,
+            "ia",
+            model,
+            model_output_dir,
+            args.overwrite,
+            args.batch_size,
+            encode_kwargs={"task": "clustering"},
+        )

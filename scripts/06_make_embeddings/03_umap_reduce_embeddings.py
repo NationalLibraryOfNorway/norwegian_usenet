@@ -17,7 +17,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--embeddings-directory",
         type=Path,
-        default=Path("data/output/05_make_embeddings"),
+        default=Path("data/output/06_make_embeddings"),
         help="Base directory containing per-model embedding subdirectories",
     )
     parser.add_argument(

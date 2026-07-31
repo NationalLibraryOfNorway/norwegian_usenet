@@ -63,7 +63,7 @@ def main() -> None:
     parser.add_argument(
         "--out-dir",
         type=Path,
-        default=Path("data/output/07_visualize/plot_ia_nb_content_comparison"),
+        default=Path("data/output/08_visualize/plot_ia_nb_content_comparison"),
         help="Directory for output files (default: %(default)s)",
     )
     args = parser.parse_args()

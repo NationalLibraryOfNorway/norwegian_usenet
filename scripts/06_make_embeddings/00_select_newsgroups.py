@@ -29,7 +29,7 @@ def main() -> None:
     parser.add_argument(
         "--out-file",
         type=Path,
-        default=Path("data/output/05_make_embeddings/newsgroups_for_selection.jsonl"),
+        default=Path("data/output/06_make_embeddings/newsgroups_for_selection.jsonl"),
         help="Output .jsonl file (default: %(default)s)",
     )
     args = parser.parse_args()

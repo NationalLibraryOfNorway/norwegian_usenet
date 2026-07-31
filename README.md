@@ -31,7 +31,7 @@ data/
 │   │   ├── unzipped_data/      # Extracted .mbox files (scripts/01_extract_and_parse_usenet_data/04_parse_internet_archive.py)
 │   │   ├── utf_8_data/         # UTF-8 encoded .mbox files (scripts/01_extract_and_parse_usenet_data/04_parse_internet_archive.py)
 │   │   ├── encodings.json      # Encoding detected per file in unzipped_data (scripts/01_extract_and_parse_usenet_data/04_parse_internet_archive.py)
-│   │   └── date_filtered/      # IA messages filtered to the NB date span (scripts/05_make_embeddings/01_filter_internet_archive_by_date.py)
+│   │   └── date_filtered/      # IA messages filtered to the NB date span (scripts/06_make_embeddings/01_filter_internet_archive_by_date.py)
 │   └── nb/
 │       ├── zipped_data/        # .tar files from the National Library (loaded from multiple CDs)
 │       ├── unzipped_data/      # Extracted message files (scripts/01_extract_and_parse_usenet_data/01_extract_nb_archive_and_find_stubbed_newsgroup_names.py)
@@ -44,15 +44,16 @@ data/
     │   └── usenet_private.db   # Private hash-to-plaintext mapping (scripts/02_build_database.py)
     ├── 03_statistics_per_archive/
     ├── 04_compare_archives/
-    ├── 05_make_embeddings/
-    ├── 06_newsgroups_and_user_analysis/
-    └── 07_visualize/
+    ├── 05_evaluate_embedding_model_robustness/
+    ├── 06_make_embeddings/
+    ├── 07_newsgroups_and_user_analysis/
+    └── 08_visualize/
 ```
 
 ### Sqlite database
 The databases are built from the `utf_8_data` subdirectories, and `usenet.db` is what the analysis scripts read.  
 The database holds names, emails, message ids and bodies only as hashes, so the file can be shared.  
-The statistics and comparisons in steps 03 and 04, and the graph building scripts in 06 read `usenet.db` and nothing else, so anyone with the file can reproduce them.  
+The statistics and comparisons in steps 03 and 04, and the graph building scripts in 07 read `usenet.db` and nothing else, so anyone with the file can reproduce them.  
 `usenet_private.db` maps the hashed names, emails and message ids back to their plain text, so local analysis can connect a hash to the address or to the message body in the mbox files.  
 Like the mbox directories, it is not shared.
 
@@ -78,14 +79,17 @@ Counts messages per newsgroup, user and date in each archive, and finds duplicat
 #### Step 04: comparison between archives
 Compares the IA and NB archives by message body and Message-ID overlap, and finds Message-IDs whose copies conflict across the archives. See [scripts/04_compare_archives/README.md](scripts/04_compare_archives/README.md) for details.
 
-#### Step 05: embed messages
-Filters the IA archive to the NB date span, selects newsgroups, and makes text embeddings for their messages, reduced to 2 dimensions with UMAP. See [scripts/05_make_embeddings/README.md](scripts/05_make_embeddings/README.md) for details.
+#### Step 05: evaluate embedding model robustness
+Measures how robust an embedding model is to the U+FFFD (`�`) damage in the IA archive, by embedding the damaged IA body and the intact NB body of the same message and comparing them. See [scripts/05_evaluate_embedding_model_robustness/README.md](scripts/05_evaluate_embedding_model_robustness/README.md) for details.
 
-#### Step 06: newsgroups and user analysis
-Computes user overlap and reference counts between newsgroups, and finds topics with BERTopic. See [scripts/06_newsgroups_and_user_analysis/README.md](scripts/06_newsgroups_and_user_analysis/README.md) for details.
+#### Step 06: embed messages
+Filters the IA archive to the NB date span, selects newsgroups, and makes text embeddings for their messages, reduced to 2 dimensions with UMAP. See [scripts/06_make_embeddings/README.md](scripts/06_make_embeddings/README.md) for details.
 
-#### Step 07: visualize
-Plots the statistics, comparisons, embeddings and graphs from the previous steps. See [scripts/07_visualize/README.md](scripts/07_visualize/README.md) for details.
+#### Step 07: newsgroups and user analysis
+Computes user overlap and reference counts between newsgroups, and finds topics with BERTopic. See [scripts/07_newsgroups_and_user_analysis/README.md](scripts/07_newsgroups_and_user_analysis/README.md) for details.
+
+#### Step 08: visualize
+Plots the statistics, comparisons, embeddings and graphs from the previous steps. See [scripts/08_visualize/README.md](scripts/08_visualize/README.md) for details.
 
 ## ePADD
 ePADD is a program with a graphical interface for exploring email archives.

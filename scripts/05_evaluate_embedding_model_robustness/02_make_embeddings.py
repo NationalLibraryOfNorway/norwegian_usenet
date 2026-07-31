@@ -80,10 +80,9 @@ if __name__ == "__main__":
         description="Measure an embedding model's robustness to the U+FFFD (�)"
         " damage in the IA archive: the cosine similarity between the embeddings"
         " of the damaged IA body and the intact NB body of the same message, for"
-        " every pair in the evaluation set built by"
-        " 02_replacement_character_robustness_make_dataset.py. Each IA body is also scored"
-        " against another pair's NB body, as a floor to read the matched"
-        " similarities against."
+        " every pair in the evaluation set built by 01_make_dataset.py. Each IA"
+        " body is also scored against another pair's NB body, as a floor to read"
+        " the matched similarities against."
     )
     parser.add_argument(
         "--model",
@@ -95,14 +94,14 @@ if __name__ == "__main__":
         "--pairs-file",
         type=Path,
         default=Path(
-            "data/output/05_make_embeddings/replacement_char_eval_pairs.jsonl"
+            "data/output/05_evaluate_embedding_model_robustness/replacement_char_eval_pairs.jsonl"
         ),
         help="JSONL file of message body pairs (default: %(default)s)",
     )
     parser.add_argument(
         "--output-directory",
         type=Path,
-        default=Path("data/output/05_make_embeddings/replacement_char_robustness"),
+        default=Path("data/output/05_evaluate_embedding_model_robustness"),
         help="Directory to write the per-model results to (default: %(default)s)",
     )
     parser.add_argument(
@@ -148,7 +147,7 @@ if __name__ == "__main__":
 
     if not args.pairs_file.exists():
         logger.error(
-            "%s does not exist. Run 02_replacement_character_robustness_make_dataset.py first.",
+            "%s does not exist. Run 01_make_dataset.py first.",
             args.pairs_file,
         )
         sys.exit(1)

@@ -27,7 +27,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--embeddings-directory",
         type=Path,
-        default=Path("data/output/05_make_embeddings"),
+        default=Path("data/output/06_make_embeddings"),
         help="Base directory containing per-model embedding subdirectories",
     )
     parser.add_argument(
@@ -51,7 +51,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--topics-directory",
         type=Path,
-        default=Path("data/output/06_newsgroups_and_user_analysis/topic_modelling"),
+        default=Path("data/output/07_newsgroups_and_user_analysis/topic_modelling"),
         help="Directory containing the saved BERTopic models",
     )
     parser.add_argument(
@@ -92,7 +92,7 @@ if __name__ == "__main__":
     if not umap_cache.exists():
         raise SystemExit(
             f"No UMAP embeddings at {umap_cache}. "
-            "Run scripts/05_make_embeddings/02_umap_reduce_embeddings.py "
+            "Run scripts/06_make_embeddings/03_umap_reduce_embeddings.py "
             f"with --selection {' '.join(args.selection)} first."
         )
 
@@ -101,7 +101,7 @@ if __name__ == "__main__":
     if not model_path.exists():
         raise SystemExit(
             f"No BERTopic model at {model_path}. "
-            "Run scripts/06_newsgroups_and_user_analysis/00_topic_modelling.py with the same --selection and "
+            "Run scripts/07_newsgroups_and_user_analysis/00_topic_modelling.py with the same --selection and "
             "--nr-topics first."
         )
 
@@ -120,7 +120,7 @@ if __name__ == "__main__":
         raise SystemExit(
             f"{umap_cache} has {len(umap_2d)} rows but the selection loaded "
             f"{len(embedding_indexer)} messages. Regenerate it with "
-            "scripts/05_make_embeddings/02_umap_reduce_embeddings.py --overwrite."
+            "scripts/06_make_embeddings/03_umap_reduce_embeddings.py --overwrite."
         )
 
     logger.info("Loading BERTopic model from %s", model_path)
