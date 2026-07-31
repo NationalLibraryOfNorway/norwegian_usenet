@@ -31,7 +31,8 @@ logger = logging.getLogger(__name__)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Count the messages each newsgroup references in each other newsgroup"
+        description="Count the messages each newsgroup references in each other newsgroup",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
         "--database-file",

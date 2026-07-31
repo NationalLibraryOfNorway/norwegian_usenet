@@ -217,7 +217,8 @@ def convert_and_validate_cli_arg_jaccard_threshold(value: str) -> float:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Draw newsgroups joined by the users they share"
+        description="Draw newsgroups joined by the users they share",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
         "--overlap-file",

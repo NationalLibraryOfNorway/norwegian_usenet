@@ -171,7 +171,8 @@ if __name__ == "__main__":
         " the intact NB body and the damaged IA body side by side, so the low"
         " scores can be read against the text that produced them. Ends with the"
         " models ranked by a weighted score of their matched and shuffled"
-        " similarities."
+        " similarities.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
         "--num-examples",

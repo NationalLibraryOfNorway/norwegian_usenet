@@ -37,7 +37,8 @@ def export_replacement_char_counts_to_csv(
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Count per newsgroup how many IA/NB body conflicts involve"
-        " the U+FFFD replacement character in the IA copy"
+        " the U+FFFD replacement character in the IA copy",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
         "--database-file",

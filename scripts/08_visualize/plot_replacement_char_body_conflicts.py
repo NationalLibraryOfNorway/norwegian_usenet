@@ -64,7 +64,8 @@ def plot_conflict_bars(
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Plot the U+FFFD share of IA/NB body conflicts as bars"
+        description="Plot the U+FFFD share of IA/NB body conflicts as bars",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
         "--conflicts-csv",

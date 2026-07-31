@@ -15,7 +15,10 @@ logger = logging.getLogger(__name__)
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Download Usenet archives")
+    parser = argparse.ArgumentParser(
+        description="Download Usenet archives",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
     parser.add_argument(
         "--page-data",
         type=Path,

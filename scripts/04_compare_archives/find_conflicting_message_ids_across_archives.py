@@ -11,7 +11,8 @@ logger = logging.getLogger(__name__)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Find message ids whose copies in the two archives never share a body"
+        description="Find message ids whose copies in the two archives never share a body",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
         "--database-file",

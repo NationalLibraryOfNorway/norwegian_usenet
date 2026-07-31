@@ -82,7 +82,8 @@ if __name__ == "__main__":
         " of the damaged IA body and the intact NB body of the same message, for"
         " every pair in the evaluation set built by 01_make_dataset.py. Each IA"
         " body is also scored against another pair's NB body, as a floor to read"
-        " the matched similarities against."
+        " the matched similarities against.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
         "--model",

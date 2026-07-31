@@ -174,7 +174,8 @@ def plot_user_overlap_venn(ia_dfs: list, df_nb: pd.DataFrame, out_path: Path) ->
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Plot message counts per user for the IA and NB archives"
+        description="Plot message counts per user for the IA and NB archives",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
         "--ia-csv",

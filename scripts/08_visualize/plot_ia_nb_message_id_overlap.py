@@ -91,7 +91,8 @@ def print_ghost_references(dfs: list) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Plot message-id overlap and reference coverage between IA and NB"
+        description="Plot message-id overlap and reference coverage between IA and NB",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
         "--overlap-json",

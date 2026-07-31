@@ -12,7 +12,8 @@ logger = logging.getLogger(__name__)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Reduce message embeddings to 2-dim vectors with UMAP"
+        description="Reduce message embeddings to 2-dim vectors with UMAP",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
         "--embeddings-directory",

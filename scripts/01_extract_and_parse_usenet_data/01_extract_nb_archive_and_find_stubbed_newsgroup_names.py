@@ -74,7 +74,8 @@ def find_cut_off_candidates(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description=f"Print newsgroup directory names from {LIMITED_SOURCE} that were probably cut off, next to the full names they may be"
+        description=f"Print newsgroup directory names from {LIMITED_SOURCE} that were probably cut off, next to the full names they may be",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
         "--zipped-dir",

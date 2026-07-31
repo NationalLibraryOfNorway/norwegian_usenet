@@ -33,7 +33,8 @@ if __name__ == "__main__":
         description="Count how many U+FFFD (�) words in the IA archive can be"
         " unambiguously resolved to a word in the NB archive vocabulary, by"
         " masking æ/ø/å/Æ/Ø/Å to U+FFFD and matching on the shared key. Only"
-        " aggregate counts are written; the words themselves are not."
+        " aggregate counts are written; the words themselves are not.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
         "--ia-directory",

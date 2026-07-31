@@ -316,7 +316,8 @@ def plot_reference_graph(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Draw newsgroups joined by the references between them"
+        description="Draw newsgroups joined by the references between them",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
         "--edges-file",

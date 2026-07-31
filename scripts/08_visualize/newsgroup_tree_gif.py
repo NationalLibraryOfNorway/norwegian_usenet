@@ -108,7 +108,8 @@ def make_gif(
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Generate scrolling .gif of newsgroup hierarchy trees"
+        description="Generate scrolling .gif of newsgroup hierarchy trees",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
         "--ia-csv",

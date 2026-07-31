@@ -21,7 +21,8 @@ def export_content_comparison_to_csv(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Compare message content between the IA and NB archives"
+        description="Compare message content between the IA and NB archives",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
         "--database-file",

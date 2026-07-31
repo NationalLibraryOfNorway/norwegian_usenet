@@ -12,7 +12,8 @@ logger = logging.getLogger(__name__)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Run BERTopic topic modelling on pre-computed message embeddings"
+        description="Run BERTopic topic modelling on pre-computed message embeddings",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
         "--embeddings-directory",
