@@ -23,7 +23,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--model",
         type=str,
-        default="jinaai/jina-embeddings-v5-text-nano",
+        default="codefuse-ai/F2LLM-v2-0.6B",
         help="Model subdirectory under --embeddings-directory",
     )
     parser.add_argument(
