@@ -13,7 +13,8 @@ logger = logging.getLogger(__name__)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Find message ids carrying several distinct message bodies within one archive"
+        description="Find message ids carrying several distinct message bodies within one archive",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
         "--database-file",

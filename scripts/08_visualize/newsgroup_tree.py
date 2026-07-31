@@ -53,7 +53,8 @@ def print_archive(label: str, csv_path: Path) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Print newsgroup hierarchy as an ASCII tree with message counts"
+        description="Print newsgroup hierarchy as an ASCII tree with message counts",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
         "--ia-csv",

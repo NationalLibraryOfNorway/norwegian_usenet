@@ -16,7 +16,8 @@ def write_newsgroups_for_selection(filtered: pd.DataFrame, out_path: Path) -> No
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Write the top newsgroups by combined unique message count"
+        description="Write the top newsgroups by combined unique message count",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
         "--content-date-filtered-csv",

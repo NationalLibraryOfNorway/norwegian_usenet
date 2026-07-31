@@ -21,7 +21,8 @@ logger = logging.getLogger(__name__)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Count true duplicate messages within each mbox file of both archives"
+        description="Count true duplicate messages within each mbox file of both archives",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
         "--database-file",

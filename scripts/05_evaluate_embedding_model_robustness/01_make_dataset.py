@@ -22,7 +22,8 @@ if __name__ == "__main__":
         " once æ/ø/å/Æ/Ø/Å and � are replaced. A crossposted message is kept"
         " once, under the smallest of the newsgroups holding it, and a sample"
         " is spread evenly over the newsgroups. The bodies are message text, so"
-        " the output file is not shared."
+        " the output file is not shared.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
         "--database-file",

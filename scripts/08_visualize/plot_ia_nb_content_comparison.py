@@ -45,7 +45,8 @@ def plot_overlap_venn(filtered: pd.DataFrame, out_path: Path) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Plot exact-body-match message overlap between IA and NB"
+        description="Plot exact-body-match message overlap between IA and NB",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
         "--content-csv",

@@ -25,7 +25,8 @@ def export_id_comparison_to_csv(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Compare message-id overlap between the IA and NB archives, and count references neither archive resolves"
+        description="Compare message-id overlap between the IA and NB archives, and count references neither archive resolves",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
         "--database-file",

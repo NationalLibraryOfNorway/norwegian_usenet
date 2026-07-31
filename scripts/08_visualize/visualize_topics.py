@@ -22,7 +22,8 @@ def topic_label(topic: int, topic_info, n_words: int = 5) -> str:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Visualize BERTopic topics over pre-computed UMAP embeddings"
+        description="Visualize BERTopic topics over pre-computed UMAP embeddings",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
         "--embeddings-directory",

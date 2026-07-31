@@ -23,7 +23,10 @@ logger = logging.getLogger(__name__)
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Count messages per user")
+    parser = argparse.ArgumentParser(
+        description="Count messages per user",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
     parser.add_argument(
         "--database-file",
         type=Path,

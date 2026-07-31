@@ -13,7 +13,8 @@ logger = logging.getLogger(__name__)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Visualize pre-computed UMAP message embeddings with Plotly"
+        description="Visualize pre-computed UMAP message embeddings with Plotly",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
         "--embeddings-directory",

@@ -20,7 +20,8 @@ logger = logging.getLogger(__name__)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Count messages with no From: header, per archive and newsgroup"
+        description="Count messages with no From: header, per archive and newsgroup",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
         "--database-file",

@@ -75,7 +75,8 @@ def plot_per_year(df: pd.DataFrame, name: str, out_path: Path) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Plot message counts over time for the IA and NB archives"
+        description="Plot message counts over time for the IA and NB archives",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
         "--ia-csv",

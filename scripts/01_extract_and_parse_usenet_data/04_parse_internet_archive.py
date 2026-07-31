@@ -27,7 +27,8 @@ def unzip_all(zip_dir: Path, unzip_dir: Path) -> None:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Unzip and parse Usenet mbox data to utf-8 readable format"
+        description="Unzip and parse Usenet mbox data to utf-8 readable format",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
         "--zipped-data-dir",

@@ -15,7 +15,8 @@ logger = logging.getLogger(__name__)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Filter IA mbox files to the date span of the NB archive (to use for embeddings later)"
+        description="Filter IA mbox files to the date span of the NB archive (to use for embeddings later)",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
         "--ia-directory",

@@ -15,7 +15,8 @@ logging.getLogger("httpx").setLevel(logging.WARNING)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Embed messages from selected newsgroups in IA and NB archives"
+        description="Embed messages from selected newsgroups in IA and NB archives",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
         "--ia-directory",

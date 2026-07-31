@@ -32,7 +32,8 @@ logger = logging.getLogger(__name__)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Compute the user overlap between pairs of newsgroups"
+        description="Compute the user overlap between pairs of newsgroups",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
         "--database-file",

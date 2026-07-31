@@ -125,7 +125,8 @@ def plot_distribution(df: pd.DataFrame, title: str, out_path: Path) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Plot message counts per newsgroup for the IA and NB archives"
+        description="Plot message counts per newsgroup for the IA and NB archives",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
         "--ia-csv",

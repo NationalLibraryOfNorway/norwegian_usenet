@@ -21,7 +21,8 @@ logger = logging.getLogger(__name__)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Convert the extracted NB archives to utf-8 .mbox files"
+        description="Convert the extracted NB archives to utf-8 .mbox files",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
         "--unzipped-dir",

@@ -30,7 +30,8 @@ logger = logging.getLogger(__name__)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Build the shared and private SQLite databases from the mbox files of both archives"
+        description="Build the shared and private SQLite databases from the mbox files of both archives",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
         "--ia-directory",

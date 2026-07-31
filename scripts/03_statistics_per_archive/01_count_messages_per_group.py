@@ -37,7 +37,10 @@ def export_newsgroup_message_counts_to_csv(
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Count messages per Usenet group")
+    parser = argparse.ArgumentParser(
+        description="Count messages per Usenet group",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
     parser.add_argument(
         "--database-file",
         type=Path,
