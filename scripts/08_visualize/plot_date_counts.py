@@ -8,6 +8,8 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from matplotlib.ticker import FuncFormatter
 
+from usenet_no.date_parsing import UNKNOWN_DATE
+
 
 def space_thousands(value, _):
     return f"{value:,.0f}".replace(",", " ")
@@ -15,9 +17,9 @@ def space_thousands(value, _):
 
 def load_date_counts(path: Path) -> pd.DataFrame:
     df = pd.read_csv(path)
-    num_unknown = df[df.date == "unknown"]["count"].item()
+    num_unknown = df[df.date == UNKNOWN_DATE]["count"].item()
     print(f"Number of messages with unknown date in {path}: {num_unknown}")
-    df = df[df["date"] != "unknown"]
+    df = df[df["date"] != UNKNOWN_DATE]
     df["date"] = pd.to_datetime(df["date"])
     return df.sort_values("date")
 

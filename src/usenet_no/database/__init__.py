@@ -1,7 +1,6 @@
 from usenet_no.database.core import (
     IA_ARCHIVE,
     NB_ARCHIVE,
-    UNKNOWN_DATE,
     ExtractedMessage,
     UserKey,
     connect,
@@ -13,6 +12,7 @@ from usenet_no.database.core import (
     insert_messages,
     load_user_ids,
 )
+from usenet_no.date_parsing import UNKNOWN_DATE
 
 __all__ = [
     "IA_ARCHIVE",
