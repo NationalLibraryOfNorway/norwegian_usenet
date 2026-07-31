@@ -101,7 +101,7 @@ if __name__ == "__main__":
     if not model_path.exists():
         raise SystemExit(
             f"No BERTopic model at {model_path}. "
-            "Run scripts/07_newsgroups_and_user_analysis/00_topic_modelling.py with the same --selection and "
+            "Run scripts/07_newsgroups_and_user_analysis/topic_modelling.py with the same --selection and "
             "--nr-topics first."
         )
 
