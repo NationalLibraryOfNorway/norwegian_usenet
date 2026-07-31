@@ -3,7 +3,7 @@
 Reads the database built in step 02 and writes a directed edge list: one row
 per (from_newsgroup, to_newsgroup) pair, weighted by how many distinct messages
 held by the second newsgroup the first one references. A message cited by five
-hundred messages weighs one here, where 00_count_references_between_newsgroups
+hundred messages weighs one here, where count_references_between_newsgroups
 weighs it five hundred. References to messages outside the read body of
 messages point to the placeholder newsgroup `unknown`, and references within a
 newsgroup are left out.

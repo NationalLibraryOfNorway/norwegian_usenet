@@ -25,18 +25,19 @@ def print_overlap_stats(dfs: list) -> None:
         print()
 
 
-def plot_overlap_venn(
-    filtered: pd.DataFrame, full: pd.DataFrame, out_path: Path
-) -> None:
-    fig, axes = plt.subplots(1, 2, figsize=(12, 5))
-    for ax, (label, df) in zip(axes, [("1994-1997", filtered), ("full period", full)]):
-        venn2_fmt(
-            subsets=(df["nb_only"].sum(), df["ia_only"].sum(), df["both"].sum()),
-            set_labels=("NB", "IA"),
-            ax=ax,
-            show_pct=True,
-        )
-        ax.set_title(f"Message overlap ({label})")
+def plot_overlap_venn(filtered: pd.DataFrame, out_path: Path) -> None:
+    fig, ax = plt.subplots(figsize=(6, 5))
+    venn2_fmt(
+        subsets=(
+            filtered["nb_only"].sum(),
+            filtered["ia_only"].sum(),
+            filtered["both"].sum(),
+        ),
+        set_labels=("NB", "IA"),
+        ax=ax,
+        show_pct=True,
+    )
+    ax.set_title("Message overlap (1994-1997)")
     fig.tight_layout()
     fig.savefig(out_path)
     plt.close(fig)
@@ -73,7 +74,7 @@ def main() -> None:
     filtered = load_content(args.content_date_filtered_csv)
 
     print_overlap_stats([("Full IA", full), ("IA date-filtered", filtered)])
-    plot_overlap_venn(filtered, full, args.out_dir / "content_overlap_venn.png")
+    plot_overlap_venn(filtered, args.out_dir / "content_overlap_venn.png")
 
 
 if __name__ == "__main__":

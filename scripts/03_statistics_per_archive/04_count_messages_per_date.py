@@ -14,11 +14,9 @@ import pandas as pd
 
 from usenet_no.database import IA_ARCHIVE, NB_ARCHIVE, connect
 from usenet_no.database.statistics import count_messages_per_date
+from usenet_no.date_parsing import UNKNOWN_DATE
 
 logger = logging.getLogger(__name__)
-
-# How a message with no parseable date is labelled in the report
-UNKNOWN_DATE = "unknown"
 
 
 if __name__ == "__main__":

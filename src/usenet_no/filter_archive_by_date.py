@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from usenet_no.date_parsing import parse_and_normalize_date_field
+from usenet_no.date_parsing import UNKNOWN_DATE, parse_and_normalize_date_field
 from usenet_no.mbox_utils import message_factory, write_mbox
 
 logger = logging.getLogger(__name__)
@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 def get_nb_date_span(date_count_csv: Path) -> tuple[str, str]:
     df = pd.read_csv(date_count_csv)
-    dates = pd.to_datetime(df[df["date"] != "unknown"]["date"])
+    dates = pd.to_datetime(df[df["date"] != UNKNOWN_DATE]["date"])
     return dates.min().strftime("%Y-%m-%d"), dates.max().strftime("%Y-%m-%d")
 
 
@@ -41,7 +41,7 @@ def filter_mbox_by_date(
     for key, message in mbox_in.items():
         date_str = parse_and_normalize_date_field(message.get("Date", None))
         if (
-            date_str != "unknown" and start_date <= date_str <= end_date
+            date_str != UNKNOWN_DATE and start_date <= date_str <= end_date
         ):  # ISO 8601 sorts lexicographically
             kept_texts.append(mbox_in.get_bytes(key).decode("utf-8", errors="replace"))
 

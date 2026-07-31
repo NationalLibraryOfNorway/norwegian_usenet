@@ -5,6 +5,9 @@ from email.utils import parsedate_to_datetime
 
 logger = logging.getLogger(__name__)
 
+# What parse_and_normalize_date_field returns for a date it cannot parse.
+UNKNOWN_DATE = "unknown"
+
 
 def _fix_invalid_timezone(date_string: str) -> str:
     """Replace timezone offsets with hour > 14 (invalid) with +0000."""
@@ -52,10 +55,10 @@ def parse_datestring(date_string: str) -> datetime | None:
 
 def parse_and_normalize_date_field(date_field: str | None) -> str:
     if date_field is None:
-        return "unknown"
+        return UNKNOWN_DATE
     parsed_date = parse_datestring(date_string=date_field)
     if parsed_date:
         return parsed_date.strftime("%Y-%m-%d")
     else:
         logger.warning("Date field: %s", date_field)
-        return "unknown"
+        return UNKNOWN_DATE

@@ -7,4 +7,29 @@ The scripts for preparing the data for analysis live in this directory.
 - [03_scrape_internet_archive.py](03_scrape_internet_archive.py) fetches and downloads all zip files from `https://archive.org/download/usenet-no` (stored in `data/input/internet_archive/zipped_data` by default).
 - [04_parse_internet_archive.py](04_parse_internet_archive.py) unzips and reads all mbox files from the scrape output. Files are decoded and re-encoded to UTF-8 and written to `data/input/internet_archive/utf_8_data`.
 
-Neither archive declares its encoding, so both parse scripts detect it with chardet (`usenet_no.archives.encoding`) and fall back to latin-1 when nothing is detected. Both detect one encoding per file in `unzipped_data`; the IA files happen to be one mbox per newsgroup, the NB files one message each. Both scripts write what they detected to `encodings.json` next to the archive's data directories, keyed by the source file's path under `unzipped_data`. The IA mbox files run to hundreds of megabytes, so they are streamed to the detector rather than read into memory.
+## Cut-off newsgroup names
+
+The pairs currently in [cut_off_newsgroup_names.csv](../../data/output/01_extract_and_parse_usenet_data/cut_off_newsgroup_names.csv):
+
+| cut_off_name | full_name |
+| --- | --- |
+| no.alt.diskusjo | no.alt.diskusjoner |
+| no.alt.frustras | no.alt.frustrasjoner |
+| no.alt.gledesut | no.alt.gledesutbrudd |
+| no.alt.motorsyk | no.alt.motorsykler |
+| no.alt.tegneser | no.alt.tegneserier |
+| no.biz.diskusjo | no.biz.diskusjoner |
+| no.elektron | no.elektronikk |
+| no.havforsk | no.havforskning |
+| no.kryptogr | no.kryptografi |
+| no.litterat | no.litteratur |
+| no.multimed | no.multimedia |
+| no.org.efn.diskusjo | no.org.efn.diskusjon |
+| no.psykolog | no.psykologi |
+| no.storting | no.stortinget |
+| no.tungregn | no.tungregning |
+| no.typograf | no.typografi |
+
+## Encodings
+
+Neither archive declares its encoding, so both parse scripts detect it with chardet (`usenet_no.archives.encoding`) and fall back to latin-1 when nothing is detected, or when the detected encoding is one chardet is known to misreport on the short NB message files (VISCII, EUC-TW). Both detect one encoding per file in `unzipped_data`; the IA files are one mbox per newsgroup, the NB files one message each. Both scripts write what they detected to `encodings.json` next to the archive's data directories, keyed by the source file's path under `unzipped_data`.

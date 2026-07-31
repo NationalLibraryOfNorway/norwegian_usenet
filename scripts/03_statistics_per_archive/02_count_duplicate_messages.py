@@ -5,8 +5,7 @@ own row there, so the duplicates are rows sharing (archive, newsgroup,
 message_id_hash, body_hash).
 
 Writes one JSON object per duplicated Message-ID, sorted by
-(source_archive, newsgroup, hashed_message_id) so the output is stable across
-runs.
+(archive, newsgroup, hashed_message_id) so the output is stable across runs.
 """
 
 import argparse
@@ -64,7 +63,7 @@ if __name__ == "__main__":
             file.write(
                 json.dumps(
                     {
-                        "source_archive": row.archive,
+                        "archive": row.archive,
                         "newsgroup": row.newsgroup,
                         "hashed_message_id": row.message_id_hash,
                         "count": row.count,

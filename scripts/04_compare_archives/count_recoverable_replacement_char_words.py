@@ -59,7 +59,7 @@ if __name__ == "__main__":
         default=Path("data/output/04_compare_archives/top_words.csv"),
         help="If set, also write the most frequent IA U+FFFD words with their"
         " NB candidates to this CSV for inspection. Contains raw words that may"
-        " hold personal information, so do not commit it.",
+        " hold personal information, so read through before sharing it.",
     )
     parser.add_argument(
         "--top-n",

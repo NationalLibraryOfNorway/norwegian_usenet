@@ -2,8 +2,19 @@
 
 from __future__ import annotations
 
+import colorsys
+
 import matplotlib.axes
 from matplotlib_venn import venn2 as _venn2
+
+
+def hsl_to_hex(hue: float, saturation: float, lightness: float) -> str:
+    """Convert an HSL colour to a hex string.
+
+    Hue is in degrees, saturation and lightness in percent.
+    """
+    r, g, b = colorsys.hls_to_rgb(hue / 360, lightness / 100, saturation / 100)
+    return f"#{int(r * 255):02x}{int(g * 255):02x}{int(b * 255):02x}"
 
 
 def venn2_fmt(

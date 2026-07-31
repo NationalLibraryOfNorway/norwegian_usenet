@@ -53,7 +53,8 @@ data/
 ### Sqlite database
 The databases are built from the `utf_8_data` subdirectories, and `usenet.db` is what the analysis scripts read.  
 The database holds names, emails, message ids and bodies only as hashes, so the file can be shared.  
-The statistics and comparisons in steps 03 and 04, and the graph building scripts in 07 read `usenet.db` and nothing else, so anyone with the file can reproduce them.  
+The statistics in step 03, most of the comparisons in step 04, and the graph building scripts in 07 read `usenet.db` and nothing else, so anyone with the file can reproduce them.  
+The two replacement character scripts in step 04 also read the message bodies from the mbox files, and so need the archives themselves.  
 `usenet_private.db` maps the hashed names, emails and message ids back to their plain text, so local analysis can connect a hash to the address or to the message body in the mbox files.  
 Like the mbox directories, it is not shared.
 
@@ -118,7 +119,6 @@ This runs the hooks defined in `.pre-commit-config.yaml` on every commit.
 
 ### Tests
 Tests mirror the directory structure in `src/`, with one file per function being tested.
-At the deepest level, a `.py` file in `src/` corresponds to a directory in `tests/`, with one `test_<function_name>.py` file per function in that source file.
 
 Run tests:
 ```

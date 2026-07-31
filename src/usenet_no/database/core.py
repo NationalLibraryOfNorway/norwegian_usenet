@@ -30,7 +30,7 @@ from dataclasses import dataclass
 from email.utils import parseaddr
 from pathlib import Path
 
-from usenet_no.date_parsing import parse_and_normalize_date_field
+from usenet_no.date_parsing import UNKNOWN_DATE, parse_and_normalize_date_field
 from usenet_no.hash import make_hash
 from usenet_no.mbox_utils import (
     get_from_field,
@@ -44,10 +44,6 @@ logger = logging.getLogger(__name__)
 
 IA_ARCHIVE = "ia"
 NB_ARCHIVE = "nb"
-
-# parse_and_normalize_date_field returns this string for unparseable dates,
-# which we store as NULL instead.
-UNKNOWN_DATE = "unknown"
 
 SHARED_SCHEMA = """
 CREATE TABLE IF NOT EXISTS users (
