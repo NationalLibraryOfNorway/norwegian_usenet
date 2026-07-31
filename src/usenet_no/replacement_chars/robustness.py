@@ -355,15 +355,24 @@ def _embed_pairs(
     model: SentenceTransformer,
     batch_size: int = 1,
     encode_kwargs: dict | None = None,
+    prompt_prefix: str = "",
 ) -> tuple[np.ndarray, np.ndarray]:
-    """Embed the NB and the IA side of every pair, in one encode call each."""
+    """Embed the NB and the IA side of every pair, in one encode call each.
+
+    `prompt_prefix` is put in front of both bodies of a pair, for models that
+    ask for the text to be passed in a set form.
+    """
     kwargs = {"batch_size": batch_size, "show_progress_bar": True} | (
         encode_kwargs or {}
     )
     logger.info("Embedding %d NB bodies", len(pairs))
-    nb_embeddings = model.encode([pair.nb_body for pair in pairs], **kwargs)
+    nb_embeddings = model.encode(
+        [prompt_prefix + pair.nb_body for pair in pairs], **kwargs
+    )
     logger.info("Embedding %d IA bodies", len(pairs))
-    ia_embeddings = model.encode([pair.ia_body for pair in pairs], **kwargs)
+    ia_embeddings = model.encode(
+        [prompt_prefix + pair.ia_body for pair in pairs], **kwargs
+    )
     return np.asarray(nb_embeddings), np.asarray(ia_embeddings)
 
 
@@ -431,9 +440,12 @@ def evaluate_pairs(
     batch_size: int = 1,
     seed: int = 42,
     encode_kwargs: dict | None = None,
+    prompt_prefix: str = "",
 ) -> tuple[RobustnessSummary, np.ndarray, np.ndarray]:
     """Score one model on the pairs, returning the summary and both similarity sets."""
-    nb_embeddings, ia_embeddings = _embed_pairs(pairs, model, batch_size, encode_kwargs)
+    nb_embeddings, ia_embeddings = _embed_pairs(
+        pairs, model, batch_size, encode_kwargs, prompt_prefix
+    )
     matched = cosine_similarities(nb_embeddings, ia_embeddings)
     shuffled = _shuffled_similarities(nb_embeddings, ia_embeddings, seed)
     summary = RobustnessSummary(

@@ -119,6 +119,14 @@ if __name__ == "__main__":
         " (e.g. 'clustering' for the Jina models)",
     )
     parser.add_argument(
+        "--prompt-prefix",
+        type=str,
+        default="",
+        help="String put in front of every message body before it is encoded,"
+        " for models asking for the text in a set form (e.g."
+        " 'task: clustering | query: ' for nicher92/saga-embed_v1)",
+    )
+    parser.add_argument(
         "--random-seed",
         type=int,
         default=42,
@@ -171,6 +179,7 @@ if __name__ == "__main__":
         batch_size=args.batch_size,
         seed=args.random_seed,
         encode_kwargs={"task": args.task} if args.task else None,
+        prompt_prefix=args.prompt_prefix,
     )
 
     model_output_dir.mkdir(parents=True, exist_ok=True)
