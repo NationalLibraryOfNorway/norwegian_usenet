@@ -8,8 +8,6 @@ import pandas as pd
 import plotly.graph_objects as go
 from matplotlib.ticker import FuncFormatter
 
-from usenet_no.plot_utils import venn2_fmt
-
 
 def space_thousands(value, _):
     return f"{int(value):,}".replace(",", " ")
@@ -137,41 +135,6 @@ def print_shared_users(ia_dfs: list, df_nb: pd.DataFrame) -> None:
             print(top_shared(shared, total_ia, total_nb, n, sort_col).to_string())
 
 
-def plot_top_user_overlap_venn(
-    ia_dfs: list, df_nb: pd.DataFrame, top_n: int, out_path: Path
-) -> None:
-    nb_by_email = df_nb.groupby("hashed_email")["post_count"].sum().reset_index()
-    fig, axes = plt.subplots(1, 2, figsize=(10, 5))
-    for ax, (label, df_ia) in zip(axes, ia_dfs):
-        ia_by_email = df_ia.groupby("hashed_email")["post_count"].sum().reset_index()
-        top_ia = set(ia_by_email.nlargest(top_n, "post_count")["hashed_email"])
-        top_nb = set(nb_by_email.nlargest(top_n, "post_count")["hashed_email"])
-        venn2_fmt(
-            [top_nb, top_ia],
-            set_labels=(f"NB top {top_n}", f"IA top {top_n}"),
-            ax=ax,
-            show_pct=True,
-        )
-        ax.set_title(f"Top {top_n} user overlap ({label})")
-    fig.tight_layout()
-    fig.savefig(out_path)
-    plt.close(fig)
-
-
-def plot_user_overlap_venn(ia_dfs: list, df_nb: pd.DataFrame, out_path: Path) -> None:
-    nb_by_email = df_nb.groupby("hashed_email")["post_count"].sum().reset_index()
-    fig, axes = plt.subplots(1, 2, figsize=(10, 5))
-    for ax, (label, df_ia) in zip(axes, ia_dfs):
-        ia_by_email = df_ia.groupby("hashed_email")["post_count"].sum().reset_index()
-        all_ia = set(ia_by_email["hashed_email"].dropna())
-        all_nb = set(nb_by_email["hashed_email"].dropna())
-        venn2_fmt([all_nb, all_ia], set_labels=("NB", "IA"), ax=ax, show_pct=True)
-        ax.set_title(f"User overlap ({label})")
-    fig.tight_layout()
-    fig.savefig(out_path)
-    plt.close(fig)
-
-
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Plot message counts per user for the IA and NB archives",
@@ -251,15 +214,6 @@ def main() -> None:
     )
 
     print_shared_users(ia_dfs, df_nb)
-
-    venn_dfs = [("1994-1997", ia_filtered), ("full period", ia_full)]
-    plot_top_user_overlap_venn(
-        venn_dfs,
-        df_nb,
-        top_n=100,
-        out_path=args.out_dir / "top_100_user_overlap_venn.png",
-    )
-    plot_user_overlap_venn(venn_dfs, df_nb, args.out_dir / "user_overlap_venn.png")
 
 
 if __name__ == "__main__":

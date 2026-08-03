@@ -1,5 +1,6 @@
 import logging
 import sqlite3
+from dataclasses import dataclass
 
 from usenet_no.database.core import IA_ARCHIVE, NB_ARCHIVE, date_span_clause
 
@@ -11,6 +12,34 @@ IA_IDS = "ia_ids"
 NB_IDS = "nb_ids"
 IA_REFERENCES = "ia_references"
 NB_REFERENCES = "nb_references"
+SHARED_NEWSGROUPS = "shared_newsgroups"
+SHARED_EMAILS = "shared_emails"
+
+# Joining the sender in, for the counts that identify a user by email
+MESSAGES_WITH_SENDER = "messages JOIN users ON messages.user_id = users.id"
+
+
+@dataclass(frozen=True)
+class VennCounts:
+    """The three regions of an NB/IA venn diagram, counted in distinct values."""
+
+    nb_only: int
+    ia_only: int
+    both: int
+
+    @property
+    def total(self) -> int:
+        return self.nb_only + self.ia_only + self.both
+
+
+def _ia_only_span_clause(ia_date_span: tuple[str, str] | None) -> tuple[str, tuple]:
+    """Build the WHERE fragment restricting IA to a date span, letting every NB row through."""
+    if ia_date_span is None:
+        return "", ()
+    return (
+        " AND (messages.archive = ? OR messages.date BETWEEN ? AND ?)",
+        (NB_ARCHIVE, *ia_date_span),
+    )
 
 
 def _create_id_table(
@@ -124,12 +153,7 @@ def _compare_hashes_per_group(
     ia_date_span: tuple[str, str] | None,
 ) -> list[tuple[str, int, int, int]]:
     """Count distinct hashes per newsgroup, as (newsgroup, ia_only, nb_only, both)."""
-    # NB rows pass the span unconditionally, so that only IA is restricted
-    if ia_date_span is None:
-        clause, span_parameters = "", ()
-    else:
-        clause = " AND (archive = ? OR date BETWEEN ? AND ?)"
-        span_parameters = (NB_ARCHIVE, *ia_date_span)
+    clause, span_parameters = _ia_only_span_clause(ia_date_span)
 
     rows = connection.execute(
         "SELECT newsgroup,"
@@ -175,3 +199,179 @@ def compare_message_ids_per_group(
     restricted to it.
     """
     return _compare_hashes_per_group(connection, "message_id_hash", ia_date_span)
+
+
+def _count_venn(
+    connection: sqlite3.Connection,
+    value: str,
+    source: str = "messages",
+    conditions: str = "",
+    parameters: tuple = (),
+) -> VennCounts:
+    """Count the distinct values of `value` held by NB alone, IA alone and both."""
+    ia_only, nb_only, both = connection.execute(
+        "SELECT SUM(in_ia AND NOT in_nb),"
+        "       SUM(in_nb AND NOT in_ia),"
+        "       SUM(in_ia AND in_nb)"
+        " FROM ("
+        "     SELECT MAX(messages.archive = ?) AS in_ia,"
+        "            MAX(messages.archive = ?) AS in_nb"
+        f"     FROM {source}"
+        f"     WHERE {value} IS NOT NULL{conditions}"
+        f"     GROUP BY {value}"
+        " )",
+        (IA_ARCHIVE, NB_ARCHIVE, *parameters),
+    ).fetchone()
+    # SUM over no rows is NULL, which is what an empty archive pair gives
+    return VennCounts(nb_only=nb_only or 0, ia_only=ia_only or 0, both=both or 0)
+
+
+def count_newsgroup_overlap(
+    connection: sqlite3.Connection, ia_date_span: tuple[str, str] | None = None
+) -> VennCounts:
+    """Count the newsgroups held by NB alone, IA alone and both.
+
+    When `ia_date_span` is given, only IA is restricted to it, so a group whose
+    IA messages all fall outside the span stops counting as one IA holds.
+    """
+    clause, parameters = _ia_only_span_clause(ia_date_span)
+    return _count_venn(
+        connection, "messages.newsgroup", conditions=clause, parameters=parameters
+    )
+
+
+def count_user_overlap(
+    connection: sqlite3.Connection, ia_date_span: tuple[str, str] | None = None
+) -> VennCounts:
+    """Count the users held by NB alone, IA alone and both, identified by hashed email.
+
+    Senders with no email are left out, and the several (name, email) pairs an
+    address was posted under collapse to one user. When `ia_date_span` is given,
+    only IA is restricted to it.
+    """
+    clause, parameters = _ia_only_span_clause(ia_date_span)
+    return _count_venn(
+        connection,
+        "users.email_hash",
+        source=MESSAGES_WITH_SENDER,
+        conditions=clause,
+        parameters=parameters,
+    )
+
+
+def count_message_id_overlap(
+    connection: sqlite3.Connection, ia_date_span: tuple[str, str] | None = None
+) -> VennCounts:
+    """Count the messages held by NB alone, IA alone and both, identified by hashed id.
+
+    Counted over the whole archive rather than per newsgroup, so a crossposted
+    message counts once. Messages without an id are left out. When
+    `ia_date_span` is given, only IA is restricted to it.
+    """
+    clause, parameters = _ia_only_span_clause(ia_date_span)
+    return _count_venn(
+        connection,
+        "messages.message_id_hash",
+        conditions=clause,
+        parameters=parameters,
+    )
+
+
+def count_body_overlap(
+    connection: sqlite3.Connection, ia_date_span: tuple[str, str] | None = None
+) -> VennCounts:
+    """Count the message bodies held by NB alone, IA alone and both, by exact text match.
+
+    Counted over the whole archive rather than per newsgroup, so a body posted
+    to several groups counts once. Messages with an empty body carry no hash and
+    are left out. When `ia_date_span` is given, only IA is restricted to it.
+    """
+    clause, parameters = _ia_only_span_clause(ia_date_span)
+    return _count_venn(
+        connection, "messages.body_hash", conditions=clause, parameters=parameters
+    )
+
+
+def _create_shared_newsgroup_table(
+    connection: sqlite3.Connection, ia_date_span: tuple[str, str] | None
+) -> None:
+    """Collect the newsgroups both archives hold."""
+    clause, parameters = _ia_only_span_clause(ia_date_span)
+    connection.execute(f"DROP TABLE IF EXISTS temp.{SHARED_NEWSGROUPS}")
+    connection.execute(
+        f"CREATE TEMP TABLE {SHARED_NEWSGROUPS} (newsgroup TEXT PRIMARY KEY)"
+    )
+    connection.execute(
+        f"INSERT INTO {SHARED_NEWSGROUPS}"
+        " SELECT messages.newsgroup FROM messages"
+        f" WHERE 1{clause}"
+        " GROUP BY messages.newsgroup"
+        " HAVING MAX(messages.archive = ?) AND MAX(messages.archive = ?)",
+        (*parameters, IA_ARCHIVE, NB_ARCHIVE),
+    )
+
+
+def _create_shared_email_table(
+    connection: sqlite3.Connection, ia_date_span: tuple[str, str] | None
+) -> None:
+    """Collect the hashed emails both archives hold."""
+    clause, parameters = _ia_only_span_clause(ia_date_span)
+    connection.execute(f"DROP TABLE IF EXISTS temp.{SHARED_EMAILS}")
+    connection.execute(
+        f"CREATE TEMP TABLE {SHARED_EMAILS} (email_hash TEXT PRIMARY KEY)"
+    )
+    connection.execute(
+        f"INSERT INTO {SHARED_EMAILS}"
+        f" SELECT users.email_hash FROM {MESSAGES_WITH_SENDER}"
+        f" WHERE users.email_hash IS NOT NULL{clause}"
+        " GROUP BY users.email_hash"
+        " HAVING MAX(messages.archive = ?) AND MAX(messages.archive = ?)",
+        (*parameters, IA_ARCHIVE, NB_ARCHIVE),
+    )
+
+
+def count_message_id_overlap_in_shared_newsgroups(
+    connection: sqlite3.Connection, ia_date_span: tuple[str, str] | None = None
+) -> VennCounts:
+    """Count message overlap over the newsgroups both archives hold.
+
+    A message counts as soon as one of the groups carrying it is shared, and
+    counts once however many groups that is. When `ia_date_span` is given, only
+    IA is restricted to it, both when deciding which groups are shared and when
+    counting messages.
+    """
+    _create_shared_newsgroup_table(connection, ia_date_span)
+    clause, parameters = _ia_only_span_clause(ia_date_span)
+    counts = _count_venn(
+        connection,
+        "messages.message_id_hash",
+        conditions=clause
+        + f" AND messages.newsgroup IN (SELECT newsgroup FROM {SHARED_NEWSGROUPS})",
+        parameters=parameters,
+    )
+    connection.execute(f"DROP TABLE temp.{SHARED_NEWSGROUPS}")
+    return counts
+
+
+def count_message_id_overlap_for_shared_users(
+    connection: sqlite3.Connection, ia_date_span: tuple[str, str] | None = None
+) -> VennCounts:
+    """Count message overlap over the users both archives hold, identified by hashed email.
+
+    Messages whose sender has no email are left out, and a message counts once
+    however many newsgroups carry it. When `ia_date_span` is given, only IA is
+    restricted to it, both when deciding which users are shared and when
+    counting messages.
+    """
+    _create_shared_email_table(connection, ia_date_span)
+    clause, parameters = _ia_only_span_clause(ia_date_span)
+    counts = _count_venn(
+        connection,
+        "messages.message_id_hash",
+        source=MESSAGES_WITH_SENDER,
+        conditions=clause
+        + f" AND users.email_hash IN (SELECT email_hash FROM {SHARED_EMAILS})",
+        parameters=parameters,
+    )
+    connection.execute(f"DROP TABLE temp.{SHARED_EMAILS}")
+    return counts

@@ -44,6 +44,7 @@ data/
     │   └── usenet_private.db   # Private hash-to-plaintext mapping (scripts/02_build_database.py)
     ├── 03_statistics_per_archive/
     ├── 04_compare_archives/
+    ├── 05_venn_diagrams/
     ├── 06_evaluate_embedding_model_robustness/
     ├── 07_make_embeddings/
     ├── 08_newsgroups_and_user_analysis/
@@ -53,7 +54,7 @@ data/
 ### Sqlite database
 The databases are built from the `utf_8_data` subdirectories, and `usenet.db` is what the analysis scripts read.  
 The database holds names, emails, message ids and bodies only as hashes, so the file can be shared.  
-The statistics in step 03, most of the comparisons in step 04, and the graph building scripts in 08 read `usenet.db` and nothing else, so anyone with the file can reproduce them.  
+The statistics in step 03, most of the comparisons in step 04, the venn diagrams in step 05, and the graph building scripts in 08 read `usenet.db` and nothing else, so anyone with the file can reproduce them.  
 The two replacement character scripts in step 04 also read the message bodies from the mbox files, and so need the archives themselves.  
 `usenet_private.db` maps the hashed names, emails and message ids back to their plain text, so local analysis can connect a hash to the address or to the message body in the mbox files.  
 Like the mbox directories, it is not shared.
@@ -79,6 +80,9 @@ Counts messages per newsgroup, user and date in each archive, and finds duplicat
 
 #### Step 04: comparison between archives
 Compares the IA and NB archives by message body and Message-ID overlap, and finds Message-IDs whose copies conflict across the archives. See [scripts/04_compare_archives/README.md](scripts/04_compare_archives/README.md) for details.
+
+#### Step 05: venn diagrams
+Draws the overlap between the archives as venn diagrams, over newsgroups, users, messages and outward references, with the IA archive restricted to the NB date span. See [scripts/05_venn_diagrams/README.md](scripts/05_venn_diagrams/README.md) for details.
 
 #### Step 06: evaluate embedding model robustness
 Measures how robust an embedding model is to the U+FFFD (`�`) damage in the IA archive, by embedding the damaged IA body and the intact NB body of the same message and comparing them. See [scripts/06_evaluate_embedding_model_robustness/README.md](scripts/06_evaluate_embedding_model_robustness/README.md) for details.

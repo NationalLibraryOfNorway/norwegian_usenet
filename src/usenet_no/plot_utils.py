@@ -8,6 +8,11 @@ import matplotlib.axes
 from matplotlib_venn import venn2 as _venn2
 
 
+def format_count(count: int) -> str:
+    """Format a count with a narrow no-break space between thousands."""
+    return f"{count:,}".replace(",", " ")
+
+
 def hsl_to_hex(hue: float, saturation: float, lightness: float) -> str:
     """Convert an HSL colour to a hex string.
 
@@ -56,7 +61,7 @@ def venn2_fmt(
         if size == 0:
             lbl.set_text("")
             continue
-        text = f"{size:,}".replace(",", "\u202f")  # narrow no-break space
+        text = format_count(size)
         if show_pct and total > 0:
             text += f"\n{size / total * 100:.1f}%"
         lbl.set_text(text)

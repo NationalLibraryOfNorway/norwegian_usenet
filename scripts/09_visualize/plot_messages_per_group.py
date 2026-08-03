@@ -7,8 +7,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from usenet_no.plot_utils import venn2_fmt
-
 
 def load_group_counts(path: Path) -> pd.DataFrame:
     df = pd.read_csv(path)
@@ -30,28 +28,6 @@ def print_group_stats(ia_dfs: list, df_nb: pd.DataFrame) -> None:
     print(
         f"NB — groups: {len(df_nb)}, total messages: {df_nb['message_count'].sum():,}"
     )
-
-
-def plot_overlap_venn(
-    ia_filtered: pd.DataFrame,
-    ia_full: pd.DataFrame,
-    df_nb: pd.DataFrame,
-    out_path: Path,
-) -> None:
-    fig, axes = plt.subplots(1, 2, figsize=(10, 5))
-    for ax, (label, df_ia) in zip(
-        axes, [("1994-1997", ia_filtered), ("full period", ia_full)]
-    ):
-        venn2_fmt(
-            [set(df_nb["newsgroup"]), set(df_ia["newsgroup"])],
-            set_labels=("NB", "IA"),
-            ax=ax,
-            show_pct=False,
-        )
-        ax.set_title(f"Newsgroup overlap ({label})")
-    fig.tight_layout()
-    fig.savefig(out_path)
-    plt.close(fig)
 
 
 def print_top_groups(
@@ -163,9 +139,6 @@ def main() -> None:
     ia_dfs = [("Full IA", ia_full), ("IA date-filtered", ia_filtered)]
 
     print_group_stats(ia_dfs, df_nb)
-    plot_overlap_venn(
-        ia_filtered, ia_full, df_nb, args.out_dir / "newsgroup_overlap_venn.png"
-    )
     print_top_groups(ia_dfs, df_nb, "pct_ia", "IA")
     print_top_groups(ia_dfs, df_nb, "pct_nb", "NB")
 
