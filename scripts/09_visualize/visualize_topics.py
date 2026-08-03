@@ -138,7 +138,7 @@ if __name__ == "__main__":
         raise SystemExit(
             f"{topics_path} has {len(topics)} topics but the selection loaded "
             f"{len(embedding_indexer)} messages. Refit the run in "
-            "scripts/07_newsgroups_and_user_analysis/topic_modelling.py."
+            "scripts/08_newsgroups_and_user_analysis/topic_modelling.py."
         )
 
     topic_labels = make_topic_labels(pd.read_csv(topic_info_path))
