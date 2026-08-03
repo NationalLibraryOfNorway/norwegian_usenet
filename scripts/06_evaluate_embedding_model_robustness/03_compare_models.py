@@ -191,7 +191,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--results-directory",
         type=Path,
-        default=Path("data/output/05_evaluate_embedding_model_robustness"),
+        default=Path("data/output/06_evaluate_embedding_model_robustness"),
         help="Directory of per-model results from 02_make_embeddings.py, each"
         " holding a summary.json and a similarities.csv (default: %(default)s)",
     )
@@ -199,7 +199,7 @@ if __name__ == "__main__":
         "--pairs-file",
         type=Path,
         default=Path(
-            "data/output/05_evaluate_embedding_model_robustness/replacement_char_eval_pairs.jsonl"
+            "data/output/06_evaluate_embedding_model_robustness/replacement_char_eval_pairs.jsonl"
         ),
         help="The evaluation set the similarities were measured on"
         " (default: %(default)s)",

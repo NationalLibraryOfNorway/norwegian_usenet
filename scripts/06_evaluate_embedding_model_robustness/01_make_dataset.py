@@ -50,7 +50,7 @@ if __name__ == "__main__":
         "--output-file",
         type=Path,
         default=Path(
-            "data/output/05_evaluate_embedding_model_robustness/replacement_char_eval_pairs.jsonl"
+            "data/output/06_evaluate_embedding_model_robustness/replacement_char_eval_pairs.jsonl"
         ),
         help="Path to JSONL output file",
     )

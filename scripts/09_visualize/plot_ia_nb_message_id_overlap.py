@@ -111,7 +111,7 @@ def main() -> None:
     parser.add_argument(
         "--out-dir",
         type=Path,
-        default=Path("data/output/08_visualize/plot_ia_nb_message_id_overlap"),
+        default=Path("data/output/09_visualize/plot_ia_nb_message_id_overlap"),
         help="Directory for output .png files (default: %(default)s)",
     )
     args = parser.parse_args()

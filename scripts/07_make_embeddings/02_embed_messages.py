@@ -33,7 +33,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--output-directory",
         type=Path,
-        default=Path("data/output/06_make_embeddings"),
+        default=Path("data/output/07_make_embeddings"),
         help="Directory to save embedding files",
     )
     parser.add_argument(

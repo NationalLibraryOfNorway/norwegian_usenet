@@ -95,14 +95,14 @@ if __name__ == "__main__":
         "--pairs-file",
         type=Path,
         default=Path(
-            "data/output/05_evaluate_embedding_model_robustness/replacement_char_eval_pairs.jsonl"
+            "data/output/06_evaluate_embedding_model_robustness/replacement_char_eval_pairs.jsonl"
         ),
         help="JSONL file of message body pairs (default: %(default)s)",
     )
     parser.add_argument(
         "--output-directory",
         type=Path,
-        default=Path("data/output/05_evaluate_embedding_model_robustness"),
+        default=Path("data/output/06_evaluate_embedding_model_robustness"),
         help="Directory to write the per-model results to (default: %(default)s)",
     )
     parser.add_argument(

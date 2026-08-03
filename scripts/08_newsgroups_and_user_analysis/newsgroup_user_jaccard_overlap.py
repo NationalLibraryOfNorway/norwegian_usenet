@@ -45,7 +45,7 @@ if __name__ == "__main__":
         "--nb-output-file",
         type=Path,
         default=Path(
-            "data/output/07_newsgroups_and_user_analysis/"
+            "data/output/08_newsgroups_and_user_analysis/"
             "newsgroup_user_jaccard_overlap_nb.csv"
         ),
         help="Path to CSV output file for the NB archive",
@@ -54,7 +54,7 @@ if __name__ == "__main__":
         "--ia-date-filtered-output-file",
         type=Path,
         default=Path(
-            "data/output/07_newsgroups_and_user_analysis/"
+            "data/output/08_newsgroups_and_user_analysis/"
             "newsgroup_user_jaccard_overlap_ia_date_filtered.csv"
         ),
         help="Path to CSV output file for IA restricted to the NB date span",
@@ -63,7 +63,7 @@ if __name__ == "__main__":
         "--merged-output-file",
         type=Path,
         default=Path(
-            "data/output/07_newsgroups_and_user_analysis/"
+            "data/output/08_newsgroups_and_user_analysis/"
             "newsgroup_user_jaccard_overlap_nb_and_ia_date_filtered.csv"
         ),
         help="Path to CSV output file for NB and the date-filtered IA together",
