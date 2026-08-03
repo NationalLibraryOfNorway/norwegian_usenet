@@ -42,6 +42,29 @@ def count_messages_per_user(
     )
 
 
+def count_messages_per_email(
+    connection: sqlite3.Connection,
+    archive: str,
+    date_span: tuple[str, str] | None = None,
+) -> list[tuple[str, int]]:
+    """Count messages per hashed email in one archive, most posts first.
+
+    The several (name, email) pairs an address was posted under collapse to one
+    user. Senders with no email are left out.
+    """
+    clause, span_parameters = date_span_clause(date_span)
+    return list(
+        connection.execute(
+            "SELECT users.email_hash, COUNT(*) AS post_count"
+            " FROM messages JOIN users ON messages.user_id = users.id"
+            f" WHERE messages.archive = ? AND users.email_hash IS NOT NULL{clause}"
+            " GROUP BY users.email_hash"
+            " ORDER BY post_count DESC, users.email_hash",
+            (archive, *span_parameters),
+        )
+    )
+
+
 def count_messages_per_date(
     connection: sqlite3.Connection, archive: str
 ) -> list[tuple[str | None, int]]:

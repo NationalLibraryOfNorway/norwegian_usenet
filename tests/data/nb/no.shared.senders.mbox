@@ -1,0 +1,17 @@
+From sender@example.com
+From: Kari <k@example.no>
+Message-ID: <in.both@example.no>
+
+posted by a sender both archives have
+
+From sender@example.com
+From: Kari <k@example.no>
+Message-ID: <nb.copy.of.shared.sender@example.no>
+
+posted by the same sender, kept by nb alone
+
+From sender@example.com
+From: Nils <n@example.no>
+Message-ID: <by.nb.only.sender@example.no>
+
+posted by a sender nb alone has

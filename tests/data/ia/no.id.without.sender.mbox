@@ -1,0 +1,4 @@
+From
+Message-ID: <without.sender@example.no>
+
+carries an id but no From header

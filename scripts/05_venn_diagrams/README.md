@@ -1,0 +1,17 @@
+# Step 05: venn diagrams
+
+Every script here reads `data/output/02_build_database/usenet.db` and draws the overlap between the two archives as venn diagrams. The IA archive is always restricted to the NB date span, which is read from the database, so there is no full period figure.
+
+Each script writes both the figure and the counts behind it, as `<name>.png` and `<name>.json` in `data/output/05_venn_diagrams/`. Nothing is cached: every run queries the database again and overwrites what is there.
+
+The scripts are unnumbered because they are independent of each other and can be run in any order.
+
+These scripts need the plotting libraries in the optional `viz` dependency group, which is not installed by default. Install it with `uv sync --group viz`.
+
+Everything is counted over the archive as a whole rather than per newsgroup, so a message crossposted to several groups counts once.
+
+- [newsgroup_overlap.py](newsgroup_overlap.py) counts the newsgroups each archive holds. A group whose IA messages all fall outside the date span stops counting as one IA holds. Creates `newsgroup_overlap.png` and `newsgroup_overlap.json`.
+- [user_overlap.py](user_overlap.py) counts the users each archive holds, identified by hashed email, so the several (name, email) pairs one address was posted under collapse to one user. Senders with no email are left out. Draws all users and, in a second figure, the `--top-n` (default 100) busiest users of each archive. Creates `user_overlap.png`, `user_overlap.json`, `top_100_user_overlap.png` and `top_100_user_overlap.json`, the last two named after `--top-n`.
+- [message_overlap.py](message_overlap.py) counts the messages each archive holds, once by hashed Message-ID and once by exact body match. Messages without an id, and messages with an empty body, are left out of the respective figure. The IA archive lost æ, ø and å to the U+FFFD replacement character, so a message both archives hold usually carries a different body text in each and falls outside the body overlap; [count_replacement_char_body_conflicts.py](../04_compare_archives/count_replacement_char_body_conflicts.py) in step 04 counts those conflicts. Creates `message_id_overlap.png`, `message_id_overlap.json`, `message_body_overlap.png` and `message_body_overlap.json`.
+- [conditional_message_overlap.py](conditional_message_overlap.py) counts the same Message-ID overlap twice more, restricted to what the archives have in common: first to the newsgroups both hold, then to the users both hold. A message stays in the first figure as soon as one of the groups carrying it is shared. Dropping a newsgroup or a user drops the messages behind it on both sides, so a Message-ID both archives hold can move into an archive's own region when the other archive's copy sits in a dropped group. Creates `message_overlap_in_shared_newsgroups.png`, `message_overlap_in_shared_newsgroups.json`, `message_overlap_for_shared_users.png` and `message_overlap_for_shared_users.json`.
+- [outside_archive_references.py](outside_archive_references.py) counts the references *out of* each archive, meaning References headers citing a Message-ID that archive does not hold, and splits them into the ones the other archive resolves and the ones neither holds. Creates `references_out_of_nb.png`, `references_out_of_ia.png` and `outside_archive_references.json`.
