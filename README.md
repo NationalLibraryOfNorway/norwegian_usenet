@@ -87,7 +87,7 @@ Measures how robust an embedding model is to the U+FFFD (`�`) damage in the IA
 Filters the IA archive to the NB date span, selects newsgroups, and makes text embeddings for their messages, reduced to 2 dimensions with UMAP. See [scripts/06_make_embeddings/README.md](scripts/06_make_embeddings/README.md) for details.
 
 #### Step 07: newsgroups and user analysis
-Computes user overlap and reference counts between newsgroups, and finds topics with BERTopic. See [scripts/07_newsgroups_and_user_analysis/README.md](scripts/07_newsgroups_and_user_analysis/README.md) for details.
+Computes user overlap and reference counts between newsgroups, and finds topics with turftopic. See [scripts/07_newsgroups_and_user_analysis/README.md](scripts/07_newsgroups_and_user_analysis/README.md) for details.
 
 #### Step 08: visualize
 Plots the statistics, comparisons, embeddings and graphs from the previous steps. See [scripts/08_visualize/README.md](scripts/08_visualize/README.md) for details.

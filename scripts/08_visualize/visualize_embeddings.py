@@ -115,9 +115,12 @@ if __name__ == "__main__":
                     x=umap_2d[mask, 0],
                     y=umap_2d[mask, 1],
                     mode="markers",
-                    marker=dict(
-                        size=6, color=color_map[ng], symbol=symbol, opacity=0.7
-                    ),
+                    marker={
+                        "size": 6,
+                        "color": color_map[ng],
+                        "symbol": symbol,
+                        "opacity": 0.7,
+                    },
                     name=f"{ng} ({source})",
                     text=hover_texts[mask],
                     hovertemplate="%{text}<extra></extra>",
@@ -130,6 +133,6 @@ if __name__ == "__main__":
         yaxis_title="UMAP 2",
         width=1000,
         height=700,
-        legend=dict(font=dict(size=9)),
+        legend={"font": {"size": 9}},
     )
     fig.show()
