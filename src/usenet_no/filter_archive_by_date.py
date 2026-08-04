@@ -5,7 +5,13 @@ from pathlib import Path
 import pandas as pd
 
 from usenet_no.date_parsing import UNKNOWN_DATE, parse_and_normalize_date_field
-from usenet_no.mbox_utils import message_factory, write_mbox
+from usenet_no.mbox_utils import (
+    RawMessage,
+    message_factory,
+    split_envelope,
+    unescape_from_lines,
+    write_mbox,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +49,12 @@ def filter_mbox_by_date(
         if (
             date_str != UNKNOWN_DATE and start_date <= date_str <= end_date
         ):  # ISO 8601 sorts lexicographically
-            kept_texts.append(mbox_in.get_bytes(key).decode("utf-8", errors="replace"))
+            # mbox_file was written by write_mbox, so its envelope line is kept
+            # and its "From " escaping is undone before it is written again.
+            envelope, text = split_envelope(
+                mbox_in.get_bytes(key, from_=True).decode("utf-8", errors="replace")
+            )
+            kept_texts.append(RawMessage(envelope, unescape_from_lines(text)))
 
     if not kept_texts:
         logger.info(

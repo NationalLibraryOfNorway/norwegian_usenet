@@ -41,6 +41,23 @@ def test_returns_the_encoding_of_each_file(tmp_path, write_message_file):
     assert encodings[latin1_file] != "UTF-8"
 
 
+def test_a_from_line_in_a_body_does_not_split_the_message(
+    tmp_path, write_message_file, count_messages
+):
+    """Fails: the source file holds one message, and the body line starting with
+    "From " is written unescaped, so the mbox file reads back as two.
+    """
+    message_file = write_message_file(
+        tmp_path / "source" / "001",
+        body="Hei\n\nFrom now on I'm thinking only of me.",
+    )
+    outfile = tmp_path / "no.test.mbox"
+
+    write_messages_to_mbox([message_file], outfile)
+
+    assert count_messages(outfile) == 1
+
+
 def test_norwegian_characters_survive_the_decode(tmp_path, write_message_file):
     message_file = write_message_file(
         tmp_path / "source" / "001", body="Blåbær", encoding="latin-1"

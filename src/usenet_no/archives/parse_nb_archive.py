@@ -5,7 +5,7 @@ from collections.abc import Iterable, Iterator
 from pathlib import Path
 
 from usenet_no.archives.encoding import detect_and_decode_file
-from usenet_no.mbox_utils import write_mbox
+from usenet_no.mbox_utils import RawMessage, write_mbox
 
 logger = logging.getLogger(__name__)
 
@@ -86,12 +86,16 @@ def iter_newsgroup_sources(
 def write_messages_to_mbox(
     message_files: Iterable[Path], outfile: Path
 ) -> dict[Path, str]:
-    """Decode message files and append them to outfile, returning the encoding of each."""
+    """Decode message files and append them to outfile, returning the encoding of each.
+
+    A source file holds one message with no envelope line, so write_mbox writes
+    the placeholder one and the whole file is the message's text.
+    """
     encodings = {}
     messages = []
     for message_file in message_files:
         text, encoding = detect_and_decode_file(message_file)
-        messages.append(text)
+        messages.append(RawMessage(envelope=None, text=text))
         encodings[message_file] = encoding
     write_mbox(messages, outfile, append=True)
     logger.info("Wrote %d textfiles to %s", len(messages), outfile)

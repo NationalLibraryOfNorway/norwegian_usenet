@@ -53,12 +53,36 @@ def test_overwrite_refilters_existing_output(mbox_data, tmp_path):
     assert _count_messages(out) == 2
 
 
-def test_output_is_normalized_mbox(mbox_data, tmp_path):
+def test_counts_the_messages_in_the_source(mbox_data, tmp_path):
+    """no.from.line.in.body.mbox holds two dated messages, and a signature line
+    starting with "From " that write_mbox escaped.
+    """
+    source = mbox_data / "ia/no.from.line.in.body.mbox"
+    out = tmp_path / "out.mbox"
+
+    kept, total = filter_mbox_by_date(source, out, *SPAN)
+
+    assert total == 2
+    assert kept == 2
+
+
+def test_keeps_the_source_envelope_line(mbox_data, tmp_path):
+    """Fails: the IA envelope holds a Google Groups id, which process_mbox_file
+    carries over, but filtering reads the message without it and writes the
+    "From MAILER-DAEMON" placeholder instead.
+    """
+    source = mbox_data / "ia/no.from.line.in.body.mbox"
+    out = tmp_path / "out.mbox"
+
+    filter_mbox_by_date(source, out, *SPAN)
+
+    assert out.read_bytes().startswith(b"From 6051272061054231474\n")
+
+
+def test_output_starts_with_an_envelope_line(mbox_data, tmp_path):
     source = mbox_data / "ia/no.one.dated.message.mbox"
     out = tmp_path / "out.mbox"
 
     filter_mbox_by_date(source, out, *SPAN)
 
-    content = out.read_bytes()
-    assert b"\n\n\n" not in content
-    assert content.startswith(b"From ")
+    assert out.read_bytes().startswith(b"From ")
