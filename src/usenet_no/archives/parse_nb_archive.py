@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 def extract_tarfiles(zipped_dir: Path, unzipped_dir: Path) -> None:
-    for compressed_dir in zipped_dir.glob("*.tar"):
+    for compressed_dir in sorted(zipped_dir.glob("*.tar")):
         logger.info("Unpacking %s", compressed_dir)
         out_dir = unzipped_dir / compressed_dir.stem
         out_dir.mkdir(parents=True, exist_ok=True)
@@ -51,13 +51,17 @@ def correct_stem(stem: str, corrections: dict[str, str]) -> str:
 def find_newsgroups_parent_dir(directory: Path) -> Path:
     """Find the parent directory to all the newsgroups directories.
     This function is needed because the newsgroups are nested differently depending on which CD the data was stored on
+
+    Subdirectories are walked in sorted order: iterdir yields them in the order
+    the filesystem holds them, which is not the same on two machines, and the
+    first one found is the one descended into.
     """
     # In one of the directories, the parent dir is named NEWS
     if directory.name == "no" or (
         directory.name == "NEWS" and "KZ" in directory.parent.name
     ):
         return directory
-    for e in directory.iterdir():
+    for e in sorted(directory.iterdir()):
         if e.is_dir():
             return find_newsgroups_parent_dir(e)
 

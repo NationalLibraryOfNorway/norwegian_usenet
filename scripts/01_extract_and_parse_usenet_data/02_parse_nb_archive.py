@@ -77,7 +77,7 @@ if __name__ == "__main__":
 
     encodings: FileEncodings = {}
 
-    directories = [d for d in args.unzipped_dir.iterdir() if d.is_dir()]
+    directories = sorted(d for d in args.unzipped_dir.iterdir() if d.is_dir())
     for directory in tqdm(directories, desc="Processing tar archives"):
         logger.info("Finding usenet data in %s", directory)
 
