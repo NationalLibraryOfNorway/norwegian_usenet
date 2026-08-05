@@ -26,6 +26,7 @@ subset becomes a WHERE clause instead of a copy on disk.
 import logging
 import mailbox
 import sqlite3
+from collections import defaultdict
 from dataclasses import dataclass
 from email.utils import parseaddr
 from pathlib import Path
@@ -162,6 +163,29 @@ def load_id_spans(
             )
         spans[(archive, newsgroup)] = (min_id, count)
     return spans
+
+
+def load_message_positions(
+    connection: sqlite3.Connection,
+    archive: str,
+    date_span: tuple[str, str] | None = None,
+) -> dict[str, list[int]]:
+    """Map each newsgroup to the mbox file positions of its messages in the span.
+
+    A position is `id - lowest row id` for the (archive, newsgroup), as
+    `load_id_spans` describes, so the bodies can be read straight out of the
+    archive's own mbox files without filtering them onto disk first.
+    """
+    clause, span_parameters = date_span_clause(date_span)
+    spans = load_id_spans(connection)
+    positions: dict[str, list[int]] = defaultdict(list)
+    for newsgroup, row_id in connection.execute(
+        f"SELECT newsgroup, id FROM messages WHERE archive = ?{clause} ORDER BY id",
+        (archive, *span_parameters),
+    ):
+        min_id, _count = spans[(archive, newsgroup)]
+        positions[newsgroup].append(row_id - min_id)
+    return dict(positions)
 
 
 def connect(database_file: Path) -> sqlite3.Connection:

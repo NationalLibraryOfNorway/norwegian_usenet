@@ -10,6 +10,7 @@ from usenet_no.database.core import (
     extract_message,
     extract_messages_from_mbox_file,
     insert_messages,
+    load_message_positions,
     load_user_ids,
 )
 from usenet_no.date_parsing import UNKNOWN_DATE
@@ -27,5 +28,6 @@ __all__ = [
     "extract_message",
     "extract_messages_from_mbox_file",
     "insert_messages",
+    "load_message_positions",
     "load_user_ids",
 ]
