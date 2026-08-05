@@ -1,16 +1,16 @@
 {
   "nb_distinct_norwegian_words": 222685,
   "nb_distinct_masked_keys": 217986,
-  "ia_distinct_replacement_words": 230793,
-  "ia_total_replacement_word_occurrences": 6855727,
+  "ia_distinct_replacement_words": 230189,
+  "ia_total_replacement_word_occurrences": 6853000,
   "by_distinct_word": {
-    "unambiguous": 148271,
+    "unambiguous": 148279,
     "ambiguous": 3723,
-    "unresolvable": 78799
+    "unresolvable": 78187
   },
   "by_occurrence": {
-    "unambiguous": 1727945,
-    "ambiguous": 4924239,
-    "unresolvable": 203543
+    "unambiguous": 1727212,
+    "ambiguous": 4923378,
+    "unresolvable": 202410
   }
 }
