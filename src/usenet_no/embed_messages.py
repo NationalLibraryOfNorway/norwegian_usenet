@@ -1,12 +1,17 @@
 import logging
 import mailbox
+from collections.abc import Collection
 from pathlib import Path
 
 import numpy as np
 from sentence_transformers import SentenceTransformer
 from tqdm import tqdm
 
-from usenet_no.mbox_utils import get_message_body, message_factory
+from usenet_no.mbox_utils import (
+    get_message_bodies_at_positions,
+    get_message_body,
+    message_factory,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +24,14 @@ def embed_mbox_file(
     overwrite: bool,
     batch_size: int = 32,
     encode_kwargs: dict | None = None,
+    positions: Collection[int] | None = None,
+    expected_message_count: int | None = None,
 ) -> None:
+    """Embed the messages of one mbox file, or the ones at `positions`.
+
+    The positions are written beside the embeddings, so a row can be traced back
+    to the message it came from.
+    """
     output_path = output_dir / f"{mbox_file.stem}_{source}.npy"
     index_path = output_dir / f"{mbox_file.stem}_{source}_index.npy"
 
@@ -27,18 +39,24 @@ def embed_mbox_file(
         logger.info("Skipping %s (already exists)", output_path.name)
         return
 
-    mbox = mailbox.mbox(str(mbox_file), factory=message_factory)
+    if positions is None:
+        mbox = mailbox.mbox(str(mbox_file), factory=message_factory)
+        bodies_by_position = {
+            position: get_message_body(message) for position, message in enumerate(mbox)
+        }
+    else:
+        bodies_by_position = get_message_bodies_at_positions(
+            mbox_file, positions, expected_message_count
+        )
+
     bodies = []
     indices = []
-    total = 0
-    for i, message in enumerate(mbox):
-        total += 1
-        body = get_message_body(message)
+    for position, body in sorted(bodies_by_position.items()):
         if not body:
-            logger.debug("Skipping empty message %d in %s", i, mbox_file)
+            logger.debug("Skipping empty message %d in %s", position, mbox_file)
             continue
         bodies.append(body)
-        indices.append(i)
+        indices.append(position)
 
     if not bodies:
         logger.warning("No non-empty messages in %s, skipping", mbox_file)
@@ -51,14 +69,13 @@ def embed_mbox_file(
     np.save(output_path, embeddings)
     logger.info("Saved embeddings to %s", output_path)
 
-    if len(bodies) < total:
-        np.save(index_path, np.array(indices))
-        logger.info(
-            "Saved index file to %s (%d/%d messages had content)",
-            index_path,
-            len(bodies),
-            total,
-        )
+    np.save(index_path, np.array(indices))
+    logger.info(
+        "Saved index file to %s (%d of %d messages had content)",
+        index_path,
+        len(bodies),
+        len(bodies_by_position),
+    )
 
 
 def load_embeddings_and_docs(

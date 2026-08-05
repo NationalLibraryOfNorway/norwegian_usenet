@@ -1,101 +1,101 @@
 word,occurrences,category,candidates
-�,1015340,ambiguous,Å | Æ | Ø | å | æ | ø
-p�,890906,ambiguous,pÅ | pÆ | på | pæ | pø
-s�,336345,ambiguous,sÅ | sÆ | så | sæ | sø
-v�re,171843,ambiguous,vÅre | vÆre | våre | være | vøre
-f�r,138887,ambiguous,fÅr | fØr | får | fær | før
-ogs�,124723,ambiguous,ogsÅ | også | ogsæ
-m�,115264,ambiguous,mÅ | mÆ | må | mæ | mø
-f�,108343,ambiguous,fÅ | fÆ | få | fø
-n�r,103560,ambiguous,nÅr | når | nær | nør
-v�rt,67225,ambiguous,vårt | vært | vørt
-gj�r,59994,ambiguous,gjår | gjær | gjør
-n�,59553,ambiguous,nÅ | nå | næ | nø
-g�r,57583,ambiguous,gÅr | går | gær | gør
-gj�re,50097,ambiguous,gjære | gjøre
-b�r,45414,ambiguous,bÆr | bår | bær | bør
-�r,41892,ambiguous,År | Ær | år | ær | ør
-�nsker,36164,ambiguous,Ånsker | Ænsker | Ønsker | ønsker
-S�,35676,ambiguous,SÅ | SÆ | SØ | Så | Sæ | Sø
-st�r,32688,ambiguous,stÅr | står | stær | stør
-g�,31179,ambiguous,gÅ | gå | gæ
-P�,30580,ambiguous,PÅ | PÆ | På
-N�r,30174,ambiguous,NÅr | Når | Nær
-f�tt,29631,ambiguous,fÅtt | fått | fætt | føtt
-b�de,26873,ambiguous,både | bæde | bøde
-m�te,23928,ambiguous,mÆte | måte | møte
-f�rste,23875,ambiguous,fårste | færste | første
-kj�pe,23523,ambiguous,kjØpe | kjåpe | kjøpe
-alts�,23492,unambiguous,altså
-v�r,22604,ambiguous,vÅr | vår | vær | vør
-N�,22003,ambiguous,NÅ | NØ | Nå | Næ
-m�tte,20203,ambiguous,mÅtte | måtte | møtte
-Bj�rn,19596,ambiguous,Bjærn | Bjørn
-sv�rt,18906,ambiguous,svårt | svært | svørt
-p�.,17747,ambiguous,pÅ. | på.
-h�rt,17050,ambiguous,hårt | hørt
-kj�re,17032,ambiguous,kjÆre | kjære | kjøre
-st�rre,15772,ambiguous,stØrre | større
-f�rst,15471,ambiguous,fårst | først
-kj�rer,14762,ambiguous,kjærer | kjører
-s�rlig,14577,ambiguous,sårlig | særlig | sørlig
-d�rlig,14257,ambiguous,dÅrlig | dårlig | dærlig
-sp�rsm�l,12958,ambiguous,spårsmål | spørsmål | spørsmøl
-f�lge,12807,ambiguous,fålge | følge
-f�lger,12381,unambiguous,følger
-ogs�.,12266,unambiguous,også.
-pr�ve,12168,ambiguous,pråve | præve | prøve
-pr�ver,11729,ambiguous,pråver | prøver
-f�lgende,11646,ambiguous,fØlgende | følgende
-pr�vd,11601,ambiguous,prÆvd | prØvd | prøvd
-s�nn,11247,ambiguous,sånn | sønn
-skj�nner,11078,unambiguous,skjønner
-"p�,",10703,ambiguous,"pÅ, | på,"
-g�tt,10455,ambiguous,gÅtt | gått
-selvf�lgelig,10257,ambiguous,selvfælgelig | selvfølgelig
-for�vrig,9797,ambiguous,forØvrig | forøvrig
-kj�pt,9688,ambiguous,kjåpt | kjøpt
-l�re,9508,ambiguous,låre | lære | løre
-h�re,9100,ambiguous,håre | hære | høre
-h�rer,8935,ambiguous,hårer | hærer | hører
-m�ten,8851,ambiguous,mÅten | måten | møten
-sp�r,8606,ambiguous,spår | spør
-forst�,8480,ambiguous,forstå | forstø
-gj�re.,8412,ambiguous,gjÆre. | gjære. | gjøre.
-forst�r,8256,unambiguous,forstår
-�n,7665,ambiguous,ån | æn | øn
-st�tte,7615,ambiguous,ståtte | støtte
-h�per,7424,ambiguous,hÅper | håper
-kj�per,7390,unambiguous,kjøper
-st�tter,7338,ambiguous,ståtter | støtter
-st�,7320,ambiguous,stå | stø
-�r.,7192,ambiguous,År. | år. | ær.
-f�ler,7183,unambiguous,føler
-sm�,7105,ambiguous,smÅ | små | smæ | smø
-h�res,6940,ambiguous,håres | hæres | høres
-M�,6710,ambiguous,MÅ | MÆ | MØ | Må | Mæ | Mø
-Hongr�,6450,unambiguous,Hongrø
-r�d,6409,ambiguous,rÅd | råd | ræd | rød
-Pr�v,6399,unambiguous,Prøv
-"ogs�,",6357,unambiguous,"også,"
-st�rste,6299,ambiguous,stårste | største
-sl�,6119,unambiguous,slå
-"n�,",6112,ambiguous,"nÅ, | nå, | næ,"
-sp�rsm�let,6097,ambiguous,spårsmålet | spørsmålet
-gj�res,6076,unambiguous,gjøres
-h�yere,6074,unambiguous,høyere
-f�rer,5913,unambiguous,fører
-n�dvendigvis,5783,ambiguous,nØdvendigvis | nådvendigvis | nødvendigvis
-n�.,5779,ambiguous,nå. | næ. | nø.
+�,1014035,ambiguous,Å | Æ | Ø | å | æ | ø
+p�,889926,ambiguous,pÅ | pÆ | på | pæ | pø
+s�,336091,ambiguous,sÅ | sÆ | så | sæ | sø
+v�re,171628,ambiguous,vÅre | vÆre | våre | være | vøre
+f�r,138737,ambiguous,fÅr | fØr | får | fær | før
+ogs�,124556,ambiguous,ogsÅ | også | ogsæ
+m�,115172,ambiguous,mÅ | mÆ | må | mæ | mø
+f�,108241,ambiguous,fÅ | fÆ | få | fø
+n�r,103436,ambiguous,nÅr | når | nær | nør
+v�rt,67166,ambiguous,vårt | vært | vørt
+gj�r,59945,ambiguous,gjår | gjær | gjør
+n�,59514,ambiguous,nÅ | nå | næ | nø
+g�r,57504,ambiguous,gÅr | går | gær | gør
+gj�re,50073,ambiguous,gjære | gjøre
+b�r,45390,ambiguous,bÆr | bår | bær | bør
+�r,41806,ambiguous,År | Ær | år | ær | ør
+�nsker,36135,ambiguous,Ånsker | Ænsker | Ønsker | ønsker
+S�,35645,ambiguous,SÅ | SÆ | SØ | Så | Sæ | Sø
+st�r,32644,ambiguous,stÅr | står | stær | stør
+g�,31149,ambiguous,gÅ | gå | gæ
+P�,30540,ambiguous,PÅ | PÆ | På
+N�r,30156,ambiguous,NÅr | Når | Nær
+f�tt,29579,ambiguous,fÅtt | fått | fætt | føtt
+b�de,26820,ambiguous,både | bæde | bøde
+m�te,23905,ambiguous,mÆte | måte | møte
+f�rste,23852,ambiguous,fårste | færste | første
+kj�pe,23511,ambiguous,kjØpe | kjåpe | kjøpe
+alts�,23458,unambiguous,altså
+v�r,22583,ambiguous,vÅr | vår | vær | vør
+N�,21971,ambiguous,NÅ | NØ | Nå | Næ
+m�tte,20183,ambiguous,mÅtte | måtte | møtte
+Bj�rn,19589,ambiguous,Bjærn | Bjørn
+sv�rt,18886,ambiguous,svårt | svært | svørt
+p�.,17737,ambiguous,pÅ. | på.
+h�rt,17026,ambiguous,hårt | hørt
+kj�re,17023,ambiguous,kjÆre | kjære | kjøre
+st�rre,15758,ambiguous,stØrre | større
+f�rst,15459,ambiguous,fårst | først
+kj�rer,14758,ambiguous,kjærer | kjører
+s�rlig,14547,ambiguous,sårlig | særlig | sørlig
+d�rlig,14243,ambiguous,dÅrlig | dårlig | dærlig
+sp�rsm�l,12950,ambiguous,spårsmål | spørsmål | spørsmøl
+f�lge,12781,ambiguous,fålge | følge
+f�lger,12366,unambiguous,følger
+ogs�.,12258,unambiguous,også.
+pr�ve,12166,ambiguous,pråve | præve | prøve
+pr�ver,11723,ambiguous,pråver | prøver
+f�lgende,11633,ambiguous,fØlgende | følgende
+pr�vd,11588,ambiguous,prÆvd | prØvd | prøvd
+s�nn,11240,ambiguous,sånn | sønn
+skj�nner,11073,unambiguous,skjønner
+"p�,",10692,ambiguous,"pÅ, | på,"
+g�tt,10418,ambiguous,gÅtt | gått
+selvf�lgelig,10249,ambiguous,selvfælgelig | selvfølgelig
+for�vrig,9789,ambiguous,forØvrig | forøvrig
+kj�pt,9684,ambiguous,kjåpt | kjøpt
+l�re,9506,ambiguous,låre | lære | løre
+h�re,9095,ambiguous,håre | hære | høre
+h�rer,8918,ambiguous,hårer | hærer | hører
+m�ten,8832,ambiguous,mÅten | måten | møten
+sp�r,8604,ambiguous,spår | spør
+forst�,8475,ambiguous,forstå | forstø
+gj�re.,8410,ambiguous,gjÆre. | gjære. | gjøre.
+forst�r,8251,unambiguous,forstår
+�n,7657,ambiguous,ån | æn | øn
+st�tte,7610,ambiguous,ståtte | støtte
+h�per,7419,ambiguous,hÅper | håper
+kj�per,7386,unambiguous,kjøper
+st�tter,7332,ambiguous,ståtter | støtter
+st�,7316,ambiguous,stå | stø
+f�ler,7181,unambiguous,føler
+�r.,7152,ambiguous,År. | år. | ær.
+sm�,7085,ambiguous,smÅ | små | smæ | smø
+h�res,6939,ambiguous,håres | hæres | høres
+M�,6706,ambiguous,MÅ | MÆ | MØ | Må | Mæ | Mø
+Hongr�,6443,unambiguous,Hongrø
+r�d,6405,ambiguous,rÅd | råd | ræd | rød
+Pr�v,6398,unambiguous,Prøv
+"ogs�,",6346,unambiguous,"også,"
+st�rste,6294,ambiguous,stårste | største
+sl�,6117,unambiguous,slå
+"n�,",6109,ambiguous,"nÅ, | nå, | næ,"
+sp�rsm�let,6091,ambiguous,spårsmålet | spørsmålet
+gj�res,6074,unambiguous,gjøres
+h�yere,6071,unambiguous,høyere
+f�rer,5909,unambiguous,fører
+n�dvendigvis,5775,ambiguous,nØdvendigvis | nådvendigvis | nødvendigvis
+n�.,5774,ambiguous,nå. | næ. | nø.
 n�dde,5721,ambiguous,nådde | nødde
-"�r,",5674,ambiguous,"År, | år, | ær,"
-n�dvendig,5669,ambiguous,nØdvendig | nødvendig
-F�r,5579,ambiguous,FØr | Får | Før
+"�r,",5668,ambiguous,"År, | år, | ær,"
+n�dvendig,5668,ambiguous,nØdvendig | nødvendig
+F�r,5574,ambiguous,FØr | Får | Før
 �nske,5344,ambiguous,Ønske | ønske
-kj�pte,5330,ambiguous,kjåpte | kjøpte
+kj�pte,5325,ambiguous,kjåpte | kjøpte
 sp�rre,5323,ambiguous,spærre | spørre
-m�ter,5275,ambiguous,måter | mæter | møter
-f�re,5227,ambiguous,fåre | fære | føre
-H�per,5216,ambiguous,HÅper | Håper
-l�pet,5166,unambiguous,løpet
-fors�k,5164,ambiguous,forsåk | forsøk
+m�ter,5271,ambiguous,måter | mæter | møter
+f�re,5226,ambiguous,fåre | fære | føre
+H�per,5213,ambiguous,HÅper | Håper
+l�pet,5159,unambiguous,løpet
+fors�k,5156,ambiguous,forsåk | forsøk

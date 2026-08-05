@@ -5,13 +5,13 @@ from collections.abc import Iterable, Iterator
 from pathlib import Path
 
 from usenet_no.archives.encoding import detect_and_decode_file
-from usenet_no.mbox_utils import write_mbox
+from usenet_no.mbox_utils import RawMessage, write_mbox
 
 logger = logging.getLogger(__name__)
 
 
 def extract_tarfiles(zipped_dir: Path, unzipped_dir: Path) -> None:
-    for compressed_dir in zipped_dir.glob("*.tar"):
+    for compressed_dir in sorted(zipped_dir.glob("*.tar")):
         logger.info("Unpacking %s", compressed_dir)
         out_dir = unzipped_dir / compressed_dir.stem
         out_dir.mkdir(parents=True, exist_ok=True)
@@ -51,13 +51,17 @@ def correct_stem(stem: str, corrections: dict[str, str]) -> str:
 def find_newsgroups_parent_dir(directory: Path) -> Path:
     """Find the parent directory to all the newsgroups directories.
     This function is needed because the newsgroups are nested differently depending on which CD the data was stored on
+
+    Subdirectories are walked in sorted order: iterdir yields them in the order
+    the filesystem holds them, which is not the same on two machines, and the
+    first one found is the one descended into.
     """
     # In one of the directories, the parent dir is named NEWS
     if directory.name == "no" or (
         directory.name == "NEWS" and "KZ" in directory.parent.name
     ):
         return directory
-    for e in directory.iterdir():
+    for e in sorted(directory.iterdir()):
         if e.is_dir():
             return find_newsgroups_parent_dir(e)
 
@@ -86,12 +90,16 @@ def iter_newsgroup_sources(
 def write_messages_to_mbox(
     message_files: Iterable[Path], outfile: Path
 ) -> dict[Path, str]:
-    """Decode message files and append them to outfile, returning the encoding of each."""
+    """Decode message files and append them to outfile, returning the encoding of each.
+
+    A source file holds one message with no envelope line, so write_mbox writes
+    the placeholder one and the whole file is the message's text.
+    """
     encodings = {}
     messages = []
     for message_file in message_files:
         text, encoding = detect_and_decode_file(message_file)
-        messages.append(text)
+        messages.append(RawMessage(envelope=None, text=text))
         encodings[message_file] = encoding
     write_mbox(messages, outfile, append=True)
     logger.info("Wrote %d textfiles to %s", len(messages), outfile)

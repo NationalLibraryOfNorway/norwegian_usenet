@@ -5,6 +5,14 @@ from pathlib import Path
 from sentence_transformers import SentenceTransformer
 from tqdm import tqdm
 
+from usenet_no.database import (
+    IA_ARCHIVE,
+    NB_ARCHIVE,
+    connect,
+    load_message_positions,
+)
+from usenet_no.database.core import load_id_spans
+from usenet_no.database.statistics import get_date_span
 from usenet_no.embed_messages import embed_mbox_file
 
 logger = logging.getLogger(__name__)
@@ -21,7 +29,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--ia-directory",
         type=Path,
-        default=Path("data/input/internet_archive/date_filtered"),
+        default=Path("data/input/internet_archive/utf_8_data"),
         help="Directory containing IA mbox files",
     )
     parser.add_argument(
@@ -29,6 +37,12 @@ if __name__ == "__main__":
         type=Path,
         default=Path("data/input/nb/utf_8_data"),
         help="Directory containing NB mbox files",
+    )
+    parser.add_argument(
+        "--database-file",
+        type=Path,
+        default=Path("data/output/02_build_database/usenet.db"),
+        help="Path to the SQLite database file, which says which IA messages fall in the NB date span",
     )
     parser.add_argument(
         "--output-directory",
@@ -74,6 +88,21 @@ if __name__ == "__main__":
     model_output_dir = args.output_directory / args.model
     model_output_dir.mkdir(parents=True, exist_ok=True)
 
+    # The IA archive runs past the NB one at both ends, so only the messages
+    # inside the NB date span are embedded. They are read from the archive's own
+    # mbox files at the positions the database gives, rather than from a filtered
+    # copy of those files.
+    connection = connect(args.database_file)
+    nb_date_span = get_date_span(connection, NB_ARCHIVE)
+    logger.info("NB date span: %s to %s", *nb_date_span)
+    ia_positions = load_message_positions(connection, IA_ARCHIVE, nb_date_span)
+    ia_message_counts = {
+        newsgroup: count
+        for (archive, newsgroup), (_min_id, count) in load_id_spans(connection).items()
+        if archive == IA_ARCHIVE
+    }
+    connection.close()
+
     logger.info("Loading model %s", args.model)
     model = SentenceTransformer(args.model, trust_remote_code=True)
 
@@ -93,7 +122,11 @@ if __name__ == "__main__":
 
         ia_mbox_file = args.ia_directory / f"{newsgroup}.mbox"
 
-        if ia_mbox_file.exists():
+        if not ia_mbox_file.exists():
+            logger.warning("%s does not exist, can't embed messages", ia_mbox_file)
+        elif newsgroup not in ia_positions:
+            logger.warning("%s holds no message inside the NB date span", ia_mbox_file)
+        else:
             embed_mbox_file(
                 ia_mbox_file,
                 "ia",
@@ -101,6 +134,6 @@ if __name__ == "__main__":
                 model_output_dir,
                 args.overwrite,
                 args.batch_size,
+                positions=ia_positions[newsgroup],
+                expected_message_count=ia_message_counts[newsgroup],
             )
-        else:
-            logger.warning("%s does not exist, can't embed messages", ia_mbox_file)

@@ -7,13 +7,13 @@ process_mbox_file apply a single detected charset to the whole message.
 from usenet_no.archives.parse_internet_archive import iter_raw_messages
 
 TWO_MESSAGES = (
-    "From ola@uio.no Mon Jan  1 00:00:00 1996\n"
+    "From 6214288843448422964\n"
     "From: ola@uio.no\n"
     "Subject: first\n"
     "\n"
     "Blåbær\n"
     "\n"
-    "From kari@uio.no Tue Jan  2 00:00:00 1996\n"
+    "From -3831648075992104022\n"
     "From: kari@uio.no\n"
     "Subject: second\n"
     "\n"
@@ -31,7 +31,7 @@ def test_yields_one_bytestring_per_message(tmp_path):
 def test_yields_undecoded_bytes(tmp_path):
     """The message keeps its original bytes: latin-1 Blåbær, not utf-8 or text."""
     mbox_file = tmp_path / "no.latin1.mbox"
-    mbox_file.write_bytes("From a\nSubject: t\n\nBlåbær\n".encode("latin-1"))
+    mbox_file.write_bytes("From 1\nSubject: t\n\nBlåbær\n".encode("latin-1"))
 
     [raw] = list(iter_raw_messages(mbox_file))
 
@@ -41,7 +41,7 @@ def test_yields_undecoded_bytes(tmp_path):
 
 def test_yields_headers_with_the_body(tmp_path):
     mbox_file = tmp_path / "no.headers.mbox"
-    mbox_file.write_bytes(b"From a\nSubject: hei\n\nkropp\n")
+    mbox_file.write_bytes(b"From 1\nSubject: hei\n\nkropp\n")
 
     [raw] = list(iter_raw_messages(mbox_file))
 

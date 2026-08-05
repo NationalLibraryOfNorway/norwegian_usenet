@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 def unzip_all(zip_dir: Path, unzip_dir: Path) -> None:
-    all_zips = list(zip_dir.glob("*.zip"))
+    all_zips = sorted(zip_dir.glob("*.zip"))
     for zip_file in tqdm(all_zips, desc="Unzipping zipped mbox files"):
         with ZipFile(zip_file, "r") as z:
             z.extractall(unzip_dir)
@@ -81,7 +81,7 @@ if __name__ == "__main__":
 
     unzipped_mbox_files = [
         f
-        for f in args.unzipped_data_dir.iterdir()
+        for f in sorted(args.unzipped_data_dir.iterdir())
         if not (
             source_key(f, args.unzipped_data_dir) in encodings
             and (args.decoded_data_dir / f.name).exists()

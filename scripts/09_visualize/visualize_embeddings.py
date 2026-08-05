@@ -31,7 +31,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--ia-directory",
         type=Path,
-        default=Path("data/input/internet_archive/date_filtered"),
+        default=Path("data/input/internet_archive/utf_8_data"),
         help="Directory containing IA mbox files",
     )
     parser.add_argument(
@@ -78,7 +78,7 @@ if __name__ == "__main__":
         raise SystemExit(
             f"{umap_cache} has {len(umap_2d)} rows but the selection loaded "
             f"{len(embedding_indexer)} messages. Regenerate it with "
-            "scripts/07_make_embeddings/03_umap_reduce_embeddings.py --overwrite."
+            "scripts/07_make_embeddings/02_umap_reduce_embeddings.py --overwrite."
         )
 
     newsgroups_indexer = [s.rsplit("_", 1)[0] for s in embedding_indexer]

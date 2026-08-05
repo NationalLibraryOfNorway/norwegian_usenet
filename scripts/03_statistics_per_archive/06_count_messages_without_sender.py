@@ -1,5 +1,6 @@
-"""Count messages whose sender is unknown, per archive and newsgroup.
-A message has no sender when it carried no From header at all.
+"""Count messages with no sender, per archive and newsgroup.
+A message has no sender when no name or email could be read from its From
+header.
 
 Writes one JSON object per newsgroup that has at least one such message, sorted
 by (archive, newsgroup) so the output is stable across runs.
