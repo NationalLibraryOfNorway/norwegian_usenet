@@ -6,6 +6,14 @@ import sys
 from dataclasses import asdict
 from pathlib import Path
 
+from usenet_no.database import (
+    IA_ARCHIVE,
+    NB_ARCHIVE,
+    connect,
+    load_message_positions,
+)
+from usenet_no.database.core import load_id_spans
+from usenet_no.database.statistics import get_date_span
 from usenet_no.replacement_chars.recovery import (
     RankedReplacementWord,
     build_norwegian_vocabulary_index,
@@ -39,8 +47,14 @@ if __name__ == "__main__":
     parser.add_argument(
         "--ia-directory",
         type=Path,
-        default=Path("data/input/internet_archive/date_filtered"),
+        default=Path("data/input/internet_archive/utf_8_data"),
         help="Directory containing Internet Archive (IA) .mbox files",
+    )
+    parser.add_argument(
+        "--database-file",
+        type=Path,
+        default=Path("data/output/02_build_database/usenet.db"),
+        help="Path to the SQLite database file, which says which IA messages fall in the NB date span",
     )
     parser.add_argument(
         "--nb-directory",
@@ -92,8 +106,27 @@ if __name__ == "__main__":
         iter_message_bodies(args.nb_directory)
     )
 
-    logger.info("Counting IA replacement-character words from %s", args.ia_directory)
-    ia_word_counts = count_replacement_words(iter_message_bodies(args.ia_directory))
+    # The IA archive runs past the NB one at both ends, and a word can only be
+    # recovered from a vocabulary the NB archive covers, so only IA messages
+    # inside the NB date span are counted.
+    connection = connect(args.database_file)
+    nb_date_span = get_date_span(connection, NB_ARCHIVE)
+    ia_positions = load_message_positions(connection, IA_ARCHIVE, nb_date_span)
+    ia_message_counts = {
+        newsgroup: count
+        for (archive, newsgroup), (_min_id, count) in load_id_spans(connection).items()
+        if archive == IA_ARCHIVE
+    }
+    connection.close()
+
+    logger.info(
+        "Counting IA replacement-character words from %s, within the NB date span %s to %s",
+        args.ia_directory,
+        *nb_date_span,
+    )
+    ia_word_counts = count_replacement_words(
+        iter_message_bodies(args.ia_directory, ia_positions, ia_message_counts)
+    )
 
     statistics = compute_recovery_statistics(vocabulary_index, ia_word_counts)
 
