@@ -93,7 +93,7 @@ if __name__ == "__main__":
     if not umap_cache.exists():
         raise SystemExit(
             f"No UMAP embeddings at {umap_cache}. "
-            "Run scripts/07_make_embeddings/03_umap_reduce_embeddings.py "
+            "Run scripts/07_make_embeddings/02_umap_reduce_embeddings.py "
             f"with --selection {' '.join(args.selection)} first."
         )
 
@@ -121,7 +121,7 @@ if __name__ == "__main__":
         raise SystemExit(
             f"{umap_cache} has {len(umap_2d)} rows but the selection loaded "
             f"{len(embedding_indexer)} messages. Regenerate it with "
-            "scripts/07_make_embeddings/03_umap_reduce_embeddings.py --overwrite."
+            "scripts/07_make_embeddings/02_umap_reduce_embeddings.py --overwrite."
         )
 
     logger.info("Loading BERTopic model from %s", model_path)
