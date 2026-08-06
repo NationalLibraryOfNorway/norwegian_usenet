@@ -19,13 +19,17 @@ information and are never written out.
 
 import mailbox
 from collections import Counter
-from collections.abc import Iterable, Iterator
+from collections.abc import Collection, Iterable, Iterator, Mapping
 from dataclasses import dataclass
 from pathlib import Path
 
 from tqdm import tqdm
 
-from usenet_no.mbox_utils import get_message_body, message_factory
+from usenet_no.mbox_utils import (
+    get_message_bodies_at_positions,
+    get_message_body,
+    message_factory,
+)
 from usenet_no.replacement_chars.pairs import NORWEGIAN_CHARS, REPLACEMENT_CHAR
 
 _MASK_TABLE = str.maketrans({char: REPLACEMENT_CHAR for char in NORWEGIAN_CHARS})
@@ -75,12 +79,33 @@ def mask_norwegian_chars(word: str) -> str:
     return word.translate(_MASK_TABLE)
 
 
-def iter_message_bodies(directory: Path) -> Iterator[str]:
-    """Yield every non-empty message body from the .mbox files in a directory."""
+def iter_message_bodies(
+    directory: Path,
+    positions_per_newsgroup: Mapping[str, Collection[int]] | None = None,
+    message_counts: Mapping[str, int] | None = None,
+) -> Iterator[str]:
+    """Yield every non-empty message body from the .mbox files in a directory.
+
+    Given `positions_per_newsgroup`, only the messages at those positions are
+    read and a file with no entry is skipped, which is how a date span reaches
+    this module without the mbox files being filtered onto disk first.
+    `message_counts` is checked against each file, so positions computed against
+    a different version of it are caught rather than read as other messages.
+    """
     for mbox_file in tqdm(sorted(directory.glob("*.mbox")), unit="file"):
-        mbox = mailbox.mbox(str(mbox_file), factory=message_factory)
-        for message in mbox:
-            body = get_message_body(message)
+        if positions_per_newsgroup is None:
+            mbox = mailbox.mbox(str(mbox_file), factory=message_factory)
+            bodies = (get_message_body(message) for message in mbox)
+        elif mbox_file.stem in positions_per_newsgroup:
+            bodies_by_position = get_message_bodies_at_positions(
+                mbox_file,
+                positions_per_newsgroup[mbox_file.stem],
+                (message_counts or {}).get(mbox_file.stem),
+            )
+            bodies = (body for _position, body in sorted(bodies_by_position.items()))
+        else:
+            continue
+        for body in bodies:
             if body:
                 yield body
 

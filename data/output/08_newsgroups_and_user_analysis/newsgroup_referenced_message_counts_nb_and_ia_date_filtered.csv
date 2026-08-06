@@ -1,11 +1,11 @@
 from_newsgroup,to_newsgroup,number_of_references
 no.alt.flame,unknown,4427
-no.general,unknown,3754
+no.general,unknown,3749
 no.general,no.alt.diskusjoner,3579
 no.alt.diskusjoner,no.general,3335
 no.general,no.prat.politikk,2551
 no.prat.politikk,no.general,2516
-no.religion,unknown,1942
+no.religion,unknown,1937
 no.alt.frustrasjoner,no.general,1732
 no.jus,no.general,1522
 no.pc,unknown,1431
@@ -4952,7 +4952,6 @@ no.kjemi,no.eunet.hjelp,7
 no.kjemi,no.standard,7
 no.kjemi,no.tungregning,7
 no.kryptografi,no.c,7
-no.kultur.film,no.film,7
 no.linux,no.alt.mat,7
 no.linux,no.alt.motorsykler,7
 no.linux,no.alt.radio_tv.irma1000,7

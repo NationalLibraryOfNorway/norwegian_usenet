@@ -1,8 +1,8 @@
 {
-  "ghost_cited_by_ia_only": 15675,
+  "ghost_cited_by_ia_only": 15670,
   "ghost_cited_by_nb_only": 5192,
   "ghost_cited_by_both": 5768,
-  "ia_refs_resolved_by_nb": 27203,
+  "ia_refs_resolved_by_nb": 27202,
   "nb_refs_resolved_by_ia": 6488,
   "references_out_of_nb": {
     "unresolved": 10960,
@@ -10,8 +10,8 @@
     "total": 17448
   },
   "references_out_of_ia": {
-    "unresolved": 21443,
-    "resolved_by_nb": 27203,
-    "total": 48646
+    "unresolved": 21438,
+    "resolved_by_nb": 27202,
+    "total": 48640
   }
 }

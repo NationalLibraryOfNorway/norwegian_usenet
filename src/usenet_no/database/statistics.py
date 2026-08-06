@@ -85,11 +85,11 @@ def count_messages_per_date(
 def count_messages_without_sender(
     connection: sqlite3.Connection,
 ) -> list[tuple[str, str, int]]:
-    """Count messages whose sender is unknown, per archive and newsgroup.
+    """Count messages with no sender, per archive and newsgroup.
 
-    A message has no user when it carried no From header; the mbox envelope is
-    not used as a fallback. Returns (archive, newsgroup, count) for newsgroups
-    with at least one such message, sorted by (archive, newsgroup).
+    A message has no sender when no name or email could be read from its From
+    header. Returns (archive, newsgroup, count) for newsgroups with at least
+    one such message, sorted by (archive, newsgroup).
     """
     return list(
         connection.execute(

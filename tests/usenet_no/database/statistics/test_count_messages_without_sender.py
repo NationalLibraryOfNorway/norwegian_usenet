@@ -24,3 +24,15 @@ def test_no_rows_when_every_message_has_a_sender(mbox_data, database, load_archi
     connection = load_archives(database, [(mbox_file, IA_ARCHIVE)])
 
     assert count_messages_without_sender(connection) == []
+
+
+def test_an_escaped_from_line_in_a_body_is_not_counted(
+    mbox_data, database, load_archives
+):
+    """no.from.line.in.body.mbox holds two messages, both with a From header,
+    and a signature line starting with "From " that write_mbox escaped.
+    """
+    mbox_file = mbox_data / "ia/no.from.line.in.body.mbox"
+    connection = load_archives(database, [(mbox_file, IA_ARCHIVE)])
+
+    assert count_messages_without_sender(connection) == []

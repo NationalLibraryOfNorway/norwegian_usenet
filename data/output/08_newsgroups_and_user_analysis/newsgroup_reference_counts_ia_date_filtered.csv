@@ -1,8 +1,8 @@
 from_newsgroup,to_newsgroup,number_of_references
-no.general,unknown,51008
+no.general,unknown,51003
 no.alt.flame,unknown,37971
 no.general,no.prat.politikk,30639
-no.religion,unknown,29093
+no.religion,unknown,29088
 no.general,no.alt.diskusjoner,28809
 no.prat.politikk,no.general,26158
 no.alt.diskusjoner,no.general,24397
@@ -3372,7 +3372,6 @@ no.jus,no.marked.bil,4
 no.kjemi,no.media,4
 no.kjemi,no.student.nett,4
 no.kryptografi,no.havforskning,4
-no.kultur.film,no.film,4
 no.linux,no.alt.diskusjoner,4
 no.linux,no.alt.pompel-og-pilt,4
 no.linux,no.ef,4
@@ -3564,7 +3563,6 @@ no.it.os.os2,no.unix,3
 no.jus,no.vit.diverse,3
 no.kjemi,no.hobby.diverse,3
 no.kryptografi,no.hobby.diverse,3
-no.kultur.film,unknown,3
 no.linux,no.biz.annonser,3
 no.linux,no.it.diverse,3
 no.lisp,no.x,3

@@ -30,8 +30,7 @@ data/
 │   │   ├── zipped_data/        # Downloaded .zip files from archive.org (scripts/01_extract_and_parse_usenet_data/03_scrape_internet_archive.py)
 │   │   ├── unzipped_data/      # Extracted .mbox files (scripts/01_extract_and_parse_usenet_data/04_parse_internet_archive.py)
 │   │   ├── utf_8_data/         # UTF-8 encoded .mbox files (scripts/01_extract_and_parse_usenet_data/04_parse_internet_archive.py)
-│   │   ├── encodings.json      # Encoding detected per file in unzipped_data (scripts/01_extract_and_parse_usenet_data/04_parse_internet_archive.py)
-│   │   └── date_filtered/      # IA messages filtered to the NB date span (scripts/07_make_embeddings/01_filter_internet_archive_by_date.py)
+│   │   └── encodings.json      # Encoding detected per file in unzipped_data (scripts/01_extract_and_parse_usenet_data/04_parse_internet_archive.py)
 │   └── nb/
 │       ├── zipped_data/        # .tar files from the National Library (loaded from multiple CDs)
 │       ├── unzipped_data/      # Extracted message files (scripts/01_extract_and_parse_usenet_data/01_extract_nb_archive_and_find_stubbed_newsgroup_names.py)
@@ -40,8 +39,8 @@ data/
 └── output/                     # Script outputs, one subdirectory per script group
     ├── 01_extract_and_parse_usenet_data/
     ├── 02_build_database/
-    │   ├── usenet.db           # Shared SQLite database of both archives, hashes only (scripts/02_build_database.py)
-    │   └── usenet_private.db   # Private hash-to-plaintext mapping (scripts/02_build_database.py)
+    │   ├── usenet.db           # Shared SQLite database of both archives, hashes only (scripts/02_build_database/01_build_database.py)
+    │   └── usenet_private.db   # Private hash-to-plaintext mapping (scripts/02_build_database/01_build_database.py)
     ├── 03_statistics_per_archive/
     ├── 04_compare_archives/
     ├── 05_venn_diagrams/
@@ -71,7 +70,7 @@ The scripts are grouped into subdirectories of the script folder, and are number
 Extracts the NB tar archives and the IA zip files, and writes both archives as utf-8-encoded .mbox files, one per newsgroup. See [scripts/01_extract_and_parse_usenet_data/README.md](scripts/01_extract_and_parse_usenet_data/README.md) for details.
 
 #### Step 02: building the database
-[02_build_database.py](scripts/02_build_database.py) reads every message of both archives into two SQLite databases in one pass, so that later analyses are SQL queries over one dataset instead of repeated parses of the archive directories. The shared database at `data/output/02_build_database/usenet.db` stores names, emails, message ids and bodies only as hashes, and no free text at all; the private database at `data/output/02_build_database/usenet_private.db` maps the hashes back to their plain text.
+[01_build_database.py](scripts/02_build_database/01_build_database.py) reads every message of both archives into two SQLite databases in one pass, so that later analyses are SQL queries over one dataset instead of repeated parses of the archive directories. The shared database at `data/output/02_build_database/usenet.db` stores names, emails, message ids and bodies only as hashes, and no free text at all; the private database at `data/output/02_build_database/usenet_private.db` maps the hashes back to their plain text.
 
 Messages are stored one row per message per newsgroup, with nothing dropped or merged, so the database is a faithful transcription of the mbox files.
 

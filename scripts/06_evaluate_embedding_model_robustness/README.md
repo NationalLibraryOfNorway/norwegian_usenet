@@ -4,8 +4,8 @@ These scripts measure how robust an embedding model is to the U+FFFD (`�`) dam
 
 They read the mbox files as well as the database, since embedding needs the message text itself, which the database stores only as a hash.
 
-- [01_make_dataset.py](01_make_dataset.py) builds the evaluation set for the robustness check: the message bodies behind the `messages_equal_with_char_replacement` count in step 04, as pairs of the damaged IA body and the intact NB body of the same message. Both bodies are whitespace-normalized (every run of whitespace collapsed to a single space, ends stripped), so that the two texts of a pair differ in nothing but the replacement characters — the archives wrap and space the same posting differently, and that difference would otherwise be measured along with the U+FFFD damage. Reads `data/output/02_build_database/usenet.db` for the conflicts and the mbox files in `data/input/` for the body texts, which means the `--ia-directory` has to be `utf_8_data` (the directory the database was built from), not `date_filtered`. A crossposted message conflicts in every newsgroup that carries it, so the pairs are deduplicated on the hashed message id, keeping the copy from the newsgroup that contributes the fewest pairs. Writes at most `--max-pairs` of them (default 5000, `0` writes all), spread as evenly over the newsgroups as their sizes allow, to `data/output/06_evaluate_embedding_model_robustness/replacement_char_eval_pairs.jsonl`. The file holds message text and is not shared.
-- [02_make_embeddings.py](02_make_embeddings.py) embeds both sides of every pair with `--model` and measures the cosine similarity between them. Each IA body is also scored against another pair's NB body, giving the similarity unrelated messages get from the same model. Writes `summary.json` (the distribution of both sets of similarities) and `similarities.csv` (one row per pair, with the newsgroup, the hashed message id and the two similarities) to `data/output/06_evaluate_embedding_model_robustness/<model>/`. Pass `--task clustering` for the Jina models, and `--prompt-prefix` for models asking for the text in a set form, which puts the string in front of both bodies of every pair before they are encoded (`--prompt-prefix 'task: clustering | query: '` for `nicher92/saga-embed_v1`).
+- [01_make_dataset.py](01_make_dataset.py) builds the evaluation set for the robustness check: the message bodies behind the `messages_equal_with_char_replacement` count in step 04, as pairs of the damaged IA body and the intact NB body of the same message. Both bodies are whitespace-normalized (every run of whitespace collapsed to a single space, ends stripped), so that the two texts of a pair differ in nothing but the replacement characters — the archives wrap and space the same posting differently, and that difference would otherwise be measured along with the U+FFFD damage. Reads `data/output/02_build_database/usenet.db` for the conflicts and the mbox files in `data/input/` for the body texts. The pairs are deduplicated on the hashed message id, keeping the copy from the newsgroup that contributes the fewest pairs. Writes at most `--max-pairs` of them (default 5000, `0` writes all), spread as evenly over the newsgroups as their sizes allow, to `data/output/06_evaluate_embedding_model_robustness/replacement_char_eval_pairs.jsonl`. The file holds message text and is not shared.
+- [02_evaluate_embedding_model.py](02_evaluate_embedding_model.py) embeds both sides of every pair with `--model` and measures the cosine similarity between them. Each IA body is also scored against another pair's NB body, giving the similarity unrelated messages get from the same model. Writes `summary.json` (the distribution of both sets of similarities) and `similarities.csv` (one row per pair, with the newsgroup, the hashed message id and the two similarities) to `data/output/06_evaluate_embedding_model_robustness/<model>/`. Pass `--task clustering` for the Jina models, and `--prompt-prefix` for models asking for the text in a set form, which puts the string in front of both bodies of every pair before they are encoded (`--prompt-prefix 'task: clustering | query: '` for `nicher92/saga-embed_v1`).
 - [03_compare_models.py](03_compare_models.py) reads every model run under `--results-directory` back: each directory holding both a `summary.json` and a `similarities.csv`. For each model it prints the summary means, the weighted score, the Pearson r between the similarity a pair scored and each of three measures of it (how many replacement characters it holds, how long it is, and how dense the damage is), and then the pairs the model scored lowest, the intact NB body and the damaged IA body in two columns. It prints the `--num-examples` (default 5) worst-scoring pairs per model that score below `--max-score` (default 0.7), reading the bodies from the evaluation set the similarities were measured on (`--pairs-file`). It ends with every model ranked by its weighted score, best first, and the model holding the best.
 
 ## Replacement character robustness
@@ -43,23 +43,23 @@ We ran evaluation of the following models:
 
 on the same subset of 5000 pairs. 
 
-For `jinaai/jina-embeddings-v5-text-nano`, 02_make_embeddings.py was run with `--task clustering`  
-For `nicher92/saga-embed_v1`,  02_make_embeddings.py was run with `--prompt-prefix "task: clustering | query: "`
+For `jinaai/jina-embeddings-v5-text-nano`, 02_evaluate_embedding_model.py was run with `--task clustering`  
+For `nicher92/saga-embed_v1`,  02_evaluate_embedding_model.py was run with `--prompt-prefix "task: clustering | query: "`
 
 The overall best model was `codefuse-ai/F2LLM-v2-0.6B`:
 
 ``` 
-####################################################################################################
+################################################################################################################################################################
 Weighted score, 1 × matched mean − 1 × shuffled mean
-####################################################################################################
-  1. codefuse-ai/F2LLM-v2-0.6B                +0.7243  (matched 0.9701, shuffled 0.2458, 5000 pairs)
-  2. Qwen/Qwen3-Embedding-0.6B                +0.7073  (matched 0.9791, shuffled 0.2718, 5000 pairs)
-  3. NbAiLab/nb-sbert-v2-base                 +0.6653  (matched 0.9846, shuffled 0.3193, 5000 pairs)
-  4. jinaai/jina-embeddings-v5-text-nano      +0.4388  (matched 0.9944, shuffled 0.5557, 5000 pairs)
-  5. nicher92/saga-embed_v1                   +0.3440  (matched 0.9804, shuffled 0.6364, 5000 pairs)
+################################################################################################################################################################
+  1. codefuse-ai/F2LLM-v2-0.6B                +0.7259  (matched 0.9701, shuffled 0.2441, 5000 pairs)
+  2. Qwen/Qwen3-Embedding-0.6B                +0.7078  (matched 0.9791, shuffled 0.2713, 5000 pairs)
+  3. NbAiLab/nb-sbert-v2-base                 +0.6665  (matched 0.9846, shuffled 0.3181, 5000 pairs)
+  4. jinaai/jina-embeddings-v5-text-nano      +0.4398  (matched 0.9944, shuffled 0.5546, 5000 pairs)
+  5. nicher92/saga-embed_v1                   +0.3439  (matched 0.9805, shuffled 0.6366, 5000 pairs)
   6. intfloat/multilingual-e5-large-instruct  +0.1541  (matched 0.9905, shuffled 0.8364, 5000 pairs)
 
-Best weighted score: codefuse-ai/F2LLM-v2-0.6B (+0.7243)
+Best weighted score: codefuse-ai/F2LLM-v2-0.6B (+0.7259)
 ``` 
 
 See the full output of 03_compare_models.py at [data/output/06_evaluate_embedding_model_robustness/model_comparison.txt](../../data/output/06_evaluate_embedding_model_robustness/model_comparison.txt)
