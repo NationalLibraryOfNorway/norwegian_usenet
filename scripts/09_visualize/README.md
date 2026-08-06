@@ -2,7 +2,7 @@
 
 These scripts need the plotting libraries in the optional `viz` dependency group, which is not installed by default. Install it with `uv sync --group viz`.
 
-To run graph plotting scripts with the default selection from embedding and topic modelling scripts, append this to run command:
+To run graph plotting scripts with the default selection from the embedding scripts, append this to run command:
 ```
 --selection no.religion no.bil no.musikk no.slekt no.litteratur no.prat.politikk
 ```
@@ -10,7 +10,7 @@ To run graph plotting scripts with the default selection from embedding and topi
 - [newsgroup_tree.py](newsgroup_tree.py) draws the nested newsgroup structure of each archive as an ASCII tree, reading `data/output/03_statistics_per_archive/messages_per_group_ia.csv` and `data/output/03_statistics_per_archive/messages_per_group_nb.csv` (from step 03). Prints to stdout.
 - [newsgroup_tree_gif.py](newsgroup_tree_gif.py) draws the same trees as scrolling animations. Creates `data/output/09_visualize/newsgroup_tree_gif/newsgroup_tree_ia.gif` and `data/output/09_visualize/newsgroup_tree_gif/newsgroup_tree_nb.gif`
 - [visualize_embeddings.py](visualize_embeddings.py) plots the UMAP embeddings from step 07 as an interactive Plotly scatter plot, coloured by newsgroup and shaped by archive. Opens in a browser.
-- [visualize_topics.py](visualize_topics.py) plots the same UMAP embeddings coloured by the topics from step 08, reading the `document_topics.npy` and `topic_info.csv` of the run that `--method`, `--selection` and `--nr-topics` name. Opens in a browser.
+- [visualize_topics.py](visualize_topics.py) plots the messages of the one newsgroup that `--newsgroup` names in two dimensions, coloured by the topics from step 08 and shaped by archive, reading the `document_topics.npy` and `topic_info.csv` of the run that `--method`, `--newsgroup` and `--nr-topics` name. A `--method topeax` or `--method clustering` run is plotted over the two t-SNE dimensions it found its topics in, read from its `reduced_embeddings.npy`, and the other methods over the step 07 UMAP embeddings, which need to be computed for that newsgroup alone, i.e. step 07 run with `--selection <newsgroup>`. Opens in a browser.
 - [plot_date_counts.py](plot_date_counts.py) plots message counts over time (daily, monthly and yearly) for each archive, reading the `date_count_*.csv` files from step 03. Saves .png files to `data/output/09_visualize/plot_date_counts/`.
 - [plot_messages_per_group.py](plot_messages_per_group.py) plots messages in the top 20 groups vs the rest, and the distribution of newsgroups by message count, reading the `messages_per_group_*.csv` files from step 03. Prints group statistics to stdout and saves .png files to `data/output/09_visualize/plot_messages_per_group/`.
 - [plot_messages_per_user.py](plot_messages_per_user.py) plots posts by the top 100 users vs the rest and the cumulative post distribution by user, reading the `messages_per_user_*.csv` files from step 03. Prints user statistics to stdout and saves image files to `data/output/09_visualize/plot_messages_per_user/`.

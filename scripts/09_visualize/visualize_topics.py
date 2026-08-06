@@ -11,6 +11,7 @@ from usenet_no.plot_utils import hsl_to_hex
 from usenet_no.topic_modelling import (
     METHODS,
     OUTLIER_TOPIC,
+    REDUCING_METHODS,
     make_run_tag,
     make_topic_labels,
 )
@@ -68,24 +69,16 @@ if __name__ == "__main__":
         help="Select the run that was fitted with this --nr-topics (omit for a run without it)",
     )
 
-    DEFAULT_SELECTION = [
-        "no.religion",
-        "no.bil",
-        "no.musikk",
-        "no.slekt",
-        "no.litteratur",
-        "no.prat.politikk",
-    ]
-
     parser.add_argument(
-        "--selection",
-        nargs="+",
+        "--newsgroup",
+        type=str,
+        default="no.religion",
         metavar="NEWSGROUP",
-        default=DEFAULT_SELECTION,
-        help="Newsgroup names to include (default: %(default)s)",
+        help="The newsgroup the run was fitted on, read from both archives",
     )
     args = parser.parse_args()
-    logger.info(args)
+    logging.basicConfig(level=logging.INFO)
+    logger.info("Args: %s", args)
 
     embedding_dir = args.embeddings_directory / args.model
 
@@ -93,16 +86,9 @@ if __name__ == "__main__":
         args.embeddings_directory
         / "umap_embeddings"
         / args.model
-        / f"{'_'.join(sorted(args.selection))}.npy"
+        / f"{args.newsgroup}.npy"
     )
-    if not umap_cache.exists():
-        raise SystemExit(
-            f"No UMAP embeddings at {umap_cache}. "
-            "Run scripts/07_make_embeddings/02_umap_reduce_embeddings.py "
-            f"with --selection {' '.join(args.selection)} first."
-        )
-
-    run_tag = make_run_tag(args.method, args.nr_topics, selection=args.selection)
+    run_tag = make_run_tag(args.method, args.nr_topics, newsgroup=args.newsgroup)
     run_dir = args.topics_directory / args.model / run_tag
     topics_path = run_dir / "document_topics.npy"
     topic_info_path = run_dir / "topic_info.csv"
@@ -110,25 +96,52 @@ if __name__ == "__main__":
         raise SystemExit(
             f"No topic modelling run at {run_dir}. "
             "Run scripts/08_newsgroups_and_user_analysis/topic_modelling.py with the same "
-            "--method, --selection and --nr-topics first."
+            "--method, --newsgroup and --nr-topics first."
         )
 
-    logger.info("Loading UMAP embeddings from %s", umap_cache)
-    umap_2d = np.load(umap_cache)
+    # A reducing method has already placed every document in two dimensions, and
+    # those are the ones it read the topics off.
+    if args.method in REDUCING_METHODS:
+        coordinates_path = run_dir / "reduced_embeddings.npy"
+        axis_title = "t-SNE"
+        regenerate_hint = (
+            "Refit the run in "
+            "scripts/08_newsgroups_and_user_analysis/topic_modelling.py."
+        )
+        if not coordinates_path.exists():
+            raise SystemExit(
+                f"No reduced embeddings at {coordinates_path}, which a "
+                f"{args.method} run writes. {regenerate_hint}"
+            )
+    else:
+        coordinates_path = umap_cache
+        axis_title = "UMAP"
+        regenerate_hint = (
+            "Regenerate it with "
+            "scripts/07_make_embeddings/02_umap_reduce_embeddings.py --overwrite."
+        )
+        if not coordinates_path.exists():
+            raise SystemExit(
+                f"No UMAP embeddings at {coordinates_path}. "
+                "Run scripts/07_make_embeddings/02_umap_reduce_embeddings.py "
+                f"with --selection {args.newsgroup} first."
+            )
+
+    logger.info("Loading coordinates from %s", coordinates_path)
+    coordinates = np.load(coordinates_path)
 
     _, embedding_indexer, docs = load_embeddings_and_docs(
         embedding_dir,
         args.ia_directory,
         args.nb_directory,
-        selection=args.selection,
+        selection=[args.newsgroup],
     )
     logger.info("Loaded %d messages total", len(embedding_indexer))
 
-    if len(umap_2d) != len(embedding_indexer):
+    if len(coordinates) != len(embedding_indexer):
         raise SystemExit(
-            f"{umap_cache} has {len(umap_2d)} rows but the selection loaded "
-            f"{len(embedding_indexer)} messages. Regenerate it with "
-            "scripts/07_make_embeddings/02_umap_reduce_embeddings.py --overwrite."
+            f"{coordinates_path} has {len(coordinates)} rows but the newsgroup loaded "
+            f"{len(embedding_indexer)} messages. {regenerate_hint}"
         )
 
     logger.info("Loading topics from %s", topics_path)
@@ -136,7 +149,7 @@ if __name__ == "__main__":
 
     if len(topics) != len(embedding_indexer):
         raise SystemExit(
-            f"{topics_path} has {len(topics)} topics but the selection loaded "
+            f"{topics_path} has {len(topics)} topics but the newsgroup loaded "
             f"{len(embedding_indexer)} messages. Refit the run in "
             "scripts/08_newsgroups_and_user_analysis/topic_modelling.py."
         )
@@ -156,9 +169,12 @@ if __name__ == "__main__":
         for i, t in enumerate(unique_topics)
     }
 
+    sources = np.array([stem.rsplit("_", 1)[1] for stem in embedding_indexer])
+    symbol_map = {"nb": "circle", "ia": "triangle-up"}
+
     hover_texts = np.array(
         [
-            f"<b>{topic_labels[t]}</b><br><i>{stem.rsplit('_', 1)[0]}</i><br>"
+            f"<b>{topic_labels[t]}</b><br><i>{stem}</i><br>"
             + body[:400].replace("\n", "<br>")
             for t, stem, body in zip(topics, embedding_indexer, docs)
         ]
@@ -167,27 +183,32 @@ if __name__ == "__main__":
     fig = go.Figure()
 
     for t in unique_topics:
-        mask = topics == t
-        fig.add_trace(
-            go.Scattergl(
-                x=umap_2d[mask, 0],
-                y=umap_2d[mask, 1],
-                mode="markers",
-                marker=dict(
-                    size=4,
-                    color=color_map[t],
-                    opacity=0.5 if t == OUTLIER_TOPIC else 0.7,
-                ),
-                name=short_labels[t],
-                text=hover_texts[mask],
-                hovertemplate="%{text}<extra></extra>",
+        for source, symbol in symbol_map.items():
+            mask = (topics == t) & (sources == source)
+            if not mask.any():
+                continue
+            fig.add_trace(
+                go.Scattergl(
+                    x=coordinates[mask, 0],
+                    y=coordinates[mask, 1],
+                    mode="markers",
+                    marker=dict(
+                        size=5,
+                        color=color_map[t],
+                        symbol=symbol,
+                        opacity=0.5 if t == OUTLIER_TOPIC else 0.7,
+                    ),
+                    name=f"{short_labels[t]} ({source})",
+                    text=hover_texts[mask],
+                    hovertemplate="%{text}<extra></extra>",
+                )
             )
-        )
 
     fig.update_layout(
-        title=f"Norwegian Usenet message embeddings (color={args.method} topic)",
-        xaxis_title="UMAP 1",
-        yaxis_title="UMAP 2",
+        title=f"{args.newsgroup} message embeddings "
+        f"(color={args.method} topic, shape=source)",
+        xaxis_title=f"{axis_title} 1",
+        yaxis_title=f"{axis_title} 2",
         width=1100,
         height=750,
         legend=dict(font=dict(size=9)),

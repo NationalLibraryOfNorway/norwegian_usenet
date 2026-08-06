@@ -1,5 +1,8 @@
 """Build and read turftopic models fitted on pre-computed message embeddings."""
 
+from collections import Counter
+from collections.abc import Sequence
+
 import numpy as np
 import pandas as pd
 from sklearn.feature_extraction.text import CountVectorizer
@@ -16,11 +19,17 @@ from turftopic.base import Encoder
 
 METHODS = ("senstopic", "s3", "gmm", "topeax", "keynmf", "clustering")
 
+# The methods that reduce the embeddings to two t-SNE dimensions and read their
+# topics off those, rather than off the embeddings as they are.
+REDUCING_METHODS = ("topeax", "clustering")
+
+SOURCES = ("nb", "ia")
+
 OUTLIER_TOPIC = -1
 
 
-def make_run_tag(method: str, nr_topics: int | None, selection: list[str]) -> str:
-    parts = [method, "_".join(sorted(selection))]
+def make_run_tag(method: str, nr_topics: int | None, newsgroup: str) -> str:
+    parts = [method, newsgroup]
     if nr_topics is not None:
         parts.append(f"nr{nr_topics}")
     return "_".join(parts)
@@ -87,6 +96,26 @@ def assign_topics(
     if classes is None:
         classes = np.arange(document_topic_matrix.shape[1])
     return np.asarray(classes)[document_topic_matrix.argmax(axis=1)]
+
+
+def count_documents_per_source(
+    topics: np.ndarray, sources: Sequence[str]
+) -> list[dict[str, int]]:
+    """Count the documents each source archive contributes to each topic."""
+    counts = Counter(zip(topics.tolist(), sources, strict=True))
+    rows = []
+    for topic_id in sorted({int(topic) for topic in topics.tolist()}):
+        per_source = {
+            f"{source}_message_count": counts[(topic_id, source)] for source in SOURCES
+        }
+        rows.append(
+            {
+                "topic_id": topic_id,
+                **per_source,
+                "total_message_count": sum(per_source.values()),
+            }
+        )
+    return rows
 
 
 def make_topic_labels(topic_info: pd.DataFrame, n_words: int = 5) -> dict[int, str]:

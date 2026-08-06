@@ -1,9 +1,10 @@
 import numpy as np
 import pytest
+from sklearn.manifold import TSNE
 from turftopic import GMM, S3, ClusteringTopicModel, SensTopic, Topeax
 from turftopic.encoders import ExternalEncoder
 
-from usenet_no.topic_modelling import build_topic_model
+from usenet_no.topic_modelling import METHODS, REDUCING_METHODS, build_topic_model
 
 
 class StubEncoder(ExternalEncoder):
@@ -60,3 +61,14 @@ def test_a_number_of_topics_reduces_the_clusters_of_a_clustering_run_after_fitti
 
 def test_terms_below_the_document_frequency_cutoff_are_left_out_of_the_descriptions():
     assert build("gmm", min_df=25).vectorizer.min_df == 25
+
+
+@pytest.mark.parametrize("method", METHODS)
+def test_the_reducing_methods_are_the_ones_that_come_with_a_t_sne(method):
+    nr_topics = 10 if method in ("s3", "keynmf") else None
+    reduction = getattr(build(method, nr_topics), "dimensionality_reduction", None)
+    if method in REDUCING_METHODS:
+        assert isinstance(reduction, TSNE)
+        assert reduction.n_components == 2
+    else:
+        assert reduction is None

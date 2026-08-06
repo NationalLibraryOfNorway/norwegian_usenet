@@ -1,4 +1,5 @@
 import argparse
+import json
 import logging
 from pathlib import Path
 
@@ -9,6 +10,7 @@ from usenet_no.topic_modelling import (
     METHODS,
     assign_topics,
     build_topic_model,
+    count_documents_per_source,
     make_run_tag,
 )
 
@@ -58,7 +60,8 @@ if __name__ == "__main__":
         "--output-directory",
         type=Path,
         default=Path("data/output/08_newsgroups_and_user_analysis/topic_modelling"),
-        help="Directory to save the topic model, topic info and topic assignments",
+        help="Directory to save the topic model, topic info, topic assignments and "
+        "per-source topic counts",
     )
     parser.add_argument(
         "--nr-topics",
@@ -83,21 +86,12 @@ if __name__ == "__main__":
         help="Seed to fit with (omit for an unseeded fit)",
     )
 
-    DEFAULT_SELECTION = [
-        "no.religion",
-        "no.bil",
-        "no.musikk",
-        "no.slekt",
-        "no.litteratur",
-        "no.prat.politikk",
-    ]
-
     parser.add_argument(
-        "--selection",
-        nargs="+",
+        "--newsgroup",
+        type=str,
+        default="no.religion",
         metavar="NEWSGROUP",
-        default=DEFAULT_SELECTION,
-        help="Newsgroup names to include (default: %(default)s)",
+        help="The newsgroup to model, read from both archives",
     )
 
     args = parser.parse_args()
@@ -105,16 +99,16 @@ if __name__ == "__main__":
 
     embeddings_dir = args.embeddings_directory / args.model
 
-    run_tag = make_run_tag(args.method, args.nr_topics, selection=args.selection)
+    run_tag = make_run_tag(args.method, args.nr_topics, newsgroup=args.newsgroup)
     output_dir = args.output_directory / args.model / run_tag
     output_dir.mkdir(parents=True, exist_ok=True)
     logger.info("Output directory: %s", output_dir)
 
-    embeddings, _, docs = load_embeddings_and_docs(
+    embeddings, embedding_indexer, docs = load_embeddings_and_docs(
         embeddings_dir,
         args.ia_directory,
         args.nb_directory,
-        selection=args.selection,
+        selection=[args.newsgroup],
     )
     logger.info(
         "Loaded %d documents with embeddings of shape %s", len(docs), embeddings.shape
@@ -142,3 +136,22 @@ if __name__ == "__main__":
     topics_path = output_dir / "document_topics.npy"
     np.save(topics_path, topics)
     logger.info("Saved one topic per document to %s", topics_path)
+
+    reduced_embeddings = getattr(topic_model, "reduced_embeddings", None)
+    if reduced_embeddings is not None and reduced_embeddings.shape[1] == 2:
+        reduced_path = output_dir / "reduced_embeddings.npy"
+        np.save(reduced_path, reduced_embeddings)
+        logger.info(
+            "Saved the two dimensions the model reduced to before clustering to %s",
+            reduced_path,
+        )
+
+    sources = [stem.rsplit("_", 1)[1] for stem in embedding_indexer]
+    source_counts = count_documents_per_source(topics, sources)
+    source_counts_path = output_dir / "topic_source_counts.jsonl"
+    with source_counts_path.open("w", encoding="utf-8") as file:
+        for row in source_counts:
+            file.write(json.dumps(row) + "\n")
+    logger.info(
+        "Saved the documents per source of every topic to %s", source_counts_path
+    )
