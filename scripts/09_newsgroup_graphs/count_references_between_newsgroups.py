@@ -60,7 +60,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--output-directory",
         type=Path,
-        default=Path("data/output/09_newsgroups_and_user_analysis"),
+        default=Path("data/output/09_newsgroup_graphs"),
         help="Directory to save the edge list of each body of messages",
     )
     parser.add_argument(

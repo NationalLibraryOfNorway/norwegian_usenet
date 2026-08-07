@@ -47,7 +47,7 @@ data/
     ├── 06_evaluate_embedding_model_robustness/
     ├── 07_make_embeddings/
     ├── 08_topic_modelling/
-    ├── 09_newsgroups_and_user_analysis/
+    ├── 09_newsgroup_graphs/
     └── 10_visualize/
 ```
 
@@ -93,8 +93,8 @@ Filters the IA archive to the NB date span, selects newsgroups, makes text embed
 #### Step 08: topic modelling
 Finds topics in one newsgroup with turftopic, over the embeddings from the previous step, and plots the messages coloured by topic. See [scripts/08_topic_modelling/README.md](scripts/08_topic_modelling/README.md) for details.
 
-#### Step 09: newsgroups and user analysis
-Computes user overlap and reference counts between newsgroups, and how many references each archive can resolve. See [scripts/09_newsgroups_and_user_analysis/README.md](scripts/09_newsgroups_and_user_analysis/README.md) for details.
+#### Step 09: newsgroup graphs
+Builds the edges between newsgroups, from the users they share and the references running between them, and counts how many references each archive can resolve. See [scripts/09_newsgroup_graphs/README.md](scripts/09_newsgroup_graphs/README.md) for details.
 
 #### Step 10: visualize
 Draws the newsgroup graphs, and the body conflicts between the archives. See [scripts/10_visualize/README.md](scripts/10_visualize/README.md) for details.

@@ -38,7 +38,7 @@ if __name__ == "__main__":
         "--output-file",
         type=Path,
         default=Path(
-            "data/output/09_newsgroups_and_user_analysis/ia_nb_message_id_overlap_date_filtered.json"
+            "data/output/09_newsgroup_graphs/ia_nb_message_id_overlap_date_filtered.json"
         ),
         help="Path to JSON output file",
     )
@@ -46,7 +46,7 @@ if __name__ == "__main__":
         "--csv-output-file",
         type=Path,
         default=Path(
-            "data/output/09_newsgroups_and_user_analysis/ia_nb_message_id_comparison_date_filtered.csv"
+            "data/output/09_newsgroup_graphs/ia_nb_message_id_comparison_date_filtered.csv"
         ),
         help="Path to per-newsgroup CSV output file",
     )
