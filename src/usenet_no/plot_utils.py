@@ -6,6 +6,7 @@ import colorsys
 import textwrap
 
 import matplotlib.axes
+import numpy as np
 from matplotlib_venn import venn2 as _venn2
 
 
@@ -21,6 +22,22 @@ def hsl_to_hex(hue: float, saturation: float, lightness: float) -> str:
     """
     r, g, b = colorsys.hls_to_rgb(hue / 360, lightness / 100, saturation / 100)
     return f"#{int(r * 255):02x}{int(g * 255):02x}{int(b * 255):02x}"
+
+
+def with_square_legend_swatch(
+    x: np.ndarray, y: np.ndarray, symbols: np.ndarray, text: np.ndarray
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """Prepend a point that is not drawn, to make the legend swatch a square.
+
+    Plotly reads the swatch off the first point of a trace, which in a trace of
+    mixed marker symbols would name one of them over the others.
+    """
+    return (
+        np.concatenate([[np.nan], x]),
+        np.concatenate([[np.nan], y]),
+        np.concatenate([["square"], symbols]),
+        np.concatenate([[""], text]),
+    )
 
 
 def wrap_hover_text(text: str, width: int = 70) -> str:

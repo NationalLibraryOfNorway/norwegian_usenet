@@ -6,7 +6,11 @@ import numpy as np
 import plotly.graph_objects as go
 
 from usenet_no.embed_messages import load_embeddings_and_docs
-from usenet_no.plot_utils import hsl_to_hex, wrap_hover_text
+from usenet_no.plot_utils import (
+    hsl_to_hex,
+    with_square_legend_swatch,
+    wrap_hover_text,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -125,19 +129,24 @@ if __name__ == "__main__":
     for name, newsgroup, mask in traces:
         if not mask.any():
             continue
+        x, y = umap_2d[mask, 0], umap_2d[mask, 1]
+        symbols, text = point_symbols[mask], hover_texts[mask]
+        # An unflattened trace holds one archive, so its swatch already says which.
+        if args.flatten_legend:
+            x, y, symbols, text = with_square_legend_swatch(x, y, symbols, text)
         fig.add_trace(
             go.Scattergl(
-                x=umap_2d[mask, 0],
-                y=umap_2d[mask, 1],
+                x=x,
+                y=y,
                 mode="markers",
                 marker={
                     "size": 6,
                     "color": color_map[newsgroup],
-                    "symbol": point_symbols[mask],
+                    "symbol": symbols,
                     "opacity": 0.7,
                 },
                 name=name,
-                text=hover_texts[mask],
+                text=text,
                 hovertemplate="%{text}<extra></extra>",
             )
         )

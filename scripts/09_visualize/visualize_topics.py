@@ -7,7 +7,11 @@ import pandas as pd
 import plotly.graph_objects as go
 
 from usenet_no.embed_messages import load_embeddings_and_docs
-from usenet_no.plot_utils import hsl_to_hex, wrap_hover_text
+from usenet_no.plot_utils import (
+    hsl_to_hex,
+    with_square_legend_swatch,
+    wrap_hover_text,
+)
 from usenet_no.topic_modelling import (
     METHODS,
     OUTLIER_TOPIC,
@@ -21,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Visualize turftopic topics over pre-computed UMAP embeddings",
+        description="Visualize turftopic topics over pre-computed 2-dim embeddings",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
@@ -68,7 +72,6 @@ if __name__ == "__main__":
         metavar="N",
         help="Select the run that was fitted with this --nr-topics (omit for a run without it)",
     )
-
     parser.add_argument(
         "--newsgroup",
         type=str,
@@ -77,17 +80,10 @@ if __name__ == "__main__":
         help="The newsgroup the run was fitted on, read from both archives",
     )
     args = parser.parse_args()
-    logging.basicConfig(level=logging.INFO)
     logger.info("Args: %s", args)
 
     embedding_dir = args.embeddings_directory / args.model
 
-    umap_cache = (
-        args.embeddings_directory
-        / "umap_embeddings"
-        / args.model
-        / f"{args.newsgroup}.npy"
-    )
     run_dir = make_run_dir(
         args.topics_directory,
         args.model,
@@ -113,13 +109,13 @@ if __name__ == "__main__":
             "Refit the run in "
             "scripts/08_newsgroups_and_user_analysis/topic_modelling.py."
         )
-        if not coordinates_path.exists():
-            raise SystemExit(
-                f"No reduced embeddings at {coordinates_path}, which a "
-                f"{args.method} run writes. {regenerate_hint}"
-            )
     else:
-        coordinates_path = umap_cache
+        coordinates_path = (
+            args.embeddings_directory
+            / "umap_embeddings"
+            / args.model
+            / f"{args.newsgroup}.npy"
+        )
         axis_title = "UMAP"
         regenerate_hint = (
             "Regenerate it with "
@@ -159,8 +155,9 @@ if __name__ == "__main__":
             "scripts/08_newsgroups_and_user_analysis/topic_modelling.py."
         )
 
-    topic_labels = make_topic_labels(pd.read_csv(topic_info_path))
-    short_labels = make_topic_labels(pd.read_csv(topic_info_path), n_words=1)
+    topic_info = pd.read_csv(topic_info_path)
+    topic_labels = make_topic_labels(topic_info)
+    short_labels = make_topic_labels(topic_info, n_words=1)
 
     unique_topics = sorted(set(topics.tolist()))
     logger.info("Assigned %d topics", len(unique_topics))
@@ -174,9 +171,10 @@ if __name__ == "__main__":
         for i, t in enumerate(unique_topics)
     }
 
-    sources = np.array([stem.rsplit("_", 1)[1] for stem in embedding_indexer])
     symbol_map = {"nb": "circle", "ia": "triangle-up"}
-    point_symbols = np.array([symbol_map[source] for source in sources])
+    point_symbols = np.array(
+        [symbol_map[stem.rsplit("_", 1)[1]] for stem in embedding_indexer]
+    )
 
     hover_texts = np.array(
         [
@@ -192,19 +190,25 @@ if __name__ == "__main__":
     # and the shape of every marker in it says which archive that message is from.
     for t in unique_topics:
         mask = topics == t
+        x, y, symbols, text = with_square_legend_swatch(
+            coordinates[mask, 0],
+            coordinates[mask, 1],
+            point_symbols[mask],
+            hover_texts[mask],
+        )
         fig.add_trace(
             go.Scattergl(
-                x=coordinates[mask, 0],
-                y=coordinates[mask, 1],
+                x=x,
+                y=y,
                 mode="markers",
                 marker=dict(
                     size=5,
                     color=color_map[t],
-                    symbol=point_symbols[mask],
+                    symbol=symbols,
                     opacity=0.5 if t == OUTLIER_TOPIC else 0.7,
                 ),
                 name=short_labels[t],
-                text=hover_texts[mask],
+                text=text,
                 hovertemplate="%{text}<extra></extra>",
             )
         )
