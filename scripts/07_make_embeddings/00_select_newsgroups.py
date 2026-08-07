@@ -23,7 +23,7 @@ def main() -> None:
         "--content-date-filtered-csv",
         type=Path,
         default=Path(
-            "data/output/04_compare_message_bodies/ia_nb_content_comparison_date_filtered.csv"
+            "data/output/04_compare_message_bodies/ia_nb_content_comparison.csv"
         ),
         help="CSV with date filtered content overlap per newsgroup (default: %(default)s)",
     )

@@ -35,7 +35,7 @@ if __name__ == "__main__":
         "--output-file",
         type=Path,
         default=Path(
-            "data/output/04_compare_message_bodies/ia_nb_content_comparison_date_filtered.csv"
+            "data/output/04_compare_message_bodies/ia_nb_content_comparison.csv"
         ),
         help="Path to CSV output file",
     )

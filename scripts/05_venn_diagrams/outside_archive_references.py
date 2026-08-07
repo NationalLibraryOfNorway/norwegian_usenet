@@ -105,7 +105,7 @@ def main() -> None:
     counts_file.write_text(json.dumps({**results, **counted}, indent=2))
     logger.info("Wrote counts to %s", counts_file)
 
-    per_group_file = args.out_dir / "ia_nb_message_id_comparison_date_filtered.csv"
+    per_group_file = args.out_dir / "ia_nb_message_id_comparison.csv"
     rows = compare_message_ids_per_group(connection, ia_date_span=nb_date_span)
     export_id_comparison_to_csv(rows, per_group_file)
     logger.info("Wrote %d rows to %s", len(rows), per_group_file)

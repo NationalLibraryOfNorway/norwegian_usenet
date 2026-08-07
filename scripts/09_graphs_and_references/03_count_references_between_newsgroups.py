@@ -75,11 +75,11 @@ if __name__ == "__main__":
         COUNTS.items(),
         [
             ("nb", [nb], "nb"),
-            ("ia (date filtered)", [ia_date_filtered], "ia_date_filtered"),
+            ("ia (date filtered)", [ia_date_filtered], "ia"),
             (
                 "nb and ia (date filtered)",
                 [nb, ia_date_filtered],
-                "nb_and_ia_date_filtered",
+                "nb_and_ia",
             ),
         ],
     ):

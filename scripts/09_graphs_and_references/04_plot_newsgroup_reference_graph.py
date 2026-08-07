@@ -324,7 +324,7 @@ if __name__ == "__main__":
         type=Path,
         default=Path(
             "data/output/09_graphs_and_references/"
-            "newsgroup_reference_counts_nb_and_ia_date_filtered.csv"
+            "newsgroup_reference_counts_nb_and_ia.csv"
         ),
         help="Path to a reference edge list CSV file",
     )
