@@ -4,14 +4,14 @@ import argparse
 import csv
 from pathlib import Path
 
-import matplotlib.animation as animation
 import matplotlib.pyplot as plt
+from matplotlib import animation
 
 
 class Node:
     def __init__(self):
         self.own_count: int = 0
-        self.children: dict[str, "Node"] = {}
+        self.children: dict[str, Node] = {}
 
     def total(self) -> int:
         return self.own_count + sum(c.total() for c in self.children.values())
