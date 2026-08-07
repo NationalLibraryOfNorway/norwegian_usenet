@@ -93,7 +93,7 @@ Filters the IA archive to the NB date span, selects newsgroups, makes text embed
 Finds topics in one newsgroup with turftopic, over the embeddings from the previous step, and plots the messages coloured by topic. See [scripts/08_topic_modelling/README.md](scripts/08_topic_modelling/README.md) for details.
 
 #### Step 09: graphs and references
-Builds the edges between newsgroups, from the users they share and the references running between them, draws the graphs they make, and counts how many references each archive can resolve. See [scripts/09_graphs_and_references/README.md](scripts/09_graphs_and_references/README.md) for details.
+Builds the edges between newsgroups, from the users they share and the references running between them, and draws the graphs they make. See [scripts/09_graphs_and_references/README.md](scripts/09_graphs_and_references/README.md) for details.
 
 ## ePADD
 ePADD is a program with a graphical interface for exploring email archives.
