@@ -126,7 +126,7 @@ def main() -> None:
     parser.add_argument(
         "--output-dir",
         type=Path,
-        default=Path("data/output/10_visualize/newsgroup_tree_gif"),
+        default=Path("data/output/03_statistics_per_archive/newsgroup_tree_gif"),
         help="Directory for output .gif files (default: %(default)s)",
     )
     parser.add_argument(

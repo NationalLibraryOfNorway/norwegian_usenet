@@ -163,7 +163,7 @@ def main() -> None:
     parser.add_argument(
         "--out-dir",
         type=Path,
-        default=Path("data/output/10_visualize/plot_messages_per_user"),
+        default=Path("data/output/03_statistics_per_archive/plot_messages_per_user"),
         help="Directory for output image files (default: %(default)s)",
     )
     args = parser.parse_args()

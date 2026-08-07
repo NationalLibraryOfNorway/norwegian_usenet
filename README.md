@@ -76,7 +76,7 @@ Extracts the NB tar archives and the IA zip files, and writes both archives as u
 Messages are stored one row per message per newsgroup, with nothing dropped or merged, so the database is a faithful transcription of the mbox files.
 
 #### Step 03: counting messages and users within each archive
-Counts messages per newsgroup, user and date in each archive, and finds duplicates, conflicting Message-IDs and messages without a sender. See [scripts/03_statistics_per_archive/README.md](scripts/03_statistics_per_archive/README.md) for details.
+Counts messages per newsgroup, user and date in each archive, finds duplicates, conflicting Message-IDs and messages without a sender, and plots those counts. See [scripts/03_statistics_per_archive/README.md](scripts/03_statistics_per_archive/README.md) for details.
 
 #### Step 04: comparison between archives
 Compares the IA and NB archives by message body and Message-ID overlap, and finds Message-IDs whose copies conflict across the archives. See [scripts/04_compare_archives/README.md](scripts/04_compare_archives/README.md) for details.
@@ -97,7 +97,7 @@ Finds topics in one newsgroup with turftopic, over the embeddings from the previ
 Computes user overlap and reference counts between newsgroups. See [scripts/09_newsgroups_and_user_analysis/README.md](scripts/09_newsgroups_and_user_analysis/README.md) for details.
 
 #### Step 10: visualize
-Plots the statistics, comparisons and graphs from the previous steps. See [scripts/10_visualize/README.md](scripts/10_visualize/README.md) for details.
+Draws the newsgroup graphs, and the body conflicts between the archives. See [scripts/10_visualize/README.md](scripts/10_visualize/README.md) for details.
 
 ## ePADD
 ePADD is a program with a graphical interface for exploring email archives.
