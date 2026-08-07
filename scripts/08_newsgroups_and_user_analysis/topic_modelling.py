@@ -1,6 +1,7 @@
 import argparse
 import json
 import logging
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -11,7 +12,8 @@ from usenet_no.topic_modelling import (
     assign_topics,
     build_topic_model,
     count_documents_per_source,
-    make_run_tag,
+    make_run_dir,
+    make_topic_words,
 )
 
 logger = logging.getLogger(__name__)
@@ -93,14 +95,32 @@ if __name__ == "__main__":
         metavar="NEWSGROUP",
         help="The newsgroup to model, read from both archives",
     )
+    parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="If flagged, will refit a run that is already there instead of skipping",
+    )
 
     args = parser.parse_args()
     logger.info("Args: %s", args)
 
     embeddings_dir = args.embeddings_directory / args.model
 
-    run_tag = make_run_tag(args.method, args.nr_topics, newsgroup=args.newsgroup)
-    output_dir = args.output_directory / args.model / run_tag
+    output_dir = make_run_dir(
+        args.output_directory,
+        args.model,
+        args.method,
+        args.newsgroup,
+        args.nr_topics,
+    )
+    # The counts are the last file a run writes, so an interrupted one is refitted.
+    source_counts_path = output_dir / "topic_source_counts.jsonl"
+    if source_counts_path.exists() and not args.overwrite:
+        logger.info(
+            "A run already exists at %s. Use --overwrite to refit it.", output_dir
+        )
+        sys.exit(0)
+
     output_dir.mkdir(parents=True, exist_ok=True)
     logger.info("Output directory: %s", output_dir)
 
@@ -128,8 +148,9 @@ if __name__ == "__main__":
     topic_model.to_disk(model_path)
     logger.info("Saved %s model to %s", args.method, model_path)
 
+    topic_info = topic_model.topics_df()
     topic_info_path = output_dir / "topic_info.csv"
-    topic_model.topics_df().to_csv(topic_info_path, index=False)
+    topic_info.to_csv(topic_info_path, index=False)
     logger.info("Saved topic info to %s", topic_info_path)
 
     topics = assign_topics(topic_model, document_topic_matrix)
@@ -147,11 +168,12 @@ if __name__ == "__main__":
         )
 
     sources = [stem.rsplit("_", 1)[1] for stem in embedding_indexer]
-    source_counts = count_documents_per_source(topics, sources)
-    source_counts_path = output_dir / "topic_source_counts.jsonl"
+    source_counts = count_documents_per_source(
+        topics, sources, make_topic_words(topic_info)
+    )
     with source_counts_path.open("w", encoding="utf-8") as file:
         for row in source_counts:
-            file.write(json.dumps(row) + "\n")
+            file.write(json.dumps(row, ensure_ascii=False) + "\n")
     logger.info(
         "Saved the documents per source of every topic to %s", source_counts_path
     )

@@ -7,12 +7,12 @@ import pandas as pd
 import plotly.graph_objects as go
 
 from usenet_no.embed_messages import load_embeddings_and_docs
-from usenet_no.plot_utils import hsl_to_hex
+from usenet_no.plot_utils import hsl_to_hex, wrap_hover_text
 from usenet_no.topic_modelling import (
     METHODS,
     OUTLIER_TOPIC,
     REDUCING_METHODS,
-    make_run_tag,
+    make_run_dir,
     make_topic_labels,
 )
 
@@ -88,8 +88,13 @@ if __name__ == "__main__":
         / args.model
         / f"{args.newsgroup}.npy"
     )
-    run_tag = make_run_tag(args.method, args.nr_topics, newsgroup=args.newsgroup)
-    run_dir = args.topics_directory / args.model / run_tag
+    run_dir = make_run_dir(
+        args.topics_directory,
+        args.model,
+        args.method,
+        args.newsgroup,
+        args.nr_topics,
+    )
     topics_path = run_dir / "document_topics.npy"
     topic_info_path = run_dir / "topic_info.csv"
     if not topics_path.exists() or not topic_info_path.exists():
@@ -171,38 +176,38 @@ if __name__ == "__main__":
 
     sources = np.array([stem.rsplit("_", 1)[1] for stem in embedding_indexer])
     symbol_map = {"nb": "circle", "ia": "triangle-up"}
+    point_symbols = np.array([symbol_map[source] for source in sources])
 
     hover_texts = np.array(
         [
             f"<b>{topic_labels[t]}</b><br><i>{stem}</i><br>"
-            + body[:400].replace("\n", "<br>")
+            + wrap_hover_text(body[:400])
             for t, stem, body in zip(topics, embedding_indexer, docs)
         ]
     )
 
     fig = go.Figure()
 
+    # One trace per topic, so that its legend entry holds all of its messages,
+    # and the shape of every marker in it says which archive that message is from.
     for t in unique_topics:
-        for source, symbol in symbol_map.items():
-            mask = (topics == t) & (sources == source)
-            if not mask.any():
-                continue
-            fig.add_trace(
-                go.Scattergl(
-                    x=coordinates[mask, 0],
-                    y=coordinates[mask, 1],
-                    mode="markers",
-                    marker=dict(
-                        size=5,
-                        color=color_map[t],
-                        symbol=symbol,
-                        opacity=0.5 if t == OUTLIER_TOPIC else 0.7,
-                    ),
-                    name=f"{short_labels[t]} ({source})",
-                    text=hover_texts[mask],
-                    hovertemplate="%{text}<extra></extra>",
-                )
+        mask = topics == t
+        fig.add_trace(
+            go.Scattergl(
+                x=coordinates[mask, 0],
+                y=coordinates[mask, 1],
+                mode="markers",
+                marker=dict(
+                    size=5,
+                    color=color_map[t],
+                    symbol=point_symbols[mask],
+                    opacity=0.5 if t == OUTLIER_TOPIC else 0.7,
+                ),
+                name=short_labels[t],
+                text=hover_texts[mask],
+                hovertemplate="%{text}<extra></extra>",
             )
+        )
 
     fig.update_layout(
         title=f"{args.newsgroup} message embeddings "
@@ -212,5 +217,6 @@ if __name__ == "__main__":
         width=1100,
         height=750,
         legend=dict(font=dict(size=9)),
+        hoverlabel=dict(align="left"),
     )
     fig.show()

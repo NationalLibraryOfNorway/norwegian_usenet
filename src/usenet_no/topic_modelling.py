@@ -1,7 +1,8 @@
 """Build and read turftopic models fitted on pre-computed message embeddings."""
 
 from collections import Counter
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -28,11 +29,18 @@ SOURCES = ("nb", "ia")
 OUTLIER_TOPIC = -1
 
 
-def make_run_tag(method: str, nr_topics: int | None, newsgroup: str) -> str:
-    parts = [method, newsgroup]
+def make_run_dir(
+    topics_directory: Path,
+    model: str,
+    method: str,
+    newsgroup: str,
+    nr_topics: int | None,
+) -> Path:
+    """Point at the directory a run of these settings reads and writes."""
+    run_dir = topics_directory / model / method / newsgroup
     if nr_topics is not None:
-        parts.append(f"nr{nr_topics}")
-    return "_".join(parts)
+        run_dir = run_dir / f"nr{nr_topics}"
+    return run_dir
 
 
 def build_topic_model(
@@ -99,8 +107,10 @@ def assign_topics(
 
 
 def count_documents_per_source(
-    topics: np.ndarray, sources: Sequence[str]
-) -> list[dict[str, int]]:
+    topics: np.ndarray,
+    sources: Sequence[str],
+    topic_words: Mapping[int, list[str]],
+) -> list[dict]:
     """Count the documents each source archive contributes to each topic."""
     counts = Counter(zip(topics.tolist(), sources, strict=True))
     rows = []
@@ -111,11 +121,24 @@ def count_documents_per_source(
         rows.append(
             {
                 "topic_id": topic_id,
+                "words": topic_words.get(topic_id, []),
                 **per_source,
                 "total_message_count": sum(per_source.values()),
             }
         )
     return rows
+
+
+def make_topic_words(
+    topic_info: pd.DataFrame, n_words: int = 10
+) -> dict[int, list[str]]:
+    """Map every topic id in a topic table to its highest ranking terms."""
+    return {
+        int(topic_id): [word.strip() for word in ranking.split(",")[:n_words]]
+        for topic_id, ranking in zip(
+            topic_info["Topic ID"], topic_info["Highest Ranking"], strict=True
+        )
+    }
 
 
 def make_topic_labels(topic_info: pd.DataFrame, n_words: int = 5) -> dict[int, str]:

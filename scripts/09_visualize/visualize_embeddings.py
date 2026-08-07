@@ -6,7 +6,7 @@ import numpy as np
 import plotly.graph_objects as go
 
 from usenet_no.embed_messages import load_embeddings_and_docs
-from usenet_no.plot_utils import hsl_to_hex
+from usenet_no.plot_utils import hsl_to_hex, wrap_hover_text
 
 logger = logging.getLogger(__name__)
 
@@ -54,6 +54,12 @@ if __name__ == "__main__":
         ],
         help="Newsgroup names to include (default: %(default)s)",
     )
+    parser.add_argument(
+        "--flatten-legend",
+        action="store_true",
+        help="Give every newsgroup one legend entry covering both archives, instead "
+        "of one per newsgroup and archive",
+    )
     args = parser.parse_args()
     logger.info(args)
 
@@ -81,11 +87,12 @@ if __name__ == "__main__":
             "scripts/07_make_embeddings/02_umap_reduce_embeddings.py --overwrite."
         )
 
-    newsgroups_indexer = [s.rsplit("_", 1)[0] for s in embedding_indexer]
-    sources_indexer = [s.rsplit("_", 1)[1] for s in embedding_indexer]
+    newsgroups_indexer = np.array([s.rsplit("_", 1)[0] for s in embedding_indexer])
+    sources_indexer = np.array([s.rsplit("_", 1)[1] for s in embedding_indexer])
 
     symbol_map = {"nb": "circle", "ia": "triangle-up"}
-    unique_newsgroups = sorted(set(newsgroups_indexer))
+    point_symbols = np.array([symbol_map[source] for source in sources_indexer])
+    unique_newsgroups = sorted(set(newsgroups_indexer.tolist()))
     color_map = {
         ng: hsl_to_hex(int(i * 360 / len(unique_newsgroups)), 70, 50)
         for i, ng in enumerate(unique_newsgroups)
@@ -93,39 +100,47 @@ if __name__ == "__main__":
 
     hover_texts = np.array(
         [
-            f"<b>{stem}</b><br>" + body[:400].replace("\n", "<br>")
+            f"<b>{stem}</b><br>" + wrap_hover_text(body[:400])
             for stem, body in zip(embedding_indexer, text_indexer)
         ]
     )
 
+    # A flattened legend holds every newsgroup once, and the shape of each marker
+    # in its trace is what says which archive that message is from.
+    if args.flatten_legend:
+        traces = [(ng, ng, newsgroups_indexer == ng) for ng in unique_newsgroups]
+    else:
+        traces = [
+            (
+                f"{ng} ({source})",
+                ng,
+                (newsgroups_indexer == ng) & (sources_indexer == source),
+            )
+            for ng in unique_newsgroups
+            for source in symbol_map
+        ]
+
     fig = go.Figure()
 
-    for ng in unique_newsgroups:
-        for source, symbol in symbol_map.items():
-            mask = np.array(
-                [
-                    s == source and n == ng
-                    for s, n in zip(sources_indexer, newsgroups_indexer)
-                ]
+    for name, newsgroup, mask in traces:
+        if not mask.any():
+            continue
+        fig.add_trace(
+            go.Scattergl(
+                x=umap_2d[mask, 0],
+                y=umap_2d[mask, 1],
+                mode="markers",
+                marker={
+                    "size": 6,
+                    "color": color_map[newsgroup],
+                    "symbol": point_symbols[mask],
+                    "opacity": 0.7,
+                },
+                name=name,
+                text=hover_texts[mask],
+                hovertemplate="%{text}<extra></extra>",
             )
-            if not mask.any():
-                continue
-            fig.add_trace(
-                go.Scattergl(
-                    x=umap_2d[mask, 0],
-                    y=umap_2d[mask, 1],
-                    mode="markers",
-                    marker={
-                        "size": 6,
-                        "color": color_map[ng],
-                        "symbol": symbol,
-                        "opacity": 0.7,
-                    },
-                    name=f"{ng} ({source})",
-                    text=hover_texts[mask],
-                    hovertemplate="%{text}<extra></extra>",
-                )
-            )
+        )
 
     fig.update_layout(
         title="Norwegian Usenet message embeddings (color=newsgroup, shape=source)",
@@ -134,5 +149,6 @@ if __name__ == "__main__":
         width=1000,
         height=700,
         legend={"font": {"size": 9}},
+        hoverlabel={"align": "left"},
     )
     fig.show()

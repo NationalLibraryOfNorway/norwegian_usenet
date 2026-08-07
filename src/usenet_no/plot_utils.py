@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import colorsys
+import textwrap
 
 import matplotlib.axes
 from matplotlib_venn import venn2 as _venn2
@@ -20,6 +21,14 @@ def hsl_to_hex(hue: float, saturation: float, lightness: float) -> str:
     """
     r, g, b = colorsys.hls_to_rgb(hue / 360, lightness / 100, saturation / 100)
     return f"#{int(r * 255):02x}{int(g * 255):02x}{int(b * 255):02x}"
+
+
+def wrap_hover_text(text: str, width: int = 70) -> str:
+    """Break a text into `<br>`-separated lines of at most `width` characters."""
+    lines = []
+    for line in text.splitlines():
+        lines.extend(textwrap.wrap(line, width) or [""])
+    return "<br>".join(lines)
 
 
 def venn2_fmt(
