@@ -21,7 +21,8 @@ def export_content_comparison_to_csv(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Compare message content between the IA and NB archives",
+        description="Compare message bodies per newsgroup, between NB and the IA "
+        "archive restricted to the NB date span",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
@@ -31,20 +32,12 @@ if __name__ == "__main__":
         help="Path to the SQLite database file",
     )
     parser.add_argument(
-        "--full-output-file",
-        type=Path,
-        default=Path(
-            "data/output/04_compare_message_bodies/ia_nb_content_comparison.csv"
-        ),
-        help="Path to CSV output file for the full IA archive comparison",
-    )
-    parser.add_argument(
-        "--date-filtered-output-file",
+        "--output-file",
         type=Path,
         default=Path(
             "data/output/04_compare_message_bodies/ia_nb_content_comparison_date_filtered.csv"
         ),
-        help="Path to CSV output file for the date-filtered IA archive comparison",
+        help="Path to CSV output file",
     )
     parser.add_argument(
         "--overwrite",
@@ -60,19 +53,14 @@ if __name__ == "__main__":
     nb_date_span = get_date_span(connection, NB_ARCHIVE)
     logger.info("NB date span: %s to %s", *nb_date_span)
 
-    for ia_date_span, output_file in [
-        (None, args.full_output_file),
-        (nb_date_span, args.date_filtered_output_file),
-    ]:
-        if output_file.exists() and not args.overwrite:
-            logger.info(
-                "Output file already exists: %s. Use --overwrite to regenerate.",
-                output_file,
-            )
-            continue
-
-        rows = compare_content_per_group(connection, ia_date_span=ia_date_span)
-        export_content_comparison_to_csv(rows, output_file)
-        logger.info("Wrote %d rows to %s", len(rows), output_file)
+    if args.output_file.exists() and not args.overwrite:
+        logger.info(
+            "Output file already exists: %s. Use --overwrite to regenerate.",
+            args.output_file,
+        )
+    else:
+        rows = compare_content_per_group(connection, ia_date_span=nb_date_span)
+        export_content_comparison_to_csv(rows, args.output_file)
+        logger.info("Wrote %d rows to %s", len(rows), args.output_file)
 
     connection.close()

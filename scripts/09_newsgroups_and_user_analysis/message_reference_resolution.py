@@ -35,36 +35,20 @@ if __name__ == "__main__":
         help="Path to the SQLite database file",
     )
     parser.add_argument(
-        "--full-output-file",
-        type=Path,
-        default=Path(
-            "data/output/09_newsgroups_and_user_analysis/ia_nb_message_id_overlap.json"
-        ),
-        help="Path to JSON output file for the full IA archive comparison",
-    )
-    parser.add_argument(
-        "--date-filtered-output-file",
+        "--output-file",
         type=Path,
         default=Path(
             "data/output/09_newsgroups_and_user_analysis/ia_nb_message_id_overlap_date_filtered.json"
         ),
-        help="Path to JSON output file for the date-filtered IA archive comparison",
+        help="Path to JSON output file",
     )
     parser.add_argument(
-        "--full-csv-output-file",
-        type=Path,
-        default=Path(
-            "data/output/09_newsgroups_and_user_analysis/ia_nb_message_id_comparison.csv"
-        ),
-        help="Path to per-newsgroup CSV output file for the full IA archive comparison",
-    )
-    parser.add_argument(
-        "--date-filtered-csv-output-file",
+        "--csv-output-file",
         type=Path,
         default=Path(
             "data/output/09_newsgroups_and_user_analysis/ia_nb_message_id_comparison_date_filtered.csv"
         ),
-        help="Path to per-newsgroup CSV output file for the date-filtered IA archive comparison",
+        help="Path to per-newsgroup CSV output file",
     )
     parser.add_argument(
         "--overwrite",
@@ -79,38 +63,28 @@ if __name__ == "__main__":
     nb_date_span = get_date_span(connection, NB_ARCHIVE)
     logger.info("NB date span: %s to %s", *nb_date_span)
 
-    for ia_date_span, output_file, csv_output_file in [
-        (None, args.full_output_file, args.full_csv_output_file),
-        (
-            nb_date_span,
-            args.date_filtered_output_file,
-            args.date_filtered_csv_output_file,
-        ),
-    ]:
-        if output_file.exists() and not args.overwrite:
-            logger.info(
-                "Existing file found at %s; use --overwrite to regenerate", output_file
-            )
-        else:
-            results = compare_message_ids(connection, ia_date_span=ia_date_span)
+    if args.output_file.exists() and not args.overwrite:
+        logger.info(
+            "Existing file found at %s; use --overwrite to regenerate", args.output_file
+        )
+    else:
+        results = compare_message_ids(connection, ia_date_span=nb_date_span)
 
-            logger.info(
-                "=== ia%s vs nb ===", " (date filtered)" if ia_date_span else ""
-            )
-            for key, value in results.items():
-                logger.info("%-35s %d", key, value)
+        logger.info("=== ia (date filtered) vs nb ===")
+        for key, value in results.items():
+            logger.info("%-35s %d", key, value)
 
-            output_file.write_text(json.dumps(results, indent=2))
-            logger.info("Wrote results to %s", output_file)
+        args.output_file.write_text(json.dumps(results, indent=2))
+        logger.info("Wrote results to %s", args.output_file)
 
-        if csv_output_file.exists() and not args.overwrite:
-            logger.info(
-                "Existing file found at %s; use --overwrite to regenerate",
-                csv_output_file,
-            )
-        else:
-            rows = compare_message_ids_per_group(connection, ia_date_span=ia_date_span)
-            export_id_comparison_to_csv(rows, csv_output_file)
-            logger.info("Wrote %d rows to %s", len(rows), csv_output_file)
+    if args.csv_output_file.exists() and not args.overwrite:
+        logger.info(
+            "Existing file found at %s; use --overwrite to regenerate",
+            args.csv_output_file,
+        )
+    else:
+        rows = compare_message_ids_per_group(connection, ia_date_span=nb_date_span)
+        export_id_comparison_to_csv(rows, args.csv_output_file)
+        logger.info("Wrote %d rows to %s", len(rows), args.csv_output_file)
 
     connection.close()
