@@ -198,6 +198,8 @@ data/output/07_make_embeddings/*
 data/output/08_topic_modelling/**
 !data/output/08_topic_modelling/**/
 !data/output/08_topic_modelling/**/topic_source_counts.jsonl
+!data/output/08_topic_modelling/**/topics.png
+
 
 
 # SQLite databases, too big for github

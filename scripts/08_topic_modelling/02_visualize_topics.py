@@ -79,6 +79,11 @@ if __name__ == "__main__":
         metavar="NEWSGROUP",
         help="The newsgroup the run was fitted on, read from both archives",
     )
+    parser.add_argument(
+        "--save-fig",
+        action="store_true",
+        help="If flagged, will also save the figure as a .png in the run directory",
+    )
     args = parser.parse_args()
     logger.info("Args: %s", args)
 
@@ -222,4 +227,10 @@ if __name__ == "__main__":
         legend=dict(font=dict(size=9)),
         hoverlabel=dict(align="left"),
     )
+
+    if args.save_fig:
+        figure_path = run_dir / "topics.png"
+        fig.write_image(figure_path, scale=2)
+        logger.info("Saved the figure to %s", figure_path)
+
     fig.show()
