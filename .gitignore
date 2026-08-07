@@ -192,7 +192,14 @@ data/output/06_evaluate_embedding_model_robustness/replacement_char_eval_pairs.j
 data/output/07_make_embeddings/*
 !data/output/07_make_embeddings/newsgroups_for_selection.jsonl
 
-data/output/**/topic_modelling/
+# Of a topic modelling run, only the per-source topic counts are kept. The
+# embeddings and the topic table are turftopic's own output, and the fitted
+# model holds message text.
+data/output/08_topic_modelling/**
+!data/output/08_topic_modelling/**/
+!data/output/08_topic_modelling/**/topic_source_counts.jsonl
+!data/output/08_topic_modelling/**/topics.png
+
 
 
 # SQLite databases, too big for github

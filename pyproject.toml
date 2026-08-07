@@ -10,7 +10,6 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "beautifulsoup4>=4.14.3",
-    "bertopic>=0.17.4",
     "faust-cchardet>=2.1.19",
     "pandas>=2.3.3",
     "peft>=0.19.1",
@@ -19,6 +18,8 @@ dependencies = [
     "sentence-transformers>=5.3.0",
     "torch>=2.4,<2.5",
     "tqdm>=4.67.1",
+    "turftopic>=0.27.1",
+    "umap-learn>=0.5.12",
 ]
 
 [dependency-groups]
