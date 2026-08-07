@@ -1,6 +1,6 @@
 """Draw the reference edge lists as a directed graph of newsgroups.
 
-Reads an edge list written by 09_newsgroup_graphs and keeps the
+Reads an edge list written by 09_graphs_and_references and keeps the
 edges clearing the threshold, drawn as arrows from the referring newsgroup to
 the referenced one, with the width following the weight. Every newsgroup in
 the table is drawn, so one with no edge left shows as a loose point rather
@@ -323,7 +323,7 @@ if __name__ == "__main__":
         "--edges-file",
         type=Path,
         default=Path(
-            "data/output/09_newsgroup_graphs/"
+            "data/output/09_graphs_and_references/"
             "newsgroup_reference_counts_nb_and_ia_date_filtered.csv"
         ),
         help="Path to a reference edge list CSV file",
@@ -369,7 +369,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--output-directory",
         type=Path,
-        default=Path("data/output/10_visualize/plot_newsgroup_reference_graph"),
+        default=Path(
+            "data/output/09_graphs_and_references/plot_newsgroup_reference_graph"
+        ),
         help="Directory to write the HTML figure to",
     )
     parser.add_argument(

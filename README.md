@@ -47,8 +47,7 @@ data/
     ├── 06_evaluate_embedding_model_robustness/
     ├── 07_make_embeddings/
     ├── 08_topic_modelling/
-    ├── 09_newsgroup_graphs/
-    └── 10_visualize/
+    └── 09_graphs_and_references/
 ```
 
 ### Sqlite database
@@ -79,7 +78,7 @@ Messages are stored one row per message per newsgroup, with nothing dropped or m
 Counts messages per newsgroup, user and date in each archive, finds duplicates, conflicting Message-IDs and messages without a sender, and plots those counts. See [scripts/03_statistics_per_archive/README.md](scripts/03_statistics_per_archive/README.md) for details.
 
 #### Step 04: comparing the message bodies of the archives
-Compares the IA and NB archives by message body overlap, finds Message-IDs whose copies conflict across the archives, and measures the U+FFFD damage behind those conflicts. See [scripts/04_compare_message_bodies/README.md](scripts/04_compare_message_bodies/README.md) for details.
+Compares the IA and NB archives by message body overlap, finds Message-IDs whose copies conflict across the archives, and measures and plots the U+FFFD damage behind those conflicts. See [scripts/04_compare_message_bodies/README.md](scripts/04_compare_message_bodies/README.md) for details.
 
 #### Step 05: venn diagrams
 Draws the overlap between the archives as venn diagrams, over newsgroups, users, messages and outward references, with the IA archive restricted to the NB date span. See [scripts/05_venn_diagrams/README.md](scripts/05_venn_diagrams/README.md) for details.
@@ -93,11 +92,8 @@ Filters the IA archive to the NB date span, selects newsgroups, makes text embed
 #### Step 08: topic modelling
 Finds topics in one newsgroup with turftopic, over the embeddings from the previous step, and plots the messages coloured by topic. See [scripts/08_topic_modelling/README.md](scripts/08_topic_modelling/README.md) for details.
 
-#### Step 09: newsgroup graphs
-Builds the edges between newsgroups, from the users they share and the references running between them, and counts how many references each archive can resolve. See [scripts/09_newsgroup_graphs/README.md](scripts/09_newsgroup_graphs/README.md) for details.
-
-#### Step 10: visualize
-Draws the newsgroup graphs, and the body conflicts between the archives. See [scripts/10_visualize/README.md](scripts/10_visualize/README.md) for details.
+#### Step 09: graphs and references
+Builds the edges between newsgroups, from the users they share and the references running between them, draws the graphs they make, and counts how many references each archive can resolve. See [scripts/09_graphs_and_references/README.md](scripts/09_graphs_and_references/README.md) for details.
 
 ## ePADD
 ePADD is a program with a graphical interface for exploring email archives.

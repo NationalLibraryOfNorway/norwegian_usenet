@@ -78,7 +78,9 @@ def main() -> None:
     parser.add_argument(
         "--out-dir",
         type=Path,
-        default=Path("data/output/10_visualize/plot_replacement_char_body_conflicts"),
+        default=Path(
+            "data/output/04_compare_message_bodies/plot_replacement_char_body_conflicts"
+        ),
         help="Directory for output files (default: %(default)s)",
     )
     args = parser.parse_args()
