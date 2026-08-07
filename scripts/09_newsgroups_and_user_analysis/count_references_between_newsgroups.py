@@ -1,12 +1,10 @@
-"""Count the messages in each newsgroup that each other newsgroup references.
+"""Count the references running from each newsgroup to each other newsgroup.
 
 Reads the database built in step 02 and writes a directed edge list: one row
-per (from_newsgroup, to_newsgroup) pair, weighted by how many distinct messages
-held by the second newsgroup the first one references. A message cited by five
-hundred messages weighs one here, where count_references_between_newsgroups
-weighs it five hundred. References to messages outside the read body of
-messages point to the placeholder newsgroup `unknown`, and references within a
-newsgroup are left out.
+per (from_newsgroup, to_newsgroup) pair, weighted by the number of references
+messages in the first make to messages held by the second. References to
+messages outside the read body of messages point to the placeholder newsgroup
+`unknown`, and references within a newsgroup are left out.
 
 Three bodies of messages are covered: NB, IA restricted to the NB date span,
 and the two together.
@@ -20,10 +18,7 @@ import pandas as pd
 
 from usenet_no.database import IA_ARCHIVE, NB_ARCHIVE, connect
 from usenet_no.database.overlap import ArchiveDatespan
-from usenet_no.database.reference_graph import (
-    ReferenceEdge,
-    count_referenced_messages,
-)
+from usenet_no.database.reference_graph import ReferenceEdge, count_references
 from usenet_no.database.statistics import get_date_span
 
 logger = logging.getLogger(__name__)
@@ -31,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Count the messages each newsgroup references in each other newsgroup",
+        description="Count the references running between pairs of newsgroups",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
@@ -44,8 +39,8 @@ if __name__ == "__main__":
         "--nb-output-file",
         type=Path,
         default=Path(
-            "data/output/08_newsgroups_and_user_analysis/"
-            "newsgroup_referenced_message_counts_nb.csv"
+            "data/output/09_newsgroups_and_user_analysis/"
+            "newsgroup_reference_counts_nb.csv"
         ),
         help="Path to CSV output file for the NB archive",
     )
@@ -53,8 +48,8 @@ if __name__ == "__main__":
         "--ia-date-filtered-output-file",
         type=Path,
         default=Path(
-            "data/output/08_newsgroups_and_user_analysis/"
-            "newsgroup_referenced_message_counts_ia_date_filtered.csv"
+            "data/output/09_newsgroups_and_user_analysis/"
+            "newsgroup_reference_counts_ia_date_filtered.csv"
         ),
         help="Path to CSV output file for IA restricted to the NB date span",
     )
@@ -62,8 +57,8 @@ if __name__ == "__main__":
         "--merged-output-file",
         type=Path,
         default=Path(
-            "data/output/08_newsgroups_and_user_analysis/"
-            "newsgroup_referenced_message_counts_nb_and_ia_date_filtered.csv"
+            "data/output/09_newsgroups_and_user_analysis/"
+            "newsgroup_reference_counts_nb_and_ia_date_filtered.csv"
         ),
         help="Path to CSV output file for NB and the date-filtered IA together",
     )
@@ -104,7 +99,7 @@ if __name__ == "__main__":
             )
             continue
 
-        edges = count_referenced_messages(connection, archive_datespans)
+        edges = count_references(connection, archive_datespans)
 
         output_file.parent.mkdir(parents=True, exist_ok=True)
         pd.DataFrame(edges, columns=ReferenceEdge._fields).to_csv(

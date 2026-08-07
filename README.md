@@ -46,14 +46,15 @@ data/
     ├── 05_venn_diagrams/
     ├── 06_evaluate_embedding_model_robustness/
     ├── 07_make_embeddings/
-    ├── 08_newsgroups_and_user_analysis/
-    └── 09_visualize/
+    ├── 08_topic_modelling/
+    ├── 09_newsgroups_and_user_analysis/
+    └── 10_visualize/
 ```
 
 ### Sqlite database
 The databases are built from the `utf_8_data` subdirectories, and `usenet.db` is what the analysis scripts read.  
 The database holds names, emails, message ids and bodies only as hashes, so the file can be shared.  
-The statistics in step 03, most of the comparisons in step 04, the venn diagrams in step 05, and the graph building scripts in 08 read `usenet.db` and nothing else, so anyone with the file can reproduce them.  
+The statistics in step 03, most of the comparisons in step 04, the venn diagrams in step 05, and the graph building scripts in 09 read `usenet.db` and nothing else, so anyone with the file can reproduce them.  
 The two replacement character scripts in step 04 also read the message bodies from the mbox files, and so need the archives themselves.  
 `usenet_private.db` maps the hashed names, emails and message ids back to their plain text, so local analysis can connect a hash to the address or to the message body in the mbox files.  
 Like the mbox directories, it is not shared.
@@ -87,13 +88,16 @@ Draws the overlap between the archives as venn diagrams, over newsgroups, users,
 Measures how robust an embedding model is to the U+FFFD (`�`) damage in the IA archive, by embedding the damaged IA body and the intact NB body of the same message and comparing them. See [scripts/06_evaluate_embedding_model_robustness/README.md](scripts/06_evaluate_embedding_model_robustness/README.md) for details.
 
 #### Step 07: embed messages
-Filters the IA archive to the NB date span, selects newsgroups, and makes text embeddings for their messages, reduced to 2 dimensions with UMAP. See [scripts/07_make_embeddings/README.md](scripts/07_make_embeddings/README.md) for details.
+Filters the IA archive to the NB date span, selects newsgroups, makes text embeddings for their messages, reduces them to 2 dimensions with UMAP, and plots them. See [scripts/07_make_embeddings/README.md](scripts/07_make_embeddings/README.md) for details.
 
-#### Step 08: newsgroups and user analysis
-Computes user overlap and reference counts between newsgroups, and finds topics with turftopic. See [scripts/08_newsgroups_and_user_analysis/README.md](scripts/08_newsgroups_and_user_analysis/README.md) for details.
+#### Step 08: topic modelling
+Finds topics in one newsgroup with turftopic, over the embeddings from the previous step, and plots the messages coloured by topic. See [scripts/08_topic_modelling/README.md](scripts/08_topic_modelling/README.md) for details.
 
-#### Step 09: visualize
-Plots the statistics, comparisons, embeddings and graphs from the previous steps. See [scripts/09_visualize/README.md](scripts/09_visualize/README.md) for details.
+#### Step 09: newsgroups and user analysis
+Computes user overlap and reference counts between newsgroups. See [scripts/09_newsgroups_and_user_analysis/README.md](scripts/09_newsgroups_and_user_analysis/README.md) for details.
+
+#### Step 10: visualize
+Plots the statistics, comparisons and graphs from the previous steps. See [scripts/10_visualize/README.md](scripts/10_visualize/README.md) for details.
 
 ## ePADD
 ePADD is a program with a graphical interface for exploring email archives.

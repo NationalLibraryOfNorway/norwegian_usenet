@@ -61,7 +61,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--output-directory",
         type=Path,
-        default=Path("data/output/08_newsgroups_and_user_analysis/topic_modelling"),
+        default=Path("data/output/08_topic_modelling"),
         help="Directory to save the topic model, topic info, topic assignments and "
         "per-source topic counts",
     )
@@ -121,7 +121,6 @@ if __name__ == "__main__":
         )
         sys.exit(0)
 
-    output_dir.mkdir(parents=True, exist_ok=True)
     logger.info("Output directory: %s", output_dir)
 
     embeddings, embedding_indexer, docs = load_embeddings_and_docs(
@@ -143,6 +142,8 @@ if __name__ == "__main__":
     )
     document_topic_matrix = topic_model.fit_transform(docs, embeddings=embeddings)
     logger.info("Found %d topics", document_topic_matrix.shape[1])
+
+    output_dir.mkdir(parents=True, exist_ok=True)
 
     model_path = output_dir / "topic_model"
     topic_model.to_disk(model_path)

@@ -195,9 +195,9 @@ data/output/07_make_embeddings/*
 # Of a topic modelling run, only the per-source topic counts are kept. The
 # embeddings and the topic table are turftopic's own output, and the fitted
 # model holds message text.
-data/output/**/topic_modelling/**
-!data/output/**/topic_modelling/**/
-!data/output/**/topic_modelling/**/topic_source_counts.jsonl
+data/output/08_topic_modelling/**
+!data/output/08_topic_modelling/**/
+!data/output/08_topic_modelling/**/topic_source_counts.jsonl
 
 
 # SQLite databases, too big for github
