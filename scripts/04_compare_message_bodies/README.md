@@ -1,0 +1,12 @@
+# Step 04: comparing the message bodies of the archives
+
+These scripts are unnumbered because they are independent of each other and can be run in any order.
+
+**Scripts that only read `data/output/02_build_database/usenet.db`**:
+- [message_body_overlap_per_newsgroup.py](message_body_overlap_per_newsgroup.py) compares message body overlap between IA and NB by exact text match, per newsgroup. Creates `data/output/04_compare_message_bodies/ia_nb_content_comparison.csv` and `data/output/04_compare_message_bodies/ia_nb_content_comparison_date_filtered.csv`
+- [conflicting_message_bodies.py](conflicting_message_bodies.py) finds Message-IDs held by both archives whose copies never agree on a body. Creates `data/output/04_compare_message_bodies/conflicting_message_ids_across_archives.jsonl`.
+
+
+**Scripts that read full message bodies from mbox files**:
+- [count_recoverable_replacement_char_words.py](count_recoverable_replacement_char_words.py) collects every NB word containing æ/ø/å/Æ/Ø/Å, masks those letters to U+FFFD to build an inverted index of masked word → distinct NB words, then counts how many U+FFFD words in the IA archive resolve to exactly one NB word (unambiguous), several (ambiguous), or none (unresolvable). Only IA messages inside the NB date span are counted, since a word can only be recovered from a vocabulary the NB archive covers; the database says which messages those are, and they are read from `data/input/internet_archive/utf_8_data` at the positions it gives. Creates `data/output/04_compare_message_bodies/replacement_char_recovery.json` (only aggregate counts) and `data/output/04_compare_message_bodies/top_words.csv` (set with `--top-words-file`) with the `--top-n` (default 100) most frequent IA U+FFFD words and their NB candidates.
+- [count_replacement_char_body_conflicts.py](count_replacement_char_body_conflicts.py) counts, per newsgroup, the Message-IDs held by both archives without a body in common, how many of those have an IA body containing the U+FFFD replacement character, and how many become equal once æ/ø/å/Æ/Ø/Å in the NB body and U+FFFD in the IA body are all replaced with `_`. Reads the body texts from the mbox files in `data/input/`. Creates `data/output/04_compare_message_bodies/replacement_char_body_conflicts.csv`

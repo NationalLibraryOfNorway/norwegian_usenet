@@ -42,7 +42,7 @@ data/
     │   ├── usenet.db           # Shared SQLite database of both archives, hashes only (scripts/02_build_database/01_build_database.py)
     │   └── usenet_private.db   # Private hash-to-plaintext mapping (scripts/02_build_database/01_build_database.py)
     ├── 03_statistics_per_archive/
-    ├── 04_compare_archives/
+    ├── 04_compare_message_bodies/
     ├── 05_venn_diagrams/
     ├── 06_evaluate_embedding_model_robustness/
     ├── 07_make_embeddings/
@@ -78,8 +78,8 @@ Messages are stored one row per message per newsgroup, with nothing dropped or m
 #### Step 03: counting messages and users within each archive
 Counts messages per newsgroup, user and date in each archive, finds duplicates, conflicting Message-IDs and messages without a sender, and plots those counts. See [scripts/03_statistics_per_archive/README.md](scripts/03_statistics_per_archive/README.md) for details.
 
-#### Step 04: comparison between archives
-Compares the IA and NB archives by message body and Message-ID overlap, and finds Message-IDs whose copies conflict across the archives. See [scripts/04_compare_archives/README.md](scripts/04_compare_archives/README.md) for details.
+#### Step 04: comparing the message bodies of the archives
+Compares the IA and NB archives by message body overlap, finds Message-IDs whose copies conflict across the archives, and measures the U+FFFD damage behind those conflicts. See [scripts/04_compare_message_bodies/README.md](scripts/04_compare_message_bodies/README.md) for details.
 
 #### Step 05: venn diagrams
 Draws the overlap between the archives as venn diagrams, over newsgroups, users, messages and outward references, with the IA archive restricted to the NB date span. See [scripts/05_venn_diagrams/README.md](scripts/05_venn_diagrams/README.md) for details.
@@ -94,7 +94,7 @@ Filters the IA archive to the NB date span, selects newsgroups, makes text embed
 Finds topics in one newsgroup with turftopic, over the embeddings from the previous step, and plots the messages coloured by topic. See [scripts/08_topic_modelling/README.md](scripts/08_topic_modelling/README.md) for details.
 
 #### Step 09: newsgroups and user analysis
-Computes user overlap and reference counts between newsgroups. See [scripts/09_newsgroups_and_user_analysis/README.md](scripts/09_newsgroups_and_user_analysis/README.md) for details.
+Computes user overlap and reference counts between newsgroups, and how many references each archive can resolve. See [scripts/09_newsgroups_and_user_analysis/README.md](scripts/09_newsgroups_and_user_analysis/README.md) for details.
 
 #### Step 10: visualize
 Draws the newsgroup graphs, and the body conflicts between the archives. See [scripts/10_visualize/README.md](scripts/10_visualize/README.md) for details.

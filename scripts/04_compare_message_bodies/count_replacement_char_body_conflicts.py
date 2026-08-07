@@ -62,7 +62,7 @@ if __name__ == "__main__":
         "--output-file",
         type=Path,
         default=Path(
-            "data/output/04_compare_archives/replacement_char_body_conflicts.csv"
+            "data/output/04_compare_message_bodies/replacement_char_body_conflicts.csv"
         ),
         help="Path to CSV output file",
     )

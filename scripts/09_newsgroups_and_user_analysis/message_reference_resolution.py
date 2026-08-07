@@ -37,28 +37,32 @@ if __name__ == "__main__":
     parser.add_argument(
         "--full-output-file",
         type=Path,
-        default=Path("data/output/04_compare_archives/ia_nb_message_id_overlap.json"),
+        default=Path(
+            "data/output/09_newsgroups_and_user_analysis/ia_nb_message_id_overlap.json"
+        ),
         help="Path to JSON output file for the full IA archive comparison",
     )
     parser.add_argument(
         "--date-filtered-output-file",
         type=Path,
         default=Path(
-            "data/output/04_compare_archives/ia_nb_message_id_overlap_date_filtered.json"
+            "data/output/09_newsgroups_and_user_analysis/ia_nb_message_id_overlap_date_filtered.json"
         ),
         help="Path to JSON output file for the date-filtered IA archive comparison",
     )
     parser.add_argument(
         "--full-csv-output-file",
         type=Path,
-        default=Path("data/output/04_compare_archives/ia_nb_message_id_comparison.csv"),
+        default=Path(
+            "data/output/09_newsgroups_and_user_analysis/ia_nb_message_id_comparison.csv"
+        ),
         help="Path to per-newsgroup CSV output file for the full IA archive comparison",
     )
     parser.add_argument(
         "--date-filtered-csv-output-file",
         type=Path,
         default=Path(
-            "data/output/04_compare_archives/ia_nb_message_id_comparison_date_filtered.csv"
+            "data/output/09_newsgroups_and_user_analysis/ia_nb_message_id_comparison_date_filtered.csv"
         ),
         help="Path to per-newsgroup CSV output file for the date-filtered IA archive comparison",
     )

@@ -65,13 +65,15 @@ if __name__ == "__main__":
     parser.add_argument(
         "--output-file",
         type=Path,
-        default=Path("data/output/04_compare_archives/replacement_char_recovery.json"),
+        default=Path(
+            "data/output/04_compare_message_bodies/replacement_char_recovery.json"
+        ),
         help="Path to JSON output file",
     )
     parser.add_argument(
         "--top-words-file",
         type=Path,
-        default=Path("data/output/04_compare_archives/top_words.csv"),
+        default=Path("data/output/04_compare_message_bodies/top_words.csv"),
         help="If set, also write the most frequent IA U+FFFD words with their"
         " NB candidates to this CSV for inspection. Contains raw words that may"
         " hold personal information, so read through before sharing it.",

@@ -71,7 +71,7 @@ def main() -> None:
         "--conflicts-csv",
         type=Path,
         default=Path(
-            "data/output/04_compare_archives/replacement_char_body_conflicts.csv"
+            "data/output/04_compare_message_bodies/replacement_char_body_conflicts.csv"
         ),
         help="CSV with replacement char conflict counts per newsgroup (default: %(default)s)",
     )

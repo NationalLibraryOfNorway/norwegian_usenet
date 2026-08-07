@@ -24,7 +24,7 @@ if __name__ == "__main__":
         "--output-file",
         type=Path,
         default=Path(
-            "data/output/04_compare_archives/conflicting_message_ids_across_archives.jsonl"
+            "data/output/04_compare_message_bodies/conflicting_message_ids_across_archives.jsonl"
         ),
         help="Path to JSONL output file",
     )
