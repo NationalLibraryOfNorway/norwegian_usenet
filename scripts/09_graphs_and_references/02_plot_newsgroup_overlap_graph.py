@@ -3,7 +3,6 @@
 Reads the pair table written by 09_graphs_and_references and keeps the
 pairs clearing both thresholds as edges. Every newsgroup in the table is drawn,
 so a newsgroup with no edge left shows as a loose point rather than vanishing.
-Pass --selection to draw only some of them.
 
 Where the newsgroups land is decided by a Kamada-Kawai layout, which reads each
 edge as a distance and looks for the arrangement whose drawn distances come
@@ -20,7 +19,7 @@ import networkx as nx
 import pandas as pd
 import plotly.graph_objects as go
 
-from usenet_no.newsgroup_graph import build_overlap_graph, select_newsgroups
+from usenet_no.newsgroup_graph import build_overlap_graph
 
 logger = logging.getLogger(__name__)
 
@@ -242,13 +241,6 @@ if __name__ == "__main__":
         help="Join two newsgroups only if they share at least this many users",
     )
     parser.add_argument(
-        "--selection",
-        nargs="+",
-        metavar="NEWSGROUP",
-        default=None,
-        help="Newsgroup names to draw (default: every newsgroup in the overlap file)",
-    )
-    parser.add_argument(
         "--output-directory",
         type=Path,
         default=Path(
@@ -266,12 +258,10 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     logger.info("Args: %s", args)
 
-    # The thresholds and the selection are in the file name, so a run at one
-    # setting does not overwrite the picture drawn at another.
-    selection_tag = f"_{'_'.join(sorted(args.selection))}" if args.selection else ""
+    # The thresholds are in the file name, so a run at one setting does not
+    # overwrite the picture drawn at another.
     output_file = args.output_directory / (
         f"{args.overlap_file.stem}"
-        f"{selection_tag}"
         f"_jaccard{args.jaccard_threshold}"
         f"_shared{args.min_shared_users}.html"
     )
@@ -287,12 +277,6 @@ if __name__ == "__main__":
         jaccard_threshold=args.jaccard_threshold,
         min_shared_users=args.min_shared_users,
     )
-    if args.selection:
-        # Selecting after the graph is built, so that the thresholds are read
-        # against the whole table and a selected newsgroup keeps its user count
-        # even when none of the others share enough users with it.
-        graph = select_newsgroups(graph, args.selection)
-
     args.output_directory.mkdir(parents=True, exist_ok=True)
     plot_overlap_graph(
         graph,
@@ -301,7 +285,6 @@ if __name__ == "__main__":
             f"{args.overlap_file.stem}, "
             f"jaccard at least {args.jaccard_threshold}, "
             f"at least {args.min_shared_users} shared users"
-            + (f", {len(args.selection)} selected newsgroups" if args.selection else "")
         ),
         output_file=output_file,
     )

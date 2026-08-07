@@ -4,7 +4,7 @@ Reads an edge list written by 09_graphs_and_references and keeps the
 edges clearing the threshold, drawn as arrows from the referring newsgroup to
 the referenced one, with the width following the weight. Every newsgroup in
 the table is drawn, so one with no edge left shows as a loose point rather
-than vanishing. Pass --selection to draw only some of them.
+than vanishing.
 
 Vertices are sized by how many messages the newsgroup holds, read from the
 per-group count tables written by 03_statistics_per_archive and summed over
@@ -29,11 +29,7 @@ import pandas as pd
 import plotly.graph_objects as go
 
 from usenet_no.database.reference_graph import UNKNOWN_NEWSGROUP
-from usenet_no.newsgroup_graph import (
-    build_reference_graph,
-    load_message_counts,
-    select_newsgroups,
-)
+from usenet_no.newsgroup_graph import build_reference_graph, load_message_counts
 
 logger = logging.getLogger(__name__)
 
@@ -348,17 +344,6 @@ if __name__ == "__main__":
         help="Draw an edge only if at least this many references run along it",
     )
     parser.add_argument(
-        "--selection",
-        nargs="+",
-        metavar="NEWSGROUP",
-        default=None,
-        help=(
-            "Newsgroup names to draw; the unknown placeholder is included"
-            " unless --exclude-unknown is flagged"
-            " (default: every newsgroup in the edge list)"
-        ),
-    )
-    parser.add_argument(
         "--exclude-unknown",
         action="store_true",
         help=(
@@ -384,13 +369,11 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     logger.info("Args: %s", args)
 
-    # The threshold, the selection and the unknown flag are in the file name,
-    # so a run at one setting does not overwrite the picture drawn at another.
-    selection_tag = f"_{'_'.join(sorted(args.selection))}" if args.selection else ""
+    # The threshold and the unknown flag are in the file name, so a run at one
+    # setting does not overwrite the picture drawn at another.
     unknown_tag = "_no_unknown" if args.exclude_unknown else ""
     output_file = args.output_directory / (
-        f"{args.edges_file.stem}{selection_tag}{unknown_tag}"
-        f"_min{args.min_references}.html"
+        f"{args.edges_file.stem}{unknown_tag}_min{args.min_references}.html"
     )
     if output_file.exists() and not args.overwrite:
         logger.info(
@@ -405,15 +388,6 @@ if __name__ == "__main__":
     )
     if args.exclude_unknown and UNKNOWN_NEWSGROUP in graph:
         graph.remove_node(UNKNOWN_NEWSGROUP)
-    if args.selection:
-        # Selecting after the graph is built, so that the threshold is read
-        # against the whole table and a selected newsgroup keeps its message
-        # count even when no drawn edge reaches it. The unknown placeholder
-        # joins the selection on its own, unless it is excluded.
-        selection = list(args.selection)
-        if UNKNOWN_NEWSGROUP in graph and UNKNOWN_NEWSGROUP not in selection:
-            selection.append(UNKNOWN_NEWSGROUP)
-        graph = select_newsgroups(graph, selection)
 
     args.output_directory.mkdir(parents=True, exist_ok=True)
     plot_reference_graph(
@@ -422,7 +396,6 @@ if __name__ == "__main__":
         subtitle=(
             f"{args.edges_file.stem}, "
             f"at least {args.min_references} references per drawn edge"
-            + (f", {len(args.selection)} selected newsgroups" if args.selection else "")
         ),
         output_file=output_file,
     )

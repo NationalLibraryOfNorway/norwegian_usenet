@@ -118,24 +118,3 @@ def build_reference_graph(
         sum(1 for _node, degree in graph.degree() if degree == 0),
     )
     return graph
-
-
-def select_newsgroups(graph: nx.Graph, selection: list[str]) -> nx.Graph:
-    """Keep only the named newsgroups, and the edges running between them.
-
-    A name that is not a vertex in the graph raises, since a misspelled name
-    would otherwise quietly leave a newsgroup out. A directed graph stays
-    directed.
-    """
-    missing = sorted(set(selection) - set(graph.nodes))
-    if missing:
-        raise ValueError(f"Newsgroups not in the graph: {', '.join(missing)}")
-
-    selected = graph.subgraph(selection).copy()
-    logger.info(
-        "Selected %d newsgroups, joined by %d of the %d edges",
-        selected.number_of_nodes(),
-        selected.number_of_edges(),
-        graph.number_of_edges(),
-    )
-    return selected
