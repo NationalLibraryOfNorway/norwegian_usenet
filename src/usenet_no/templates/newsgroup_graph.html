@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>{{ title }}</title>
+    <style>{% include 'lib/vis-9.1.2/vis-network.css' %}</style>
+    <script>{% include 'lib/vis-9.1.2/vis-network.min.js' %}</script>
+    <style>
+      body {
+        margin: 0;
+        padding: 24px;
+        background-color: {{ surface }};
+        color: {{ text_secondary }};
+        font-family: {{ font_family }};
+      }
+      h1 {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 600;
+        color: {{ text_primary }};
+      }
+      p {
+        margin: 6px 0 0;
+        font-size: 13px;
+      }
+      #graph {
+        width: {{ width }};
+        height: {{ height }};
+        margin-top: 16px;
+        border: 1px solid {{ border }};
+        border-radius: 4px;
+        background-color: {{ surface }};
+      }
+      div.vis-tooltip {
+        padding: 8px 10px;
+        border: 1px solid {{ border }};
+        border-radius: 4px;
+        background-color: {{ surface }};
+        color: {{ text_primary }};
+        font-family: {{ font_family }};
+        font-size: 13px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+      }
+    </style>
+  </head>
+  <body>
+    <h1>{{ title }}</h1>
+    <p>{{ subtitle }}</p>
+    {% for note in notes %}<p>{{ note }}</p>
+    {% endfor %}
+    <p>
+      Drag a vertex and the ones it is joined to follow, drag the background to
+      pan, scroll to zoom, and hover over a vertex or an edge to read it.
+    </p>
+    {%- if pin_on_drop %}
+    <p>
+      A vertex is left where it is dropped, shown by the shadow under it, and
+      double-clicking it hands it back to the physics.
+    </p>
+    {%- endif %}
+    <div id="graph"></div>
+    <script>
+      const nodes = new vis.DataSet({{ nodes|tojson }});
+      const edges = new vis.DataSet({{ edges|tojson }});
+      const network = new vis.Network(
+        document.getElementById("graph"),
+        { nodes: nodes, edges: edges },
+        {{ options|safe }}
+      );
+
+      // A vertex left out of the physics has nothing to place it, so the loose
+      // ones are set out in rows under the graph, where they neither ring it
+      // nor squeeze it. Where the graph ends is only known once it has settled,
+      // so the rows are laid again then.
+      const loose = nodes
+        .get()
+        .filter((node) => node.physics === false)
+        .map((node) => node.id)
+        .sort();
+
+      function setOutLooseVerticesBelow() {
+        if (loose.length === 0) return;
+        const positions = network.getPositions();
+        const held = Object.keys(positions).filter((id) => !loose.includes(id));
+        if (held.length === 0) return;
+
+        const left = Math.min(...held.map((id) => positions[id].x));
+        const right = Math.max(...held.map((id) => positions[id].x));
+        const bottom = Math.max(...held.map((id) => positions[id].y));
+
+        // The rows are as wide as the graph settled, which is what decides how
+        // many go in each of them, and are centred under it.
+        const across = {{ loose_column_spacing }};
+        const down = {{ loose_row_spacing }};
+        const perRow = Math.max(
+          Math.round((right - left) / across),
+          {{ loose_least_per_row }}
+        );
+        const start = (left + right) / 2 - ((perRow - 1) * across) / 2;
+        loose.forEach((id, index) => {
+          const row = Math.floor(index / perRow);
+          const column = index % perRow;
+          // The first row clears the graph by two, since the vertex above it is
+          // measured from its middle and can be a wide one.
+          network.moveNode(id, start + column * across, bottom + (row + 2) * down);
+        });
+      }
+
+      // Fitting the graph into the box keeps its proportions, so a graph wider
+      // than the box is tall leaves air above and below it. The box is taken in
+      // to what was drawn in it, which the reader can still zoom and pan within.
+      function takeInTheBox() {
+        const box = document.getElementById("graph");
+        const drawn = nodes.getIds().map((id) => network.getBoundingBox(id));
+        const top = Math.min(...drawn.map((vertex) => vertex.top));
+        const bottom = Math.max(...drawn.map((vertex) => vertex.bottom));
+        const height =
+          (bottom - top) * network.getScale() + 2 * {{ box_padding }};
+        if (height < box.clientHeight) {
+          // The box is what the reader sees a border around, and the canvas
+          // vis draws on sits inside it, so both are taken in.
+          box.style.height = height + "px";
+          network.setSize("{{ width }}", height + "px");
+          network.fit();
+        }
+      }
+
+      setOutLooseVerticesBelow();
+      network.once("stabilizationIterationsDone", function () {
+        setOutLooseVerticesBelow();
+        network.fit();
+        takeInTheBox();
+      });
+      {%- if pin_on_drop %}
+
+      // A vertex let go of falls back to the physics, which pulls it towards
+      // the middle again, so it is pinned where it is dropped instead and the
+      // rest of the graph settles around it. Double-clicking it lets it go.
+      function pin(vertices, pinned) {
+        nodes.update(
+          vertices.map((id) => ({ id: id, fixed: pinned, shadow: pinned }))
+        );
+      }
+
+      network.on("dragEnd", (event) => pin(event.nodes, true));
+      network.on("doubleClick", (event) => pin(event.nodes, false));
+      {%- endif %}
+    </script>
+  </body>
+</html>
