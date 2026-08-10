@@ -30,6 +30,12 @@ BOX_PADDING = 20
 # usual [-1, 1] square is stretched over this many pixels and turned over.
 VIEW_RADIUS = 520
 
+# Vertices are drawn between these two radii, and the count one stands for is
+# put on a square root first, since the largest is some hundred times the
+# smallest and would leave the rest as dots.
+SMALLEST_VERTEX = 4
+LARGEST_VERTEX = 22
+
 # An edge is a spring pulling towards the distance it was laid out at. The
 # average edge is scaled to this many pixels and the rest around it, so a
 # figure settles at a readable size whatever scale its distances are on.
@@ -58,6 +64,16 @@ def canvas_position(position: tuple[float, float]) -> tuple[float, float]:
     """Turn a layout position into vis-network's pixel coordinates."""
     x, y = position
     return x * VIEW_RADIUS, -y * VIEW_RADIUS
+
+
+def vertex_sizes[Vertex](counts: dict[Vertex, int]) -> dict[Vertex, float]:
+    """Scale the count each vertex stands for into a radius in pixels."""
+    largest = max(counts.values())
+    return {
+        vertex: SMALLEST_VERTEX
+        + (LARGEST_VERTEX - SMALLEST_VERTEX) * (count / largest) ** 0.5
+        for vertex, count in counts.items()
+    }
 
 
 def spring_lengths[Edge](distances: dict[Edge, float]) -> dict[Edge, float]:
@@ -127,7 +143,7 @@ def build_network(directed: bool) -> Network:
     return network
 
 
-def template_environment() -> Environment:
+def _template_environment() -> Environment:
     """Jinja reading both our page template and the vis-network assets."""
     return Environment(
         loader=FileSystemLoader([TEMPLATE_DIRECTORY, PYVIS_TEMPLATE_DIRECTORY]),
@@ -140,8 +156,9 @@ def write_graph_html(
     title: str,
     subtitle: str,
     notes: list[str],
-    pin_on_drop: bool,
     output_file: Path,
+    *,
+    pin_on_drop: bool,
 ) -> None:
     """Write the network as a page of its own, under the title and the notes.
 
@@ -150,7 +167,7 @@ def write_graph_html(
     it instead of being pulled back by the physics, until they double-click it.
     """
     nodes, edges, _heading, height, width, options = network.get_network_data()
-    page = template_environment().get_template(TEMPLATE)
+    page = _template_environment().get_template(TEMPLATE)
     output_file.write_text(
         page.render(
             title=title,

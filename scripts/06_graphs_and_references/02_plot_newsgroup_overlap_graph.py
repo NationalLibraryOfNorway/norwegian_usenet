@@ -27,6 +27,7 @@ from usenet_no.interactive_graph import (
     build_network,
     canvas_position,
     spring_lengths,
+    vertex_sizes,
     write_graph_html,
 )
 from usenet_no.newsgroup_graph import build_overlap_graph
@@ -36,12 +37,6 @@ logger = logging.getLogger(__name__)
 NODE_COLOR = "#2a78d6"
 EDGE_COLOR = "rgba(140, 139, 134, 0.6)"
 
-# Nodes are sized by how many users a newsgroup had, between these two, and the
-# largest newsgroup is some hundred times the size of the smallest, so the count
-# is put on a square root to keep the small ones visible.
-SMALLEST_NODE = 4
-LARGEST_NODE = 22
-
 
 def layout_positions(graph: nx.Graph) -> dict[str, tuple[float, float]]:
     """Where the physics starts the joined newsgroups off from.
@@ -50,13 +45,14 @@ def layout_positions(graph: nx.Graph) -> dict[str, tuple[float, float]]:
     few users to be joined to anything has nothing to pull it into place, so it
     is left out of the physics and set out in a row under the graph instead.
     """
-    joined = graph.subgraph([node for node, degree in graph.degree() if degree > 0])
+    joined = nx.Graph(
+        graph.subgraph([node for node, degree in graph.degree() if degree > 0])
+    )
 
     # The layout reads the weight as the distance an edge would like to be
     # drawn at, which is the opposite of what jaccard says: the more two
     # newsgroups overlap, the nearer they belong.
-    distances = {edge: 1 - graph.edges[edge]["jaccard"] for edge in joined.edges}
-    joined = nx.Graph(joined)
+    distances = {edge: 1 - joined.edges[edge]["jaccard"] for edge in joined.edges}
     nx.set_edge_attributes(joined, distances, "distance")
 
     return {
@@ -65,22 +61,12 @@ def layout_positions(graph: nx.Graph) -> dict[str, tuple[float, float]]:
     }
 
 
-def node_sizes(graph: nx.Graph) -> dict[str, float]:
-    """Scale each newsgroup's user count into a vertex radius."""
-    largest = max(graph.nodes[node]["users"] for node in graph)
-    return {
-        node: SMALLEST_NODE
-        + (LARGEST_NODE - SMALLEST_NODE) * (graph.nodes[node]["users"] / largest) ** 0.5
-        for node in graph
-    }
-
-
 def add_newsgroups(
     network: Network,
     graph: nx.Graph,
     positions: dict[str, tuple[float, float]],
 ) -> None:
-    sizes = node_sizes(graph)
+    sizes = vertex_sizes(nx.get_node_attributes(graph, "users"))
     for node, degree in graph.degree():
         # A newsgroup joined to nothing has no edge to hold it, so it is left
         # out of the physics and set out in a row under the graph by the page.
@@ -127,17 +113,16 @@ def graph_notes(graph: nx.Graph) -> list[str]:
     The newsgroups joined to nothing are counted on their own rather than as a
     sub-graph each.
     """
-    joined = graph.subgraph([node for node, degree in graph.degree() if degree > 0])
-    unjoined = [node for node, degree in graph.degree() if degree == 0]
+    sub_graphs = sum(1 for part in nx.connected_components(graph) if len(part) > 1)
+    loose = nx.number_of_isolates(graph)
 
     notes = [
-        f"The newsgroups with edges fall into"
-        f" {nx.number_connected_components(joined)} connected sub-graphs"
+        f"The newsgroups with edges fall into {sub_graphs} connected sub-graphs"
         " with no edge between them."
     ]
-    if unjoined:
+    if loose:
         notes.append(
-            f"The {len(unjoined)} newsgroups joined to nothing at these thresholds"
+            f"The {loose} newsgroups joined to nothing at these thresholds"
             " are set out in rows below the graph."
         )
     return notes
@@ -154,7 +139,9 @@ def plot_overlap_graph(
     add_newsgroups(network, graph, positions)
     add_overlaps(network, graph)
 
-    write_graph_html(network, title, subtitle, graph_notes(graph), False, output_file)
+    write_graph_html(
+        network, title, subtitle, graph_notes(graph), output_file, pin_on_drop=False
+    )
 
 
 def convert_and_validate_cli_arg_jaccard_threshold(value: str) -> float:

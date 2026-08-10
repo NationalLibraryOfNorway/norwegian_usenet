@@ -39,6 +39,7 @@ from usenet_no.interactive_graph import (
     build_network,
     canvas_position,
     spring_lengths,
+    vertex_sizes,
     write_graph_html,
 )
 from usenet_no.newsgroup_graph import build_reference_graph, load_message_counts
@@ -51,11 +52,8 @@ NODE_COLOR = "#2a78d6"
 UNKNOWN_COLOR = "#d97706"
 EDGE_COLOR = "rgba(140, 139, 134, 0.55)"
 
-# Nodes are sized by how many messages a newsgroup holds, between these two,
-# and the largest newsgroup is some hundred times the size of the smallest, so
-# the count is put on a square root to keep the small ones visible.
-SMALLEST_NODE = 4
-LARGEST_NODE = 22
+# The unknown placeholder holds no messages to be sized by, so its diamond is
+# drawn at this radius.
 UNKNOWN_NODE = 12
 
 # Edge widths follow the weight on a log scale, since the heaviest edge
@@ -115,23 +113,6 @@ def edge_widths(graph: nx.DiGraph) -> dict[tuple[str, str], float]:
     }
 
 
-def newsgroup_nodes(graph: nx.DiGraph) -> list[str]:
-    """The real newsgroups, leaving the unknown placeholder out."""
-    return [node for node in graph if graph.nodes[node]["messages"] is not None]
-
-
-def node_sizes(graph: nx.DiGraph) -> dict[str, float]:
-    """Scale each newsgroup's message count into a vertex radius."""
-    nodes = newsgroup_nodes(graph)
-    largest = max(graph.nodes[node]["messages"] for node in nodes)
-    return {
-        node: SMALLEST_NODE
-        + (LARGEST_NODE - SMALLEST_NODE)
-        * (graph.nodes[node]["messages"] / largest) ** 0.5
-        for node in nodes
-    }
-
-
 def node_hover(graph: nx.DiGraph, node: str) -> str:
     outgoing = sum(
         attributes["references"]
@@ -152,13 +133,16 @@ def add_newsgroups(
     positions: dict[str, tuple[float, float]],
 ) -> None:
     """Add a vertex per newsgroup, the unknown placeholder as an orange diamond."""
-    sizes = node_sizes(graph)
+    messages = nx.get_node_attributes(graph, "messages")
+    sizes = vertex_sizes(
+        {node: held for node, held in messages.items() if held is not None}
+    )
     for node in graph:
         # A newsgroup joined to nothing has no edge to hold it, so it is left
         # out of the physics and set out in a row under the graph by the page.
         joined = graph.degree(node) > 0
         x, y = canvas_position(positions[node]) if joined else (0.0, 0.0)
-        unknown = graph.nodes[node]["messages"] is None
+        unknown = messages[node] is None
         network.add_node(
             node,
             label=node,
@@ -202,17 +186,18 @@ def graph_notes(graph: nx.DiGraph) -> list[str]:
     the newsgroups joined to nothing are counted on their own rather than as a
     sub-graph each.
     """
-    joined = graph.subgraph([node for node, degree in graph.degree() if degree > 0])
-    unjoined = [node for node, degree in graph.degree() if degree == 0]
+    sub_graphs = sum(
+        1 for part in nx.weakly_connected_components(graph) if len(part) > 1
+    )
+    loose = nx.number_of_isolates(graph)
 
     notes = [
-        f"The newsgroups with edges fall into"
-        f" {nx.number_weakly_connected_components(joined)} connected sub-graphs"
+        f"The newsgroups with edges fall into {sub_graphs} connected sub-graphs"
         " with no reference between them."
     ]
-    if unjoined:
+    if loose:
         notes.append(
-            f"The {len(unjoined)} newsgroups joined to nothing at this threshold"
+            f"The {loose} newsgroups joined to nothing at this threshold"
             " are set out in rows below the graph."
         )
     return notes
@@ -231,7 +216,9 @@ def plot_reference_graph(
 
     # The reference graph is one crowd of newsgroups referencing each other, so
     # a vertex pulled out of it to be read is left where it is put.
-    write_graph_html(network, title, subtitle, graph_notes(graph), True, output_file)
+    write_graph_html(
+        network, title, subtitle, graph_notes(graph), output_file, pin_on_drop=True
+    )
 
 
 if __name__ == "__main__":
