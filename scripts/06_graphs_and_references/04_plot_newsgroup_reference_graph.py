@@ -11,7 +11,8 @@ Vertices are sized by how many messages the newsgroup holds, read from the
 per-group count tables written by 03_statistics_per_archive and summed over
 the given files. The placeholder unknown newsgroup holds no messages and is
 drawn as an orange diamond instead; pass --exclude-unknown to leave it and
-its edges out.
+its edges out. Nearly every newsgroup references no.general, which joins the
+graph up into one crowd, so --exclude-general leaves that one out the same way.
 
 Where the newsgroups start out is decided by a Kamada-Kawai layout over the two
 directions added together, which reads each pair's edge as a distance: the
@@ -43,6 +44,8 @@ from usenet_no.interactive_graph import (
 from usenet_no.newsgroup_graph import build_reference_graph, load_message_counts
 
 logger = logging.getLogger(__name__)
+
+GENERAL_NEWSGROUP = "no.general"
 
 NODE_COLOR = "#2a78d6"
 UNKNOWN_COLOR = "#d97706"
@@ -273,6 +276,14 @@ if __name__ == "__main__":
         ),
     )
     parser.add_argument(
+        "--exclude-general",
+        action="store_true",
+        help=(
+            f"If flagged, leave out {GENERAL_NEWSGROUP}, which nearly every"
+            " newsgroup references, and every edge reaching it"
+        ),
+    )
+    parser.add_argument(
         "--output-directory",
         type=Path,
         default=Path(
@@ -290,11 +301,13 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     logger.info("Args: %s", args)
 
-    # The threshold and the unknown flag are in the file name, so a run at one setting
+    # The threshold and the flags are in the file name, so a run at one setting
     # does not overwrite the picture drawn at another.
     unknown_tag = "_no_unknown" if args.exclude_unknown else ""
+    general_tag = "_no_general" if args.exclude_general else ""
     output_file = args.output_directory / (
-        f"{args.edges_file.stem}{unknown_tag}_min{args.min_references}.html"
+        f"{args.edges_file.stem}{unknown_tag}{general_tag}"
+        f"_min{args.min_references}.html"
     )
     if output_file.exists() and not args.overwrite:
         logger.info(
@@ -309,6 +322,8 @@ if __name__ == "__main__":
     )
     if args.exclude_unknown and UNKNOWN_NEWSGROUP in graph:
         graph.remove_node(UNKNOWN_NEWSGROUP)
+    if args.exclude_general and GENERAL_NEWSGROUP in graph:
+        graph.remove_node(GENERAL_NEWSGROUP)
 
     args.output_directory.mkdir(parents=True, exist_ok=True)
     plot_reference_graph(
