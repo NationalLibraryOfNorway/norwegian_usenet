@@ -1,6 +1,6 @@
 """Draw the newsgroup overlap table as a graph of newsgroups joined by users.
 
-Reads the pair table written by 09_graphs_and_references and keeps the
+Reads the pair table written by 06_graphs_and_references and keeps the
 pairs clearing both thresholds as edges. Every newsgroup in the table is drawn,
 so a newsgroup with no edge left shows as a loose point rather than vanishing.
 
@@ -223,7 +223,7 @@ if __name__ == "__main__":
         "--overlap-file",
         type=Path,
         default=Path(
-            "data/output/09_graphs_and_references/"
+            "data/output/06_graphs_and_references/"
             "newsgroup_user_jaccard_overlap_nb_and_ia.csv"
         ),
         help="Path to a newsgroup overlap CSV file",
@@ -244,7 +244,7 @@ if __name__ == "__main__":
         "--output-directory",
         type=Path,
         default=Path(
-            "data/output/09_graphs_and_references/plot_newsgroup_overlap_graph"
+            "data/output/06_graphs_and_references/plot_newsgroup_overlap_graph"
         ),
         help="Directory to write the HTML figure to",
     )

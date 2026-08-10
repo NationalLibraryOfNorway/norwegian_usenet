@@ -23,7 +23,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--embeddings-directory",
         type=Path,
-        default=Path("data/output/07_make_embeddings"),
+        default=Path("data/output/08_make_embeddings"),
         help="Base directory containing per-model embedding subdirectories",
     )
     parser.add_argument(
@@ -88,7 +88,7 @@ if __name__ == "__main__":
         raise SystemExit(
             f"{umap_cache} has {len(umap_2d)} rows but the selection loaded "
             f"{len(embedding_indexer)} messages. Regenerate it with "
-            "scripts/07_make_embeddings/02_umap_reduce_embeddings.py --overwrite."
+            "scripts/08_make_embeddings/02_umap_reduce_embeddings.py --overwrite."
         )
 
     newsgroups_indexer = np.array([s.rsplit("_", 1)[0] for s in embedding_indexer])

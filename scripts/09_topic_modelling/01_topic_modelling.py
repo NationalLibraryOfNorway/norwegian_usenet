@@ -30,7 +30,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--embeddings-directory",
         type=Path,
-        default=Path("data/output/07_make_embeddings"),
+        default=Path("data/output/08_make_embeddings"),
         help="Base directory containing per-model embedding subdirectories",
     )
     parser.add_argument(
@@ -61,7 +61,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--output-directory",
         type=Path,
-        default=Path("data/output/08_topic_modelling"),
+        default=Path("data/output/09_topic_modelling"),
         help="Directory to save the topic model, topic info, topic assignments and "
         "per-source topic counts",
     )

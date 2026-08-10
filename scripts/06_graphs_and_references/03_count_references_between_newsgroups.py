@@ -51,7 +51,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--output-directory",
         type=Path,
-        default=Path("data/output/09_graphs_and_references"),
+        default=Path("data/output/06_graphs_and_references"),
         help="Directory to save the edge list of each body of messages",
     )
     parser.add_argument(

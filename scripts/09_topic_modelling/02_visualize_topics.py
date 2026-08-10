@@ -31,7 +31,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--embeddings-directory",
         type=Path,
-        default=Path("data/output/07_make_embeddings"),
+        default=Path("data/output/08_make_embeddings"),
         help="Base directory containing per-model embedding subdirectories",
     )
     parser.add_argument(
@@ -62,7 +62,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--topics-directory",
         type=Path,
-        default=Path("data/output/08_topic_modelling"),
+        default=Path("data/output/09_topic_modelling"),
         help="Directory containing the saved topic model runs",
     )
     parser.add_argument(
@@ -101,7 +101,7 @@ if __name__ == "__main__":
     if not topics_path.exists() or not topic_info_path.exists():
         raise SystemExit(
             f"No topic modelling run at {run_dir}. "
-            "Run scripts/08_topic_modelling/01_topic_modelling.py with the same "
+            "Run scripts/09_topic_modelling/01_topic_modelling.py with the same "
             "--method, --newsgroup and --nr-topics first."
         )
 
@@ -111,7 +111,7 @@ if __name__ == "__main__":
         coordinates_path = run_dir / "reduced_embeddings.npy"
         axis_title = "t-SNE"
         regenerate_hint = (
-            "Refit the run in scripts/08_topic_modelling/01_topic_modelling.py."
+            "Refit the run in scripts/09_topic_modelling/01_topic_modelling.py."
         )
     else:
         coordinates_path = (
@@ -123,12 +123,12 @@ if __name__ == "__main__":
         axis_title = "UMAP"
         regenerate_hint = (
             "Regenerate it with "
-            "scripts/07_make_embeddings/02_umap_reduce_embeddings.py --overwrite."
+            "scripts/08_make_embeddings/02_umap_reduce_embeddings.py --overwrite."
         )
         if not coordinates_path.exists():
             raise SystemExit(
                 f"No UMAP embeddings at {coordinates_path}. "
-                "Run scripts/07_make_embeddings/02_umap_reduce_embeddings.py "
+                "Run scripts/08_make_embeddings/02_umap_reduce_embeddings.py "
                 f"with --selection {args.newsgroup} first."
             )
 
@@ -156,7 +156,7 @@ if __name__ == "__main__":
         raise SystemExit(
             f"{topics_path} has {len(topics)} topics but the newsgroup loaded "
             f"{len(embedding_indexer)} messages. Refit the run in "
-            "scripts/08_topic_modelling/01_topic_modelling.py."
+            "scripts/09_topic_modelling/01_topic_modelling.py."
         )
 
     topic_info = pd.read_csv(topic_info_path)
