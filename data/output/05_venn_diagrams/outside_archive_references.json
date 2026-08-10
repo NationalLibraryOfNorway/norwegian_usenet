@@ -1,9 +1,14 @@
 {
+  "ia_ids": 505830,
+  "nb_ids": 553908,
+  "ids_in_both": 336843,
+  "ids_ia_only": 168987,
+  "ids_nb_only": 217065,
+  "ia_refs_resolved_by_nb": 27202,
+  "nb_refs_resolved_by_ia": 6488,
   "ghost_cited_by_ia_only": 15670,
   "ghost_cited_by_nb_only": 5192,
   "ghost_cited_by_both": 5768,
-  "ia_refs_resolved_by_nb": 27202,
-  "nb_refs_resolved_by_ia": 6488,
   "references_out_of_nb": {
     "unresolved": 10960,
     "resolved_by_ia": 6488,

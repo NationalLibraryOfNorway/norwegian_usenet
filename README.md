@@ -42,19 +42,18 @@ data/
     │   ├── usenet.db           # Shared SQLite database of both archives, hashes only (scripts/02_build_database/01_build_database.py)
     │   └── usenet_private.db   # Private hash-to-plaintext mapping (scripts/02_build_database/01_build_database.py)
     ├── 03_statistics_per_archive/
-    ├── 04_compare_archives/
+    ├── 04_compare_message_bodies/
     ├── 05_venn_diagrams/
-    ├── 06_evaluate_embedding_model_robustness/
-    ├── 07_make_embeddings/
-    ├── 08_topic_modelling/
-    ├── 09_newsgroups_and_user_analysis/
-    └── 10_visualize/
+    ├── 06_graphs_and_references/
+    ├── 07_evaluate_embedding_model_robustness/
+    ├── 08_make_embeddings/
+    └── 09_topic_modelling/
 ```
 
 ### Sqlite database
 The databases are built from the `utf_8_data` subdirectories, and `usenet.db` is what the analysis scripts read.  
 The database holds names, emails, message ids and bodies only as hashes, so the file can be shared.  
-The statistics in step 03, most of the comparisons in step 04, the venn diagrams in step 05, and the graph building scripts in 09 read `usenet.db` and nothing else, so anyone with the file can reproduce them.  
+The statistics in step 03, most of the comparisons in step 04, the venn diagrams in step 05, and the graph building scripts in 06 read `usenet.db` and nothing else, so anyone with the file can reproduce them.  
 The two replacement character scripts in step 04 also read the message bodies from the mbox files, and so need the archives themselves.  
 `usenet_private.db` maps the hashed names, emails and message ids back to their plain text, so local analysis can connect a hash to the address or to the message body in the mbox files.  
 Like the mbox directories, it is not shared.
@@ -76,28 +75,25 @@ Extracts the NB tar archives and the IA zip files, and writes both archives as u
 Messages are stored one row per message per newsgroup, with nothing dropped or merged, so the database is a faithful transcription of the mbox files.
 
 #### Step 03: counting messages and users within each archive
-Counts messages per newsgroup, user and date in each archive, and finds duplicates, conflicting Message-IDs and messages without a sender. See [scripts/03_statistics_per_archive/README.md](scripts/03_statistics_per_archive/README.md) for details.
+Counts messages per newsgroup, user and date in each archive, finds duplicates, conflicting Message-IDs and messages without a sender, and plots those counts. See [scripts/03_statistics_per_archive/README.md](scripts/03_statistics_per_archive/README.md) for details.
 
-#### Step 04: comparison between archives
-Compares the IA and NB archives by message body and Message-ID overlap, and finds Message-IDs whose copies conflict across the archives. See [scripts/04_compare_archives/README.md](scripts/04_compare_archives/README.md) for details.
+#### Step 04: comparing the message bodies of the archives
+Compares the IA and NB archives by message body overlap, finds Message-IDs whose copies conflict across the archives, and measures and plots the U+FFFD damage behind those conflicts. See [scripts/04_compare_message_bodies/README.md](scripts/04_compare_message_bodies/README.md) for details.
 
 #### Step 05: venn diagrams
 Draws the overlap between the archives as venn diagrams, over newsgroups, users, messages and outward references, with the IA archive restricted to the NB date span. See [scripts/05_venn_diagrams/README.md](scripts/05_venn_diagrams/README.md) for details.
 
-#### Step 06: evaluate embedding model robustness
-Measures how robust an embedding model is to the U+FFFD (`�`) damage in the IA archive, by embedding the damaged IA body and the intact NB body of the same message and comparing them. See [scripts/06_evaluate_embedding_model_robustness/README.md](scripts/06_evaluate_embedding_model_robustness/README.md) for details.
+#### Step 06: graphs and references
+Builds the edges between newsgroups, from the users they share and the references running between them, and draws the graphs they make. See [scripts/06_graphs_and_references/README.md](scripts/06_graphs_and_references/README.md) for details.
 
-#### Step 07: embed messages
-Filters the IA archive to the NB date span, selects newsgroups, makes text embeddings for their messages, reduces them to 2 dimensions with UMAP, and plots them. See [scripts/07_make_embeddings/README.md](scripts/07_make_embeddings/README.md) for details.
+#### Step 07: evaluate embedding model robustness
+Measures how robust an embedding model is to the U+FFFD (`�`) damage in the IA archive, by embedding the damaged IA body and the intact NB body of the same message and comparing them. See [scripts/07_evaluate_embedding_model_robustness/README.md](scripts/07_evaluate_embedding_model_robustness/README.md) for details.
 
-#### Step 08: topic modelling
-Finds topics in one newsgroup with turftopic, over the embeddings from the previous step, and plots the messages coloured by topic. See [scripts/08_topic_modelling/README.md](scripts/08_topic_modelling/README.md) for details.
+#### Step 08: embed messages
+Filters the IA archive to the NB date span, selects newsgroups, makes text embeddings for their messages, reduces them to 2 dimensions with UMAP, and plots them. See [scripts/08_make_embeddings/README.md](scripts/08_make_embeddings/README.md) for details.
 
-#### Step 09: newsgroups and user analysis
-Computes user overlap and reference counts between newsgroups. See [scripts/09_newsgroups_and_user_analysis/README.md](scripts/09_newsgroups_and_user_analysis/README.md) for details.
-
-#### Step 10: visualize
-Plots the statistics, comparisons and graphs from the previous steps. See [scripts/10_visualize/README.md](scripts/10_visualize/README.md) for details.
+#### Step 09: topic modelling
+Finds topics in one newsgroup with turftopic, over the embeddings from the previous step, and plots the messages coloured by topic. See [scripts/09_topic_modelling/README.md](scripts/09_topic_modelling/README.md) for details.
 
 ## ePADD
 ePADD is a program with a graphical interface for exploring email archives.
