@@ -56,6 +56,10 @@ EDGE_COLOR = "rgba(140, 139, 134, 0.55)"
 # drawn at this radius.
 UNKNOWN_NODE = 12
 
+# Nearly every newsgroup references the busiest few, so the springs are given
+# more room than the usual, or the arrows crowd into one grey ball.
+AVERAGE_SPRING = 460
+
 # Edge widths follow the weight on a log scale, since the heaviest edge
 # carries some hundred times the references of the lightest drawn one.
 THINNEST_EDGE = 0.8
@@ -165,7 +169,8 @@ def add_references(network: Network, graph: nx.DiGraph) -> None:
         {
             edge: reference_distance(graph.edges[edge]["references"])
             for edge in graph.edges
-        }
+        },
+        average=AVERAGE_SPRING,
     )
     for source, target, attributes in graph.edges(data=True):
         network.add_edge(

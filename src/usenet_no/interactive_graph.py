@@ -76,11 +76,18 @@ def vertex_sizes[Vertex](counts: dict[Vertex, int]) -> dict[Vertex, float]:
     }
 
 
-def spring_lengths[Edge](distances: dict[Edge, float]) -> dict[Edge, float]:
-    """Scale the distances the edges were laid out at into lengths in pixels."""
-    average = sum(distances.values()) / len(distances)
+def spring_lengths[Edge](
+    distances: dict[Edge, float], average: float = AVERAGE_SPRING
+) -> dict[Edge, float]:
+    """Scale the distances the edges were laid out at into lengths in pixels.
+
+    The average edge comes out `average` pixels long and the rest are scaled
+    around it. A graph where nearly everything is joined to everything needs
+    more room than that to be read.
+    """
+    average_distance = sum(distances.values()) / len(distances)
     return {
-        edge: AVERAGE_SPRING * distance / average
+        edge: average * distance / average_distance
         for edge, distance in distances.items()
     }
 
