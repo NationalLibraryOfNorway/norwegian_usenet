@@ -37,6 +37,11 @@ logger = logging.getLogger(__name__)
 NODE_COLOR = "#2a78d6"
 EDGE_COLOR = "rgba(140, 139, 134, 0.6)"
 
+HOW_TO_READ = (
+    "Drag a vertex and the ones it is joined to follow, drag the background to"
+    " pan, scroll to zoom, and hover over a vertex or an edge to read it."
+)
+
 
 def layout_positions(graph: nx.Graph) -> dict[str, tuple[float, float]]:
     """Where the physics starts the joined newsgroups off from.
@@ -140,7 +145,12 @@ def plot_overlap_graph(
     add_overlaps(network, graph)
 
     write_graph_html(
-        network, title, subtitle, graph_notes(graph), output_file, pin_on_drop=False
+        network,
+        title,
+        subtitle,
+        [*graph_notes(graph), HOW_TO_READ],
+        output_file,
+        pin_on_drop=False,
     )
 
 

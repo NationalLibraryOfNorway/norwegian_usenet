@@ -48,16 +48,6 @@
     <p>{{ subtitle }}</p>
     {% for note in notes %}<p>{{ note }}</p>
     {% endfor %}
-    <p>
-      Drag a vertex and the ones it is joined to follow, drag the background to
-      pan, scroll to zoom, and hover over a vertex or an edge to read it.
-    </p>
-    {%- if pin_on_drop %}
-    <p>
-      A vertex is left where it is dropped, shown by the shadow under it, and
-      double-clicking it hands it back to the physics.
-    </p>
-    {%- endif %}
     <div id="graph"></div>
     <script>
       const nodes = new vis.DataSet({{ nodes|tojson }});
