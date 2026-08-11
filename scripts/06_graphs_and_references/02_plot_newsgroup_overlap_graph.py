@@ -4,11 +4,14 @@ Reads the pair table written by 06_graphs_and_references and keeps the
 pairs clearing both thresholds as edges. Every newsgroup in the table is drawn,
 so a newsgroup with no edge left shows as a loose point rather than vanishing.
 
-Where the newsgroups land is decided by a Kamada-Kawai layout, which reads each
-edge as a distance and looks for the arrangement whose drawn distances come
+Where the newsgroups start out is decided by a Kamada-Kawai layout, which reads
+each edge as a distance and looks for the arrangement whose drawn distances come
 closest to those. The distance an edge asks for is 1 - jaccard, so the more two
 newsgroups overlap the closer together they are drawn, and a cluster in the
-picture is a set of newsgroups sharing users with each other.
+picture is a set of newsgroups sharing users with each other. The same distance
+is the length each edge pulls towards under the physics the figure is drawn
+with, so a newsgroup dragged aside takes the ones it shares users with along
+and the graph settles back at those distances when it is let go.
 """
 
 import argparse
@@ -17,194 +20,138 @@ from pathlib import Path
 
 import networkx as nx
 import pandas as pd
-import plotly.graph_objects as go
+from pyvis.network import Network
 
+from usenet_no.interactive_graph import (
+    SURFACE,
+    build_network,
+    canvas_position,
+    spring_lengths,
+    vertex_sizes,
+    write_graph_html,
+)
 from usenet_no.newsgroup_graph import build_overlap_graph
 
 logger = logging.getLogger(__name__)
 
-SURFACE = "#fcfcfb"
-TEXT_PRIMARY = "#0b0b0b"
-TEXT_SECONDARY = "#52514e"
 NODE_COLOR = "#2a78d6"
-EDGE_COLOR = "#8c8b86"
+EDGE_COLOR = "rgba(140, 139, 134, 0.6)"
 
-# Nodes are sized by how many users a newsgroup had, between these two, and the
-# largest newsgroup is some hundred times the size of the smallest, so the count
-# is put on a square root to keep the small ones visible.
-SMALLEST_NODE = 6
-LARGEST_NODE = 34
-
-# Only the largest newsgroups are written on the picture itself; the rest are
-# read by hovering, so the dense middle does not fill up with overlapping names.
-# Size rather than edge count decides, because the most joined newsgroups sit on
-# top of each other and their names would too.
-DIRECTLY_LABELLED = 8
-
-# A newsgroup sharing too few users to be joined to anything has nothing to pull
-# it into place, so the unjoined ones are set out in rows below the graph rather
-# than left to the layout, which rings them around it and squeezes the graph
-# itself into the middle.
-UNJOINED_PER_ROW = 26
-UNJOINED_TOP = -1.25
-UNJOINED_ROW_HEIGHT = 0.16
+HOW_TO_READ = (
+    "Drag a vertex and the ones it is joined to follow, drag the background to"
+    " pan, scroll to zoom, and hover over a vertex or an edge to read it."
+)
 
 
 def layout_positions(graph: nx.Graph) -> dict[str, tuple[float, float]]:
-    """Place the joined newsgroups by their overlap and the rest in rows below.
+    """Where the physics starts the joined newsgroups off from.
 
-    Only the newsgroups that have an edge are laid out, so they get the whole
-    picture to spread out in rather than being squeezed into the middle of the
-    ones they are not joined to.
+    Only the newsgroups that have an edge are laid out. A newsgroup sharing too
+    few users to be joined to anything has nothing to pull it into place, so it
+    is left out of the physics and set out in a row under the graph instead.
     """
-    joined = graph.subgraph([node for node, degree in graph.degree() if degree > 0])
-    unjoined = [node for node, degree in graph.degree() if degree == 0]
+    joined = nx.Graph(
+        graph.subgraph([node for node, degree in graph.degree() if degree > 0])
+    )
 
     # The layout reads the weight as the distance an edge would like to be
     # drawn at, which is the opposite of what jaccard says: the more two
     # newsgroups overlap, the nearer they belong.
-    distances = {edge: 1 - graph.edges[edge]["jaccard"] for edge in joined.edges}
-    joined = nx.Graph(joined)
+    distances = {edge: 1 - joined.edges[edge]["jaccard"] for edge in joined.edges}
     nx.set_edge_attributes(joined, distances, "distance")
 
-    positions = {
+    return {
         node: (float(x), float(y))
         for node, (x, y) in nx.kamada_kawai_layout(joined, weight="distance").items()
     }
-    for index, node in enumerate(sorted(unjoined)):
-        row, column = divmod(index, UNJOINED_PER_ROW)
-        positions[node] = (
-            -1 + 2 * column / max(UNJOINED_PER_ROW - 1, 1),
-            UNJOINED_TOP - row * UNJOINED_ROW_HEIGHT,
+
+
+def add_newsgroups(
+    network: Network,
+    graph: nx.Graph,
+    positions: dict[str, tuple[float, float]],
+) -> None:
+    sizes = vertex_sizes(nx.get_node_attributes(graph, "users"))
+    for node, degree in graph.degree():
+        # A newsgroup joined to nothing has no edge to hold it, so it is left
+        # out of the physics and set out in a row under the graph by the page.
+        joined = degree > 0
+        x, y = canvas_position(positions[node]) if joined else (0.0, 0.0)
+        network.add_node(
+            node,
+            label=node,
+            title=(
+                f"{node}\n"
+                f"{graph.nodes[node]['users']:,} users\n"
+                f"joined to {degree} newsgroup(s)"
+            ),
+            x=x,
+            y=y,
+            physics=joined,
+            size=sizes[node],
+            color={"background": NODE_COLOR, "border": SURFACE},
         )
-    return positions
 
 
-def node_sizes(graph: nx.Graph) -> list[float]:
-    """Scale each newsgroup's user count into a marker size."""
-    users = [graph.nodes[node]["users"] for node in graph]
-    largest = max(users)
-    return [
-        SMALLEST_NODE + (LARGEST_NODE - SMALLEST_NODE) * (count / largest) ** 0.5
-        for count in users
-    ]
-
-
-def node_labels(graph: nx.Graph) -> list[str]:
-    """Name the largest newsgroups on the picture, leaving the rest to hover."""
-    joined = [node for node, degree in graph.degree() if degree > 0]
-    by_users = sorted(joined, key=lambda node: -graph.nodes[node]["users"])
-    labelled = set(by_users[:DIRECTLY_LABELLED])
-    return [node if node in labelled else "" for node in graph]
-
-
-def edge_trace(graph: nx.Graph, positions: dict) -> go.Scatter:
-    """One line per edge, drawn as a single trace broken by None between them."""
-    x, y = [], []
-    for first, second in graph.edges():
-        x.extend([positions[first][0], positions[second][0], None])
-        y.extend([positions[first][1], positions[second][1], None])
-    return go.Scatter(
-        x=x,
-        y=y,
-        mode="lines",
-        line={"color": EDGE_COLOR, "width": 1},
-        opacity=0.6,
-        hoverinfo="skip",
-        showlegend=False,
+def add_overlaps(network: Network, graph: nx.Graph) -> None:
+    lengths = spring_lengths(
+        {edge: 1 - graph.edges[edge]["jaccard"] for edge in graph.edges}
     )
-
-
-def edge_hover_trace(graph: nx.Graph, positions: dict) -> go.Scatter:
-    """An invisible marker at each edge's midpoint, so the edge can be read."""
-    x, y, text = [], [], []
     for first, second, attributes in graph.edges(data=True):
-        x.append((positions[first][0] + positions[second][0]) / 2)
-        y.append((positions[first][1] + positions[second][1]) / 2)
-        text.append(
-            f"{first} — {second}<br>"
-            f"jaccard {attributes['jaccard']:.3f}<br>"
-            f"{attributes['shared_users']:,} shared users"
+        network.add_edge(
+            first,
+            second,
+            title=(
+                f"{first} — {second}\n"
+                f"jaccard {attributes['jaccard']:.3f}\n"
+                f"{attributes['shared_users']:,} shared users"
+            ),
+            length=lengths[first, second],
+            width=1,
+            color=EDGE_COLOR,
         )
-    return go.Scatter(
-        x=x,
-        y=y,
-        mode="markers",
-        marker={"size": 12, "color": EDGE_COLOR, "opacity": 0},
-        hoverinfo="text",
-        hovertext=text,
-        showlegend=False,
-    )
 
 
-def node_trace(graph: nx.Graph, positions: dict) -> go.Scatter:
-    hover = [
-        f"<b>{node}</b><br>"
-        f"{graph.nodes[node]['users']:,} users<br>"
-        f"joined to {degree} newsgroup(s)"
-        for node, degree in graph.degree()
+def graph_notes(graph: nx.Graph) -> list[str]:
+    """What the graph holds: its connected sub-graphs and the loose newsgroups.
+
+    The newsgroups joined to nothing are counted on their own rather than as a
+    sub-graph each.
+    """
+    sub_graphs = sum(1 for part in nx.connected_components(graph) if len(part) > 1)
+    loose = nx.number_of_isolates(graph)
+
+    notes = [
+        f"The newsgroups with edges fall into {sub_graphs} connected sub-graphs"
+        " with no edge between them."
     ]
-    return go.Scatter(
-        x=[positions[node][0] for node in graph],
-        y=[positions[node][1] for node in graph],
-        mode="markers+text",
-        marker={
-            "size": node_sizes(graph),
-            "color": NODE_COLOR,
-            "line": {"color": SURFACE, "width": 2},
-        },
-        text=node_labels(graph),
-        textposition="top center",
-        textfont={"size": 11, "color": TEXT_PRIMARY},
-        hoverinfo="text",
-        hovertext=hover,
-        showlegend=False,
-    )
+    if loose:
+        notes.append(
+            f"The {loose} newsgroups joined to nothing at these thresholds"
+            " are set out in rows below the graph."
+        )
+    return notes
 
 
 def plot_overlap_graph(
-    graph: nx.Graph, title: str, subtitle: str, output_file: Path
+    graph: nx.Graph,
+    title: str,
+    subtitle: str,
+    output_file: Path,
 ) -> None:
     positions = layout_positions(graph)
-    figure = go.Figure(
-        data=[
-            edge_trace(graph, positions),
-            edge_hover_trace(graph, positions),
-            node_trace(graph, positions),
-        ]
+    network = build_network(directed=False)
+    add_newsgroups(network, graph, positions)
+    add_overlaps(network, graph)
+
+    write_graph_html(
+        network,
+        title,
+        subtitle,
+        [*graph_notes(graph), HOW_TO_READ],
+        output_file,
+        pin_on_drop=False,
     )
-    hidden_axis = {
-        "showgrid": False,
-        "zeroline": False,
-        "showticklabels": False,
-        "visible": False,
-    }
-    unjoined = [node for node, degree in graph.degree() if degree == 0]
-    if unjoined:
-        figure.add_annotation(
-            x=-1,
-            y=UNJOINED_TOP + UNJOINED_ROW_HEIGHT * 0.75,
-            text=f"{len(unjoined)} newsgroups joined to nothing at these thresholds",
-            showarrow=False,
-            xanchor="left",
-            font={"size": 12, "color": TEXT_SECONDARY},
-        )
-    figure.update_layout(
-        title={
-            "text": f"{title}<br><sup>{subtitle}</sup>",
-            "font": {"size": 18, "color": TEXT_PRIMARY},
-        },
-        xaxis=hidden_axis,
-        yaxis=hidden_axis,
-        paper_bgcolor=SURFACE,
-        plot_bgcolor=SURFACE,
-        font={"color": TEXT_SECONDARY},
-        hoverlabel={"bgcolor": SURFACE, "font": {"color": TEXT_PRIMARY}},
-        width=1100,
-        height=850,
-        margin={"l": 20, "r": 20, "t": 80, "b": 20},
-    )
-    figure.write_html(output_file)
 
 
 def convert_and_validate_cli_arg_jaccard_threshold(value: str) -> float:
@@ -237,7 +184,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--min-shared-users",
         type=int,
-        default=25,
+        default=5,
         help="Join two newsgroups only if they share at least this many users",
     )
     parser.add_argument(
