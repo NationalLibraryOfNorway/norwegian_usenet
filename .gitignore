@@ -202,10 +202,9 @@ data/output/09_topic_modelling/**
 
 
 
-# SQLite databases, too big for github
+# SQLite database, too big for github
 usenet.db
-usenet_private.db
-usenet_private.db-journal
+usenet.db-journal
 
 
 epadd-standalone.jar

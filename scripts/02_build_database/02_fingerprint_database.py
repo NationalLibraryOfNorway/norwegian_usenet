@@ -1,6 +1,6 @@
-"""Print a content fingerprint of the two databases, to compare separate builds.
+"""Print a content fingerprint of the database, to compare separate builds.
 
-The .db files are not byte-reproducible, so this hashes the rows themselves, in
+The .db file is not byte-reproducible, so this hashes the rows themselves, in
 a fixed order and including the row ids, since a message's position in its mbox
 file is its id minus the lowest id of its (archive, newsgroup).
 """
@@ -11,14 +11,10 @@ import sqlite3
 from pathlib import Path
 
 # table -> the ORDER BY that makes the read deterministic
-SHARED_TABLES = {
+TABLES = {
     "users": "id",
     "messages": "id",
     "message_references": "message_row_id, referenced_id_hash",
-}
-PRIVATE_TABLES = {
-    "users": "id",
-    "message_ids": "message_id",
 }
 
 
@@ -64,15 +60,14 @@ def report(database_file: Path, tables: dict[str, str]) -> None:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Print a content fingerprint of both databases",
+        description="Print a content fingerprint of the database",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
-        "--database-directory",
+        "--database-file",
         type=Path,
-        default=Path("data/output/02_build_database"),
-        help="Directory holding usenet.db and usenet_private.db",
+        default=Path("data/output/02_build_database/usenet.db"),
+        help="Path to the SQLite database file",
     )
     args = parser.parse_args()
-    report(args.database_directory / "usenet.db", SHARED_TABLES)
-    report(args.database_directory / "usenet_private.db", PRIVATE_TABLES)
+    report(args.database_file, TABLES)

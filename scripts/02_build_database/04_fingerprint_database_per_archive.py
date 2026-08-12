@@ -34,15 +34,13 @@ if __name__ == "__main__":
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
-        "--database-directory",
+        "--database-file",
         type=Path,
-        default=Path("data/output/02_build_database"),
-        help="Directory holding usenet.db and usenet_private.db",
+        default=Path("data/output/02_build_database/usenet.db"),
+        help="Path to the SQLite database file",
     )
     args = parser.parse_args()
-    connection = sqlite3.connect(
-        f"file:{args.database_directory / 'usenet.db'}?mode=ro", uri=True
-    )
+    connection = sqlite3.connect(f"file:{args.database_file}?mode=ro", uri=True)
 
     for archive in ("ia", "nb"):
         rows, digest = hash_rows(

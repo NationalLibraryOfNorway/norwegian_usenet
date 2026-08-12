@@ -15,7 +15,7 @@ one, and `sample_pairs` spreads a smaller evaluation set over the newsgroups
 instead of letting the largest ones fill it.
 
 Pairs are written to and read from JSONL, since the message bodies cannot go in
-the shared database and the three steps (building the set, running a model on
+the database and the three steps (building the set, running a model on
 it, reading the pairs it did worst on) are separate scripts.
 """
 
