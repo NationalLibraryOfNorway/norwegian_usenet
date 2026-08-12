@@ -201,12 +201,6 @@ data/output/09_topic_modelling/**
 !data/output/09_topic_modelling/**/topics.png
 
 
-
-# SQLite database, too big for github
-usenet.db
-usenet.db-journal
-
-
 epadd-standalone.jar
 todo.md
 notes.md

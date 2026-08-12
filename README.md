@@ -1,9 +1,5 @@
 # Usenet no
-A repository for exploring Usenet collections.
-
-The code was developed for a case comparing two collections of Usenet newsgroups: one archived by the National Library of Norway (1994-1997), and the other found in Internet Archive's (ca 1991-2013). However, much of the code is hopefully useful for other cases that needs to fetch and analyse Usenet collections.
-
-For non-computational users, jump to the [ePADD](https://github.com/Sprakbanken/usenet_no#epadd) section.
+This code is developed for a case comparing two collections of Usenet newsgroups: one archived by the National Library of Norway (1994-1997), and the other found in Internet Archive's (ca 1991-2013). However, much of the code is hopefully useful for other cases that needs to fetch and analyse Usenet collections.
 
 ## Installation
 
@@ -93,21 +89,6 @@ Filters the IA archive to the NB date span, selects newsgroups, makes text embed
 #### Step 09: topic modelling
 Finds topics in one newsgroup with turftopic, over the embeddings from the previous step, and plots the messages coloured by topic. See [scripts/09_topic_modelling/README.md](scripts/09_topic_modelling/README.md) for details.
 
-## ePADD
-ePADD is a program with a graphical interface for exploring email archives.
-Since the Usenet archive is stored as .mbox files, it can be explored with ePADD.
-
-Download the .jar file from https://github.com/ePADD/epadd/releases/  
-(filename: epadd-standalone.jar) and move it here.
-
-Requires Java:
-```
-java -jar epadd-standalone.jar
-```
-
-### NB-epadd
-Read about NB-epadd here: https://github.com/NationalLibraryOfNorway/epadd-nb  
-(Requires entity extraction outside of epadd — see the README in that repo.)
 
 ## For developers
 
