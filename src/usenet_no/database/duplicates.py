@@ -1,4 +1,4 @@
-"""Counting true duplicate messages in the shared database.
+"""Counting true duplicate messages in the database.
 
 A *true duplicate* is the same message stored more than once in the same mbox
 file: same Message-ID and identical body. These are redundant copies. Since

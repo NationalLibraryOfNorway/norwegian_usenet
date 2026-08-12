@@ -1,21 +1,19 @@
 """Shared fixtures for the tests that read sample mbox files.
 
 A newsgroup is derived from the file stem (see
-database.extract_messages_from_mbox_file), so each file is named after the case
+database.build.extract_messages_from_mbox_file), so each file is named after the case
 it demonstrates and that name is what a test asserts on. As in the real
 archives, the directory is what separates ia from nb, and the same newsgroup
 name can appear in both.
 """
 
 import shutil
-from functools import partial
 from pathlib import Path
 
 import pytest
 
-from usenet_no.database import (
-    connect,
-    create_private_schema,
+from usenet_no.database import connect
+from usenet_no.database.build import (
     create_schema,
     extract_messages_from_mbox_file,
     insert_messages,
@@ -25,13 +23,12 @@ from usenet_no.database import (
 DATA_DIR = Path(__file__).parent.parent / "data"
 
 
-def _load_archives(connection, files_with_archive, private_connection):
-    """Insert every (mbox file, archive) pair into an empty database pair."""
-    user_ids = load_user_ids(private_connection)
+def _load_archives(connection, files_with_archive):
+    """Insert every (mbox file, archive) pair into an empty database."""
+    user_ids = load_user_ids(connection)
     for mbox_file, archive in files_with_archive:
         insert_messages(
             connection,
-            private_connection,
             extract_messages_from_mbox_file((mbox_file, archive)),
             user_ids,
         )
@@ -52,25 +49,13 @@ def mbox_data(tmp_path):
 
 @pytest.fixture
 def database(tmp_path):
-    """A connection to an empty shared (hashes only) database."""
+    """A connection to an empty database."""
     connection = connect(tmp_path / "test.db")
     create_schema(connection)
     return connection
 
 
 @pytest.fixture
-def private_database(tmp_path):
-    """A connection to an empty private hash-to-plaintext database."""
-    connection = connect(tmp_path / "test_private.db")
-    create_private_schema(connection)
-    return connection
-
-
-@pytest.fixture
-def load_archives(private_database):
-    """Load mbox files into a shared database, writing plain text to the private one.
-
-    The private connection is bound here, so tests that only query the shared
-    database keep the call form load_archives(database, files_with_archive).
-    """
-    return partial(_load_archives, private_connection=private_database)
+def load_archives():
+    """Load mbox files into a database, as load_archives(database, files_with_archive)."""
+    return _load_archives

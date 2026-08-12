@@ -6,13 +6,8 @@ import sys
 from dataclasses import asdict
 from pathlib import Path
 
-from usenet_no.database import (
-    IA_ARCHIVE,
-    NB_ARCHIVE,
-    connect,
-    load_message_positions,
-)
-from usenet_no.database.core import load_id_spans
+from usenet_no.database import IA_ARCHIVE, NB_ARCHIVE, connect
+from usenet_no.database.core import load_id_spans, load_message_positions
 from usenet_no.database.statistics import get_date_span
 from usenet_no.replacement_chars.recovery import (
     RankedReplacementWord,

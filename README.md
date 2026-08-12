@@ -1,9 +1,5 @@
 # Usenet no
-A repository for exploring Usenet collections.
-
-The code was developed for a case comparing two collections of Usenet newsgroups: one archived by the National Library of Norway (1994-1997), and the other found in Internet Archive's (ca 1991-2013). However, much of the code is hopefully useful for other cases that needs to fetch and analyse Usenet collections.
-
-For non-computational users, jump to the [ePADD](https://github.com/Sprakbanken/usenet_no#epadd) section.
+This code is developed for a case comparing two collections of Usenet newsgroups: one archived by the National Library of Norway (1994-1997), and the other found in Internet Archive's (ca 1991-2013). However, much of the code is hopefully useful for other cases that needs to fetch and analyse Usenet collections.
 
 ## Installation
 
@@ -39,8 +35,7 @@ data/
 └── output/                     # Script outputs, one subdirectory per script group
     ├── 01_extract_and_parse_usenet_data/
     ├── 02_build_database/
-    │   ├── usenet.db           # Shared SQLite database of both archives, hashes only (scripts/02_build_database/01_build_database.py)
-    │   └── usenet_private.db   # Private hash-to-plaintext mapping (scripts/02_build_database/01_build_database.py)
+    │   └── usenet.db           # SQLite database of both archives, hashes only (scripts/02_build_database/01_build_database.py)
     ├── 03_statistics_per_archive/
     ├── 04_compare_message_bodies/
     ├── 05_venn_diagrams/
@@ -51,12 +46,11 @@ data/
 ```
 
 ### Sqlite database
-The databases are built from the `utf_8_data` subdirectories, and `usenet.db` is what the analysis scripts read.  
+`usenet.db` is built from the `utf_8_data` subdirectories, and is what the analysis scripts read.  
 The database holds names, emails, message ids and bodies only as hashes, so the file can be shared.  
 The statistics in step 03, most of the comparisons in step 04, the venn diagrams in step 05, and the graph building scripts in 06 read `usenet.db` and nothing else, so anyone with the file can reproduce them.  
 The two replacement character scripts in step 04 also read the message bodies from the mbox files, and so need the archives themselves.  
-`usenet_private.db` maps the hashed names, emails and message ids back to their plain text, so local analysis can connect a hash to the address or to the message body in the mbox files.  
-Like the mbox directories, it is not shared.
+A hash is connected back to its plain text through the mbox files: a message's position in its own file is its row id minus the lowest row id of its (archive, newsgroup).
 
 ## Code
 `src/usenet_no/` contains core library modules for working with the data. Everything that creates or queries the SQLite databases lives in the `usenet_no.database` submodule.  
@@ -70,7 +64,7 @@ The scripts are grouped into subdirectories of the script folder, and are number
 Extracts the NB tar archives and the IA zip files, and writes both archives as utf-8-encoded .mbox files, one per newsgroup. See [scripts/01_extract_and_parse_usenet_data/README.md](scripts/01_extract_and_parse_usenet_data/README.md) for details.
 
 #### Step 02: building the database
-[01_build_database.py](scripts/02_build_database/01_build_database.py) reads every message of both archives into two SQLite databases in one pass, so that later analyses are SQL queries over one dataset instead of repeated parses of the archive directories. The shared database at `data/output/02_build_database/usenet.db` stores names, emails, message ids and bodies only as hashes, and no free text at all; the private database at `data/output/02_build_database/usenet_private.db` maps the hashes back to their plain text.
+[01_build_database.py](scripts/02_build_database/01_build_database.py) reads every message of both archives into one SQLite database in a single pass, so that later analyses are SQL queries over one dataset instead of repeated parses of the archive directories. The database at `data/output/02_build_database/usenet.db` stores names, emails, message ids and bodies only as hashes, and no free text at all.
 
 Messages are stored one row per message per newsgroup, with nothing dropped or merged, so the database is a faithful transcription of the mbox files.
 
@@ -95,21 +89,6 @@ Filters the IA archive to the NB date span, selects newsgroups, makes text embed
 #### Step 09: topic modelling
 Finds topics in one newsgroup with turftopic, over the embeddings from the previous step, and plots the messages coloured by topic. See [scripts/09_topic_modelling/README.md](scripts/09_topic_modelling/README.md) for details.
 
-## ePADD
-ePADD is a program with a graphical interface for exploring email archives.
-Since the Usenet archive is stored as .mbox files, it can be explored with ePADD.
-
-Download the .jar file from https://github.com/ePADD/epadd/releases/  
-(filename: epadd-standalone.jar) and move it here.
-
-Requires Java:
-```
-java -jar epadd-standalone.jar
-```
-
-### NB-epadd
-Read about NB-epadd here: https://github.com/NationalLibraryOfNorway/epadd-nb  
-(Requires entity extraction outside of epadd — see the README in that repo.)
 
 ## For developers
 

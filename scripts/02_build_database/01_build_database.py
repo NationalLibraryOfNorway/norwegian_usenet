@@ -1,10 +1,8 @@
-"""Load both archives' mbox files into the shared and private SQLite databases.
+"""Load both archives' mbox files into the SQLite database.
 
-The shared database holds names, emails and message ids only as hashes; the
-private database maps those hashes back to their plain text. Both are written
-in one pass. Parsing happens in parallel, but SQLite takes one writer at a
-time, so the extracted messages are inserted from the main process, one mbox
-file at a time.
+Names, emails and message ids are stored only as hashes. Parsing happens in
+parallel, but SQLite takes one writer at a time, so the extracted messages are
+inserted from the main process, one mbox file at a time.
 """
 
 import argparse
@@ -14,11 +12,8 @@ from pathlib import Path
 
 from tqdm import tqdm
 
-from usenet_no.database import (
-    IA_ARCHIVE,
-    NB_ARCHIVE,
-    connect,
-    create_private_schema,
+from usenet_no.database import IA_ARCHIVE, NB_ARCHIVE, connect
+from usenet_no.database.build import (
     create_schema,
     extract_messages_from_mbox_file,
     insert_messages,
@@ -30,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Build the shared and private SQLite databases from the mbox files of both archives",
+        description="Build the SQLite database from the mbox files of both archives",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
@@ -49,18 +44,12 @@ if __name__ == "__main__":
         "--database-file",
         type=Path,
         default=Path("data/output/02_build_database/usenet.db"),
-        help="Path to the shared (hashes only) SQLite database file",
-    )
-    parser.add_argument(
-        "--private-database-file",
-        type=Path,
-        default=Path("data/output/02_build_database/usenet_private.db"),
-        help="Path to the private hash-to-plaintext SQLite database file",
+        help="Path to the SQLite database file",
     )
     parser.add_argument(
         "--overwrite",
         action="store_true",
-        help="If flagged, will delete existing database files and rebuild them",
+        help="If flagged, will delete an existing database file and rebuild it",
     )
     parser.add_argument(
         "--limit",
@@ -74,25 +63,16 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     logger.info("Args: %s", args)
 
-    # The two databases assign ids together, so they are only ever built as a
-    # pair: if either file exists, both are rebuilt or the script stops.
-    existing_files = [
-        file
-        for file in (args.database_file, args.private_database_file)
-        if file.exists()
-    ]
-    if existing_files:
+    if args.database_file.exists():
         if not args.overwrite:
             logger.info(
                 "Database already exists: %s. Use --overwrite to rebuild.",
-                ", ".join(str(file) for file in existing_files),
+                args.database_file,
             )
             exit(0)
-        for file in existing_files:
-            file.unlink()
+        args.database_file.unlink()
 
     args.database_file.parent.mkdir(exist_ok=True, parents=True)
-    args.private_database_file.parent.mkdir(exist_ok=True, parents=True)
 
     mbox_files_with_archive = [
         (mbox_file, archive)
@@ -106,9 +86,7 @@ if __name__ == "__main__":
 
     connection = connect(args.database_file)
     create_schema(connection)
-    private_connection = connect(args.private_database_file)
-    create_private_schema(private_connection)
-    user_ids = load_user_ids(private_connection)
+    user_ids = load_user_ids(connection)
 
     total_messages = 0
     with ProcessPoolExecutor() as executor:
@@ -117,15 +95,13 @@ if __name__ == "__main__":
             total=len(mbox_files_with_archive),
             desc="Loading messages into database",
         ):
-            insert_messages(connection, private_connection, messages, user_ids)
+            insert_messages(connection, messages, user_ids)
             total_messages += len(messages)
 
     connection.close()
-    private_connection.close()
     logger.info(
-        "Loaded %d messages from %d senders into %s (private mapping in %s)",
+        "Loaded %d messages from %d senders into %s",
         total_messages,
         len(user_ids),
         args.database_file,
-        args.private_database_file,
     )
