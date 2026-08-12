@@ -1,7 +1,7 @@
 """Shared fixtures for the tests that read sample mbox files.
 
 A newsgroup is derived from the file stem (see
-database.extract_messages_from_mbox_file), so each file is named after the case
+database.build.extract_messages_from_mbox_file), so each file is named after the case
 it demonstrates and that name is what a test asserts on. As in the real
 archives, the directory is what separates ia from nb, and the same newsgroup
 name can appear in both.
@@ -12,8 +12,8 @@ from pathlib import Path
 
 import pytest
 
-from usenet_no.database import (
-    connect,
+from usenet_no.database import connect
+from usenet_no.database.build import (
     create_schema,
     extract_messages_from_mbox_file,
     insert_messages,

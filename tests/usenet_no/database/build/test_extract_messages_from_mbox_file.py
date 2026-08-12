@@ -1,4 +1,5 @@
-from usenet_no.database import IA_ARCHIVE, NB_ARCHIVE, extract_messages_from_mbox_file
+from usenet_no.database import IA_ARCHIVE, NB_ARCHIVE
+from usenet_no.database.build import extract_messages_from_mbox_file
 from usenet_no.hash import make_hash
 
 

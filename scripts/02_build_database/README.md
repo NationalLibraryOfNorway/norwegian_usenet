@@ -7,7 +7,7 @@
 Every hash column holds a 16 character hex digest, from `blake2b` with an 8 byte
 digest, of the UTF-8 plain text. A hash is traced back to its plain text through
 the mbox files, by the position `messages.id` gives. The schema is in
-[`src/usenet_no/database/core.py`](../../src/usenet_no/database/core.py).
+[`src/usenet_no/database/build.py`](../../src/usenet_no/database/build.py).
 
 ```sql
 CREATE TABLE users (

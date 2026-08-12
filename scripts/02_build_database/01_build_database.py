@@ -12,10 +12,8 @@ from pathlib import Path
 
 from tqdm import tqdm
 
-from usenet_no.database import (
-    IA_ARCHIVE,
-    NB_ARCHIVE,
-    connect,
+from usenet_no.database import IA_ARCHIVE, NB_ARCHIVE, connect
+from usenet_no.database.build import (
     create_schema,
     extract_messages_from_mbox_file,
     insert_messages,

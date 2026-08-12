@@ -1,6 +1,5 @@
-from usenet_no.database import (
-    IA_ARCHIVE,
-    NB_ARCHIVE,
+from usenet_no.database import IA_ARCHIVE, NB_ARCHIVE
+from usenet_no.database.build import (
     ExtractedMessage,
     extract_messages_from_mbox_file,
     insert_messages,
