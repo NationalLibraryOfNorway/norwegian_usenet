@@ -30,11 +30,18 @@ def main() -> None:
         default=Path("data/output/03_statistics_per_archive/newsgroup_tree"),
         help="Output directory (default: %(default)s)",
     )
+    parser.add_argument(
+        "--hide-empty-own-mbox",
+        action="store_true",
+        help="Draw the '.' child only for supergroups that have an mbox file of their own",
+    )
     args = parser.parse_args()
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
     for label, csv_path in [("ia", args.ia_csv), ("nb", args.nb_csv)]:
-        lines = tree_lines(label.upper(), load_counts(csv_path))
+        lines = tree_lines(
+            label.upper(), load_counts(csv_path), args.hide_empty_own_mbox
+        )
         out = args.output_dir / f"newsgroup_tree_{label}.txt"
         out.write_text("\n".join(lines) + "\n", encoding="utf-8")
         print(f"Wrote {out}")

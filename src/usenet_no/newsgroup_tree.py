@@ -37,8 +37,12 @@ def load_counts(csv_path: Path) -> dict[str, int]:
     return counts
 
 
-def build_tree(counts: dict[str, int]) -> Node:
-    """Build the hierarchy of `counts` as a tree below an unlabelled root node."""
+def build_tree(counts: dict[str, int], hide_empty_own_mbox: bool = False) -> Node:
+    """Build the hierarchy of `counts` as a tree below an unlabelled root node.
+
+    With `hide_empty_own_mbox` a supergroup that has no mbox file of its own is
+    left without an OWN_MBOX_LABEL child, instead of one counting no messages.
+    """
     root = Node()
     for name, count in sorted(counts.items()):
         node = root
@@ -46,24 +50,26 @@ def build_tree(counts: dict[str, int]) -> Node:
             node = node.children.setdefault(part, Node())
         node.own_count = count
     for child in root.children.values():
-        _add_own_mbox_child(child)
+        _add_own_mbox_child(child, hide_empty_own_mbox)
     return root
 
 
-def _add_own_mbox_child(node: Node) -> None:
+def _add_own_mbox_child(node: Node, hide_empty_own_mbox: bool) -> None:
     """Move the count of every node that has children into an OWN_MBOX_LABEL child."""
     for child in node.children.values():
-        _add_own_mbox_child(child)
-    if node.children:
+        _add_own_mbox_child(child, hide_empty_own_mbox)
+    if node.children and not (hide_empty_own_mbox and node.own_count == 0):
         own_mbox = Node()
         own_mbox.own_count = node.own_count
         node.own_count = 0
         node.children = {OWN_MBOX_LABEL: own_mbox, **node.children}
 
 
-def tree_lines(label: str, counts: dict[str, int]) -> list[str]:
+def tree_lines(
+    label: str, counts: dict[str, int], hide_empty_own_mbox: bool = False
+) -> list[str]:
     """The tree of `counts` as ASCII lines, headed by `label` and its totals."""
-    tree = build_tree(counts)
+    tree = build_tree(counts, hide_empty_own_mbox)
     header = f"{label}  ({tree.total():,} messages, {len(counts)} newsgroups)"
     return [header, *_child_lines(tree)]
 

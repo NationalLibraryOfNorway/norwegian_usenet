@@ -90,6 +90,11 @@ def main() -> None:
         help="Directory for output .gif files (default: %(default)s)",
     )
     parser.add_argument(
+        "--hide-empty-own-mbox",
+        action="store_true",
+        help="Draw the '.' child only for supergroups that have an mbox file of their own",
+    )
+    parser.add_argument(
         "--viewport",
         type=int,
         default=30,
@@ -129,7 +134,9 @@ def main() -> None:
         ("IA", args.ia_csv, "newsgroup_tree_ia.gif"),
         ("NB", args.nb_csv, "newsgroup_tree_nb.gif"),
     ]:
-        lines = tree_lines(archive_label, load_counts(csv_path))
+        lines = tree_lines(
+            archive_label, load_counts(csv_path), args.hide_empty_own_mbox
+        )
         output_path = args.output_dir / gif_name
         print(f"Generating {output_path}  ({len(lines)} lines) ...")
         make_gif(

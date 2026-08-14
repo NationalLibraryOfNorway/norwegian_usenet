@@ -20,3 +20,18 @@ def test_the_tree_is_drawn_with_counts_per_node():
         "    │   └── diverse  (7)",
         "    └── x  (3)",
     ]
+
+
+def test_the_tree_can_be_drawn_without_the_empty_dot_nodes():
+    counts = {"no.marked": 100, "no.marked.diverse": 7, "no.x": 3}
+
+    lines = tree_lines("NB", counts, hide_empty_own_mbox=True)
+
+    assert lines == [
+        "NB  (110 messages, 3 newsgroups)",
+        "└── no  (110)",
+        "    ├── marked  (107)",
+        "    │   ├── .  (100)",
+        "    │   └── diverse  (7)",
+        "    └── x  (3)",
+    ]

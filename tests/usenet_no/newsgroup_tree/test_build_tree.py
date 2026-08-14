@@ -32,6 +32,22 @@ def test_a_supergroup_without_an_mbox_of_its_own_gets_a_zero_dot_child():
     assert marked.children[OWN_MBOX_LABEL].total() == 0
 
 
+def test_an_empty_dot_child_can_be_hidden():
+    tree = build_tree({"no.marked.diverse": 7}, hide_empty_own_mbox=True)
+
+    marked = tree.children["no"].children["marked"]
+    assert list(marked.children) == ["diverse"]
+    assert marked.total() == 7
+
+
+def test_a_nonempty_dot_child_is_kept_when_empty_ones_are_hidden():
+    tree = build_tree({"no.marked": 100, "no.marked.diverse": 7}, True)
+
+    marked = tree.children["no"].children["marked"]
+    assert list(marked.children) == [OWN_MBOX_LABEL, "diverse"]
+    assert marked.total() == 107
+
+
 def test_a_newsgroup_without_subgroups_gets_no_dot_child():
     tree = build_tree({"no.marked": 100})
 
