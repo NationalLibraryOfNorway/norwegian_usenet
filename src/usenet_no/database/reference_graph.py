@@ -1,4 +1,4 @@
-"""References between newsgroups, read as a directed weighted edge list.
+"""References between newsgroups as a directed weighted edge list, and their totals.
 
 Every message carries a References header naming the messages it replies to.
 When a message in one newsgroup references a message held by another newsgroup,
@@ -17,6 +17,11 @@ distinct (message id, newsgroup, referenced ids) rows: a message held by both
 archives counts once, and a message crossposted to two newsgroups is a source
 in each. The few messages with no message id at all cannot be deduplicated
 that way and count once per stored row instead.
+
+The totals leave the newsgroup out altogether: a reference is a (referring
+message, referenced id) pair, counted once however many newsgroups hold either
+end of it, and split by where the referenced message is found. A message with no
+message id of its own makes no such pair and is left out.
 """
 
 import logging
@@ -30,6 +35,11 @@ logger = logging.getLogger(__name__)
 
 UNKNOWN_NEWSGROUP = "unknown"
 
+# Temporary tables holding one row per distinct reference and referenced id. The
+# references run to tens of millions of rows, so they are built inside SQLite.
+REFERENCE_PAIRS = "reference_pairs"
+REFERENCE_TARGETS = "reference_targets"
+
 
 class ReferenceEdge(NamedTuple):
     """One directed edge, under whichever weighting produced it.
@@ -40,6 +50,15 @@ class ReferenceEdge(NamedTuple):
     from_newsgroup: str
     to_newsgroup: str
     number_of_references: int
+
+
+class ReferenceResolution(NamedTuple):
+    """One archive's references, split by where the referenced message is found."""
+
+    total: int
+    resolved_in_archive: int
+    resolved_in_other_archive: int
+    unresolved: int
 
 
 def _archive_scope(
@@ -144,3 +163,114 @@ def count_referenced_messages(
         archive_datespans,
         "COUNT(DISTINCT referenced_id_hash)",
     )
+
+
+def _create_reference_pair_table(
+    connection: sqlite3.Connection, archive_datespan: ArchiveDatespan
+) -> None:
+    """Collect one archive's distinct (referring message, referenced id) pairs.
+
+    A message held by several newsgroups, or by both archives, is one referring
+    message, so its references count once. Messages with no message id are left
+    out, since there is no id to deduplicate their references on.
+    """
+    scope, parameters = _archive_scope([archive_datespan], "messages")
+    connection.execute(f"DROP TABLE IF EXISTS temp.{REFERENCE_PAIRS}")
+    connection.execute(
+        f"CREATE TEMP TABLE {REFERENCE_PAIRS} ("
+        "    from_id TEXT NOT NULL,"
+        "    to_id TEXT NOT NULL,"
+        "    PRIMARY KEY (from_id, to_id)"
+        ") WITHOUT ROWID"
+    )
+    connection.execute(
+        f"INSERT INTO {REFERENCE_PAIRS}"
+        " SELECT DISTINCT"
+        "     messages.message_id_hash,"
+        "     message_references.referenced_id_hash"
+        " FROM messages"
+        " JOIN message_references ON message_references.message_row_id = messages.id"
+        f" WHERE messages.message_id_hash IS NOT NULL AND {scope}",
+        parameters,
+    )
+
+
+def _create_reference_target_table(
+    connection: sqlite3.Connection,
+    archive_datespan: ArchiveDatespan,
+    other_archive_datespan: ArchiveDatespan,
+) -> None:
+    """Look each referenced id up in both archives, one row per distinct id."""
+    archive_scope, archive_parameters = _archive_scope([archive_datespan], "held")
+    other_scope, other_parameters = _archive_scope(
+        [other_archive_datespan], "other_held"
+    )
+    connection.execute(f"DROP TABLE IF EXISTS temp.{REFERENCE_TARGETS}")
+    connection.execute(
+        f"CREATE TEMP TABLE {REFERENCE_TARGETS} ("
+        "    to_id TEXT PRIMARY KEY,"
+        "    in_archive INTEGER NOT NULL,"
+        "    in_other_archive INTEGER NOT NULL"
+        ") WITHOUT ROWID"
+    )
+    connection.execute(
+        f"INSERT INTO {REFERENCE_TARGETS}"
+        " SELECT"
+        "     targets.to_id,"
+        "     EXISTS (SELECT 1 FROM messages AS held"
+        "             WHERE held.message_id_hash = targets.to_id"
+        f"             AND {archive_scope}),"
+        "     EXISTS (SELECT 1 FROM messages AS other_held"
+        "             WHERE other_held.message_id_hash = targets.to_id"
+        f"             AND {other_scope})"
+        f" FROM (SELECT DISTINCT to_id FROM {REFERENCE_PAIRS}) AS targets",
+        (*archive_parameters, *other_parameters),
+    )
+
+
+def count_reference_resolution(
+    connection: sqlite3.Connection,
+    archive_datespan: ArchiveDatespan,
+    other_archive_datespan: ArchiveDatespan,
+) -> ReferenceResolution:
+    """Count one archive's references, split by where the referenced message is found.
+
+    A reference is a distinct (referring message, referenced id) pair, so the
+    same reply stored twice counts once and a message referencing five hundred
+    others counts five hundred. Messages with no message id of their own are left
+    out. Each pair falls in exactly one of three groups: the referenced message
+    is in the archive itself, it is missing from the archive but the other
+    archive holds it, or neither holds it.
+    """
+    _create_reference_pair_table(connection, archive_datespan)
+    _create_reference_target_table(connection, archive_datespan, other_archive_datespan)
+    total, resolved, resolved_by_other, unresolved = connection.execute(
+        "SELECT"
+        "     COUNT(*),"
+        "     SUM(in_archive),"
+        "     SUM(NOT in_archive AND in_other_archive),"
+        "     SUM(NOT in_archive AND NOT in_other_archive)"
+        f" FROM {REFERENCE_PAIRS}"
+        f" JOIN {REFERENCE_TARGETS} USING (to_id)"
+    ).fetchone()
+
+    for table in (REFERENCE_PAIRS, REFERENCE_TARGETS):
+        connection.execute(f"DROP TABLE temp.{table}")
+
+    # SUM over no rows is NULL, which is what an archive with no references gives
+    resolution = ReferenceResolution(
+        total=total,
+        resolved_in_archive=resolved or 0,
+        resolved_in_other_archive=resolved_by_other or 0,
+        unresolved=unresolved or 0,
+    )
+    logger.info(
+        "Counted %d references in %s: %d resolved, %d resolved by %s, %d unresolved",
+        resolution.total,
+        archive_datespan[0],
+        resolution.resolved_in_archive,
+        resolution.resolved_in_other_archive,
+        other_archive_datespan[0],
+        resolution.unresolved,
+    )
+    return resolution
