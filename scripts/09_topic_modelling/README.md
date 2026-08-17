@@ -1,7 +1,5 @@
 # Step 09: topic modelling
 
-[02_visualize_topics.py](02_visualize_topics.py) needs the plotting libraries in the optional `viz` dependency group, which is not installed by default. Install it with `uv sync --group viz`.
-
 - [01_topic_modelling.py](01_topic_modelling.py) finds topics with turftopic in the one newsgroup `--newsgroup` names, reading its messages from both archives and its embeddings from step 08. Writes to `data/output/09_topic_modelling/<model>/<method>/<newsgroup>[/nr<N>]/`, skipping a run that is already there unless `--overwrite` is flagged.
   - `--method` picks the model: `senstopic` (the default), `s3`, `gmm`, `topeax`, `keynmf` or `clustering`, which is the dimensionality reduction and HDBSCAN pipeline of BERTopic and Top2Vec. `topeax` and `clustering` fit on two t-SNE dimensions, with a perplexity of 50 and 15; the other four fit on the embeddings as they are. Every method except `gmm` and `clustering` loads `--model` to embed the vocabulary.
   - `--nr-topics` is picked by `senstopic`, `gmm` and `topeax` when it is left out, needed by `s3` and `keynmf`, and taken by `clustering` as the number of clusters to reduce to after fitting.
