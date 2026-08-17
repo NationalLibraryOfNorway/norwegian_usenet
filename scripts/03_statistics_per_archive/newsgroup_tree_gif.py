@@ -1,52 +1,12 @@
 """Generate scrolling .gif animations of the newsgroup hierarchy trees."""
 
 import argparse
-import csv
 from pathlib import Path
 
 import matplotlib.pyplot as plt
 from matplotlib import animation
 
-
-class Node:
-    def __init__(self):
-        self.own_count: int = 0
-        self.children: dict[str, Node] = {}
-
-    def total(self) -> int:
-        return self.own_count + sum(c.total() for c in self.children.values())
-
-
-def load_counts(csv_path: Path) -> dict[str, int]:
-    counts = {}
-    with csv_path.open(encoding="utf-8") as f:
-        for row in csv.DictReader(f):
-            name = row["newsgroup"].removesuffix(".mbox")
-            if name == "Total":
-                continue
-            counts[name] = int(row["message_count"])
-    return counts
-
-
-def build_tree(counts: dict[str, int]) -> Node:
-    root = Node()
-    for name, count in sorted(counts.items()):
-        node = root
-        for part in name.split("."):
-            node = node.children.setdefault(part, Node())
-        node.own_count = count
-    return root
-
-
-def collect_lines(node: Node, prefix: str = "") -> list[str]:
-    lines = []
-    items = list(node.children.items())
-    for i, (name, child) in enumerate(items):
-        is_last = i == len(items) - 1
-        connector = "└── " if is_last else "├── "
-        lines.append(f"{prefix}{connector}{name}  ({child.total():,})")
-        lines.extend(collect_lines(child, prefix + ("    " if is_last else "│   ")))
-    return lines
+from usenet_no.newsgroup_tree import load_counts, tree_lines
 
 
 def make_gif(
@@ -126,8 +86,13 @@ def main() -> None:
     parser.add_argument(
         "--output-dir",
         type=Path,
-        default=Path("data/output/03_statistics_per_archive/newsgroup_tree_gif"),
+        default=Path("data/output/03_statistics_per_archive/newsgroup_tree"),
         help="Directory for output .gif files (default: %(default)s)",
+    )
+    parser.add_argument(
+        "--hide-empty-own-mbox",
+        action="store_true",
+        help="Draw the '.' child only for supergroups that have an mbox file of their own",
     )
     parser.add_argument(
         "--viewport",
@@ -169,12 +134,9 @@ def main() -> None:
         ("IA", args.ia_csv, "newsgroup_tree_ia.gif"),
         ("NB", args.nb_csv, "newsgroup_tree_nb.gif"),
     ]:
-        counts = load_counts(csv_path)
-        tree = build_tree(counts)
-        header = (
-            f"{archive_label}  ({tree.total():,} messages, {len(counts)} newsgroups)"
+        lines = tree_lines(
+            archive_label, load_counts(csv_path), args.hide_empty_own_mbox
         )
-        lines = [header] + collect_lines(tree)
         output_path = args.output_dir / gif_name
         print(f"Generating {output_path}  ({len(lines)} lines) ...")
         make_gif(
