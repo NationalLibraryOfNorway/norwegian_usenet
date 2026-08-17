@@ -1,6 +1,6 @@
 # Step 02: loading both archives into the database
 
-- [01_build_database.py](01_build_database.py) reads the .mbox files of both archives and writes `data/output/02_build_database/usenet.db` in one pass. It holds one row per message, with names, emails and message ids as hashes only, so it can be shared.
+- [01_build_database.py](01_build_database.py) reads the .mbox files of both archives and writes `data/output/02_build_database/usenet.db` in one pass. It holds one row per message, with names, emails and message ids as hashes only, so it can be shared. Run with `--overwrite` to delete an existing database file and build it again; without the flag the script exits without doing anything when the file is already there.
 
 ## The tables
 
