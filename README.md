@@ -1,22 +1,11 @@
-# Usenet no
-This code is developed for a case comparing two collections of Usenet newsgroups: one archived by the National Library of Norway (1994-1997), and the other found in Internet Archive's (ca 1991-2013). However, much of the code is hopefully useful for other cases that needs to fetch and analyse Usenet collections.
+# Norwegian Usenet
 
-## Installation
-
-With [uv](https://docs.astral.sh/uv/#installation):  
-`uv sync`
-
-With pip and venv:
-```
-python3 -m venv .venv
-source .venv/bin/activate
-pip install .
-```
 
 ## Data
 The data used in this repo comes from two sources: Internet Archive (IA) and **N**asjonal**b**iblioteket (NB, eng:  National Library of Norway).
-Because the data may contain personal information, it is not shared here.
+Because the data may contain personal information, the archives themselves are not shared here.
 What we have are scripts to download, extract, and parse the data from both archives, as well as various scripts to analyze the data.
+The SQLite database built from them holds no plain text, and is committed to this repository with git-lfs.
 
 This is the structure of the data directory according to default input/output data cli args 
 ```
@@ -35,7 +24,10 @@ data/
 └── output/                     # Script outputs, one subdirectory per script group
     ├── 01_extract_and_parse_usenet_data/
     ├── 02_build_database/
-    │   └── usenet.db           # SQLite database of both archives, hashes only (scripts/02_build_database/01_build_database.py)
+    │   ├── usenet.db                             # SQLite database of both archives, hashes only (scripts/02_build_database/01_build_database.py)
+    │   ├── fingerprint_database.csv              # Hash of every table, row ids included (scripts/02_build_database/02_fingerprint_database.py)
+    │   ├── fingerprint_database_content.csv      # The same with the row ids left out (scripts/02_build_database/03_fingerprint_database_content.py)
+    │   └── fingerprint_database_per_archive.csv  # The same split by archive (scripts/02_build_database/04_fingerprint_database_per_archive.py)
     ├── 03_statistics_per_archive/
     ├── 04_compare_message_bodies/
     ├── 05_venn_diagrams/
@@ -48,9 +40,16 @@ data/
 ### Sqlite database
 `usenet.db` is built from the `utf_8_data` subdirectories, and is what the analysis scripts read.  
 The database holds names, emails, message ids and bodies only as hashes, so the file can be shared.  
+It is stored here with [git-lfs](https://git-lfs.com): with git-lfs installed, `git clone` fetches the file itself, and `git lfs pull` fetches it in a clone made without it.  
 The statistics in step 03, most of the comparisons in step 04, the venn diagrams in step 05, and the graph building scripts in 06 read `usenet.db` and nothing else, so anyone with the file can reproduce them.  
 The two replacement character scripts in step 04 also read the message bodies from the mbox files, and so need the archives themselves.  
 A hash is connected back to its plain text through the mbox files: a message's position in its own file is its row id minus the lowest row id of its (archive, newsgroup).
+
+## Install dependencies
+
+With [uv](https://docs.astral.sh/uv/#installation):  
+`uv sync`
+
 
 ## Code
 `src/usenet_no/` contains core library modules for working with the data. Everything that creates or queries the SQLite databases lives in the `usenet_no.database` submodule.  
@@ -67,6 +66,8 @@ Extracts the NB tar archives and the IA zip files, and writes both archives as u
 [01_build_database.py](scripts/02_build_database/01_build_database.py) reads every message of both archives into one SQLite database in a single pass, so that later analyses are SQL queries over one dataset instead of repeated parses of the archive directories. The database at `data/output/02_build_database/usenet.db` stores names, emails, message ids and bodies only as hashes, and no free text at all.
 
 Messages are stored one row per message per newsgroup, with nothing dropped or merged, so the database is a faithful transcription of the mbox files.
+
+The three fingerprint scripts hash the rows of a database, write the fingerprint to `data/output/02_build_database/`, and print every value that changed since the last run, which is how a database built on another machine is checked against this one. See [scripts/02_build_database/README.md](scripts/02_build_database/README.md) for details.
 
 #### Step 03: counting messages and users within each archive
 Counts messages per newsgroup, user and date in each archive, finds duplicates, conflicting Message-IDs and messages without a sender, and plots those counts. See [scripts/03_statistics_per_archive/README.md](scripts/03_statistics_per_archive/README.md) for details.
