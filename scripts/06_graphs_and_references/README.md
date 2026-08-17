@@ -2,8 +2,6 @@
 
 The scripts are numbered in pairs: each drawing script reads the edge list the script before it writes.
 
-The drawing scripts need the plotting libraries in the optional `viz` dependency group, which is not installed by default. Install it with `uv sync --group viz`.
-
 Both figures are drawn with vis-network, which brings its own physics: each edge is a spring pulling towards the distance the layout placed it at, so a newsgroup dragged aside takes the ones it is joined to along. In the reference graph a newsgroup is left where it is dropped, since it is one crowd of newsgroups referencing each other; double-clicking it hands it back to the physics.
 
 A newsgroup joined to nothing has no edge to hold it, so it is left out of the physics and set out in a row under the graph instead. Above the graph stands what it holds: how many connected sub-graphs the newsgroups with edges fall into, and how many are joined to nothing. Each figure carries the drawing library within it, so it can be opened without a network.

@@ -6,8 +6,6 @@ Each script writes both the figure and the counts behind it, as `<name>.png` and
 
 The scripts are unnumbered because they are independent of each other and can be run in any order.
 
-These scripts need the plotting libraries in the optional `viz` dependency group, which is not installed by default. Install it with `uv sync --group viz`.
-
 Everything is counted over the archive as a whole rather than per newsgroup, so a message crossposted to several groups counts once.
 
 - [newsgroup_overlap.py](newsgroup_overlap.py) counts the newsgroups each archive holds. A group whose IA messages all fall outside the date span stops counting as one IA holds. Creates `newsgroup_overlap.png` and `newsgroup_overlap.json`.

@@ -2,8 +2,6 @@
 
 The counting scripts read `data/output/02_build_database/usenet.db`, and each drawing script reads what the script before it wrote. Messages whose date could not be parsed are excluded from the date filtered statistics.
 
-All of the drawing scripts except [newsgroup_tree.py](newsgroup_tree.py), which writes its trees as text, need the plotting libraries in the optional `viz` dependency group, which is not installed by default. Install it with `uv sync --group viz`.
-
 - [01_count_messages_per_group.py](01_count_messages_per_group.py) counts messages per newsgroup for each of IA, date filtered IA and NB archives. Creates `data/output/03_statistics_per_archive/messages_per_group_ia.csv`, `data/output/03_statistics_per_archive/messages_per_group_ia_date_filtered.csv`  and `data/output/03_statistics_per_archive/messages_per_group_nb.csv`
 - [02_plot_messages_per_group.py](02_plot_messages_per_group.py) plots messages in the top 20 groups vs the rest, and the distribution of newsgroups by message count, reading the `messages_per_group_*.csv` files. Prints group statistics to stdout and saves .png files to `data/output/03_statistics_per_archive/plot_messages_per_group/`.
 - [03_count_duplicate_messages.py](03_count_duplicate_messages.py) finds *true duplicates*: messages stored more than once in the same mbox file with both the same Message-ID and the same body. Every copy is its own row in the database, so these are rows sharing archive, newsgroup, hashed Message-ID and hashed body. Creates `data/output/03_statistics_per_archive/duplicate_messages_per_group.jsonl`, with one row per duplicated Message-ID (`archive`, `newsgroup`, `hashed_message_id`, `count`), where `count` is the total number of copies present.
