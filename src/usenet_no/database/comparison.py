@@ -54,7 +54,7 @@ def _create_id_table(
     connection.execute(f"CREATE TEMP TABLE {table} (id_hash TEXT PRIMARY KEY)")
     connection.execute(
         f"INSERT INTO {table} SELECT DISTINCT message_id_hash FROM messages"
-        f" WHERE archive = ? AND message_id_hash IS NOT NULL{clause}",
+        f" WHERE archive = ?{clause}",
         (archive, *span_parameters),
     )
 

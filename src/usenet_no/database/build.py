@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 SCHEMA = """
 -- Two senders are the same user exactly when they share the (name, email) pair
 -- the hashes were made from.
-CREATE TABLE IF NOT EXISTS users (
+CREATE TABLE users (
     id         INTEGER PRIMARY KEY,
     name_hash  TEXT,
     email_hash TEXT
@@ -31,11 +31,11 @@ CREATE TABLE IF NOT EXISTS users (
 -- `newsgroup` is the group whose mbox file held the message. The message's own
 -- Newsgroups header is not stored, and neither is the subject; both are free
 -- text that turned out to carry addresses and message ids in the clear.
-CREATE TABLE IF NOT EXISTS messages (
+CREATE TABLE messages (
     id              INTEGER PRIMARY KEY,
     archive         TEXT NOT NULL,
     newsgroup       TEXT NOT NULL,
-    message_id_hash TEXT,
+    message_id_hash TEXT NOT NULL,
     user_id         INTEGER REFERENCES users(id),
     date            TEXT,
     body_hash       TEXT
@@ -45,19 +45,19 @@ CREATE TABLE IF NOT EXISTS messages (
 -- archives resolves through messages.message_id_hash, and one whose message is
 -- missing is only ever counted, so the plain text would add nothing but a
 -- second copy of 27 million identifying strings.
-CREATE TABLE IF NOT EXISTS message_references (
+CREATE TABLE message_references (
     message_row_id     INTEGER NOT NULL REFERENCES messages(id),
     referenced_id_hash TEXT NOT NULL
 );
 
-CREATE INDEX IF NOT EXISTS idx_users_email_hash ON users(email_hash);
-CREATE INDEX IF NOT EXISTS idx_messages_archive_newsgroup ON messages(archive, newsgroup);
-CREATE INDEX IF NOT EXISTS idx_messages_message_id_hash ON messages(message_id_hash);
-CREATE INDEX IF NOT EXISTS idx_messages_user_id ON messages(user_id);
-CREATE INDEX IF NOT EXISTS idx_messages_date ON messages(date);
-CREATE INDEX IF NOT EXISTS idx_messages_body_hash ON messages(body_hash);
-CREATE INDEX IF NOT EXISTS idx_references_row_id ON message_references(message_row_id);
-CREATE INDEX IF NOT EXISTS idx_references_hash ON message_references(referenced_id_hash);
+CREATE INDEX idx_users_email_hash ON users(email_hash);
+CREATE INDEX idx_messages_archive_newsgroup ON messages(archive, newsgroup);
+CREATE INDEX idx_messages_message_id_hash ON messages(message_id_hash);
+CREATE INDEX idx_messages_user_id ON messages(user_id);
+CREATE INDEX idx_messages_date ON messages(date);
+CREATE INDEX idx_messages_body_hash ON messages(body_hash);
+CREATE INDEX idx_references_row_id ON message_references(message_row_id);
+CREATE INDEX idx_references_hash ON message_references(referenced_id_hash);
 """
 
 UserKey = tuple[str | None, str | None]
@@ -69,7 +69,7 @@ class ExtractedMessage:
 
     archive: str
     newsgroup: str
-    message_id_hash: str | None
+    message_id_hash: str
     from_name_hash: str | None
     from_email_hash: str | None
     date: str | None
@@ -107,7 +107,7 @@ def extract_message(
     return ExtractedMessage(
         archive=archive,
         newsgroup=newsgroup,
-        message_id_hash=make_hash(message_id) if message_id else None,
+        message_id_hash=make_hash(message_id),
         from_name_hash=make_hash(from_name) if from_name else None,
         from_email_hash=make_hash(from_email) if from_email else None,
         date=None if date == UNKNOWN_DATE else date,

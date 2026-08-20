@@ -6,6 +6,8 @@ from usenet_no.archives.encoding import decode_bytes, detect_file_encoding
 from usenet_no.mbox_utils import (
     RawMessage,
     open_source_mbox,
+    repair_header_line_endings,
+    repair_mangled_header_lines,
     split_envelope,
     write_mbox,
 )
@@ -47,7 +49,9 @@ def process_mbox_file(mbox_file: Path, outfile: Path) -> str:
 
     The source is an mbox file, so every message starts with its own envelope
     line. Its text is not unescaped: the source's own ">From " lines are content
-    as far as this step can tell.
+    as far as this step can tell. Each message's header block is repaired first,
+    so that no header line reads as broken off and email's parser reaches the
+    fields below a line the source mangled.
 
     Returns the encoding, which the caller reports against the source file.
     """
@@ -57,7 +61,14 @@ def process_mbox_file(mbox_file: Path, outfile: Path) -> str:
     message_count = len(mbox_in)
     write_mbox(
         (
-            RawMessage(*split_envelope(decode_bytes(raw, encoding)))
+            RawMessage(
+                *split_envelope(
+                    decode_bytes(
+                        repair_mangled_header_lines(repair_header_line_endings(raw)),
+                        encoding,
+                    )
+                )
+            )
             for raw in iter_raw_messages(mbox_file)
         ),
         outfile,

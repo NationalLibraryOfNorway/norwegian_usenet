@@ -1,15 +1,18 @@
 From sender@example.com
 Date: nonsense
+Message-ID: <unparseable.and.late.1@example.no>
 
 unknown date
 
 From sender@example.com
 Date: Wed, 10 Jan 1996 12:00:00 +0000
+Message-ID: <unparseable.and.late.2@example.no>
 
 inside
 
 From sender@example.com
 Date: Sat, 01 Jan 2005 12:00:00 +0000
+Message-ID: <unparseable.and.late.3@example.no>
 
 too late
 

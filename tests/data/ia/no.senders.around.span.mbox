@@ -1,12 +1,14 @@
 From sender@example.com
 From: kari@example.no
 Date: Wed, 10 Jan 1996 12:00:00 +0000
+Message-ID: <senders.around.span.1@example.no>
 
 inside
 
 From sender@example.com
 From: ola@example.no
 Date: Sat, 01 Jan 2005 12:00:00 +0000
+Message-ID: <senders.around.span.2@example.no>
 
 out
 

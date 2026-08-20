@@ -124,21 +124,6 @@ def test_a_repeated_id_in_one_references_list_counts_once(
     assert resolution == (1, 1, 0, 0)
 
 
-def test_messages_without_id_are_left_out(mbox_data, database, load_archives):
-    """Two id-less replies cite the same origin, and neither reference is counted."""
-    connection = load_archives(
-        database,
-        [
-            (mbox_data / "ia/no.graph.origins.mbox", NB_ARCHIVE),
-            (mbox_data / "ia/no.graph.nameless.mbox", NB_ARCHIVE),
-        ],
-    )
-
-    resolution = count_reference_resolution(connection, NB, IA)
-
-    assert resolution == (0, 0, 0, 0)
-
-
 def test_ia_references_are_left_out(mbox_data, database, load_archives):
     """Only the archive whose references are counted contributes referring messages."""
     connection = load_archives(

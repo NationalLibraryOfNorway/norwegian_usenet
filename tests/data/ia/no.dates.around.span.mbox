@@ -1,15 +1,18 @@
 From sender@example.com
 Date: Mon, 01 Jan 1990 12:00:00 +0000
+Message-ID: <dates.around.span.1@example.no>
 
 too early
 
 From sender@example.com
 Date: Wed, 10 Jan 1996 12:00:00 +0000
+Message-ID: <dates.around.span.2@example.no>
 
 inside
 
 From sender@example.com
 Date: Sat, 01 Jan 2005 12:00:00 +0000
+Message-ID: <dates.around.span.3@example.no>
 
 too late
 
