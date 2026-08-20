@@ -33,16 +33,6 @@ def test_a_crossposted_id_counts_once(mbox_data, database, load_archives):
     )
 
 
-def test_messages_without_an_id_are_left_out(mbox_data, database, load_archives):
-    connection = load_archives(
-        database, [(mbox_data / "ia/no.missing.sender.mbox", IA_ARCHIVE)]
-    )
-
-    assert count_message_id_overlap(connection) == VennCounts(
-        nb_only=0, ia_only=0, both=0
-    )
-
-
 def test_date_filtering_restricts_ia_but_not_nb(mbox_data, database, load_archives):
     connection = load_archives(
         database,

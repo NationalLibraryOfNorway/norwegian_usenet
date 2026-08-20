@@ -143,7 +143,7 @@ def test_message_without_sender_has_no_user(database):
     message = ExtractedMessage(
         archive=IA_ARCHIVE,
         newsgroup="no.test",
-        message_id_hash=None,
+        message_id_hash=make_hash("<1@example.no>"),
         from_name_hash=None,
         from_email_hash=None,
         date=None,

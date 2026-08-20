@@ -54,20 +54,3 @@ def test_references_within_a_newsgroup_make_no_edge(mbox_data, database, load_ar
     edges = count_referenced_messages(connection, [(IA_ARCHIVE, None)])
 
     assert edges == []
-
-
-def test_id_less_messages_citing_the_same_origin_count_it_once(
-    mbox_data, database, load_archives
-):
-    """Two id-less replies cite the same origin, which is one referenced message."""
-    connection = load_archives(
-        database,
-        [
-            (mbox_data / "ia/no.graph.origins.mbox", IA_ARCHIVE),
-            (mbox_data / "ia/no.graph.nameless.mbox", IA_ARCHIVE),
-        ],
-    )
-
-    edges = count_referenced_messages(connection, [(IA_ARCHIVE, None)])
-
-    assert edges == [("no.graph.nameless", "no.graph.origins", 1)]

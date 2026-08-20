@@ -1,10 +1,12 @@
 From sender@example.com
 From: Kari Nordmann <k@example.no>
+Message-ID: <same.email.two.names.1@example.no>
 
 one
 
 From sender@example.com
 From: kari <k@example.no>
+Message-ID: <same.email.two.names.2@example.no>
 
 two
 

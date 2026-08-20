@@ -1,15 +1,18 @@
 From sender@example.com
 Date: Mon, 06 Jan 1996 12:00:00 +0000
+Message-ID: <mixed.dates.1@example.no>
 
 early
 
 From sender@example.com
 Date: nonsense
+Message-ID: <mixed.dates.2@example.no>
 
 undated
 
 From sender@example.com
 Date: Sat, 20 Jan 1996 12:00:00 +0000
+Message-ID: <mixed.dates.3@example.no>
 
 late
 

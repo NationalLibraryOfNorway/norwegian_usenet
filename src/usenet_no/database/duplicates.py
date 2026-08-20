@@ -40,7 +40,6 @@ def find_true_duplicates(connection: sqlite3.Connection) -> list[DuplicateMessag
         " FROM ("
         "     SELECT archive, newsgroup, message_id_hash, COUNT(*) AS copies"
         "     FROM messages"
-        "     WHERE message_id_hash IS NOT NULL"
         "     GROUP BY archive, newsgroup, message_id_hash, body_hash"
         "     HAVING COUNT(*) > 1"
         " )"

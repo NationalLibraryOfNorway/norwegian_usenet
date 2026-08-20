@@ -64,7 +64,6 @@ def _fetch_rows_by_message_id_hash(
     )
     for message_id_hash, archive, newsgroup, body_hash in connection.execute(
         "SELECT message_id_hash, archive, newsgroup, body_hash FROM messages"
-        " WHERE message_id_hash IS NOT NULL"
         " ORDER BY message_id_hash, archive, newsgroup, body_hash"
     ):
         rows_by_message_id_hash[message_id_hash].append((archive, newsgroup, body_hash))
@@ -153,7 +152,6 @@ def find_newsgroup_body_conflicts(
     rows = connection.execute(
         "SELECT newsgroup, message_id_hash, archive, body_hash, MIN(id)"
         " FROM messages"
-        " WHERE message_id_hash IS NOT NULL"
         " GROUP BY newsgroup, message_id_hash, archive, body_hash"
         " ORDER BY newsgroup, message_id_hash, archive, body_hash"
     )

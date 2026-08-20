@@ -27,14 +27,6 @@ def test_same_id_different_body_is_not_a_true_duplicate(
     assert find_true_duplicates(connection) == []
 
 
-def test_messages_without_id_are_never_duplicates(mbox_data, database, load_archives):
-    connection = load_archives(
-        database, [(mbox_data / "ia/no.without.message.id.mbox", IA_ARCHIVE)]
-    )
-
-    assert find_true_duplicates(connection) == []
-
-
 def test_reports_one_row_per_duplicated_message_id(mbox_data, database, load_archives):
     connection = load_archives(
         database, [(mbox_data / "ia/no.many.duplicates.mbox", IA_ARCHIVE)]

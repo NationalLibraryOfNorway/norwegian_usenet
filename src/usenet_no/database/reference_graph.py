@@ -15,13 +15,11 @@ runs between newsgroups.
 The archives hold the same message more than once, so sources are read as
 distinct (message id, newsgroup, referenced ids) rows: a message held by both
 archives counts once, and a message crossposted to two newsgroups is a source
-in each. The few messages with no message id at all cannot be deduplicated
-that way and count once per stored row instead.
+in each.
 
 The totals leave the newsgroup out altogether: a reference is a (referring
 message, referenced id) pair, counted once however many newsgroups hold either
-end of it, and split by where the referenced message is found. A message with no
-message id of its own makes no such pair and is left out.
+end of it, and split by where the referenced message is found.
 """
 
 import logging
@@ -98,8 +96,7 @@ def _count_edges(
     query = f"""
         WITH resolved_references AS (
             SELECT DISTINCT
-                COALESCE(messages.message_id_hash, 'row:' || messages.id)
-                    AS source_message,
+                messages.message_id_hash AS source_message,
                 messages.newsgroup AS from_newsgroup,
                 message_references.referenced_id_hash AS referenced_id_hash,
                 targets.newsgroup AS target_newsgroup
@@ -171,8 +168,7 @@ def _create_reference_pair_table(
     """Collect one archive's distinct (referring message, referenced id) pairs.
 
     A message held by several newsgroups, or by both archives, is one referring
-    message, so its references count once. Messages with no message id are left
-    out, since there is no id to deduplicate their references on.
+    message, so its references count once.
     """
     scope, parameters = _archive_scope([archive_datespan], "messages")
     connection.execute(f"DROP TABLE IF EXISTS temp.{REFERENCE_PAIRS}")
@@ -190,7 +186,7 @@ def _create_reference_pair_table(
         "     message_references.referenced_id_hash"
         " FROM messages"
         " JOIN message_references ON message_references.message_row_id = messages.id"
-        f" WHERE messages.message_id_hash IS NOT NULL AND {scope}",
+        f" WHERE {scope}",
         parameters,
     )
 
@@ -237,8 +233,8 @@ def count_reference_resolution(
 
     A reference is a distinct (referring message, referenced id) pair, so the
     same reply stored twice counts once and a message referencing five hundred
-    others counts five hundred. Messages with no message id of their own are left
-    out. Each pair falls in exactly one of three groups: the referenced message
+    others counts five hundred. Each pair falls in exactly one of three groups:
+    the referenced message
     is in the archive itself, it is missing from the archive but the other
     archive holds it, or neither holds it.
     """

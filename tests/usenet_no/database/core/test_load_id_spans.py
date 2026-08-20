@@ -21,8 +21,9 @@ def test_spans_follow_load_order(mbox_data, database, load_archives):
 
 def test_raises_on_gap_in_row_ids(database):
     database.executemany(
-        "INSERT INTO messages (id, archive, newsgroup) VALUES (?, ?, ?)",
-        [(1, IA_ARCHIVE, "no.gapped"), (3, IA_ARCHIVE, "no.gapped")],
+        "INSERT INTO messages (id, archive, newsgroup, message_id_hash)"
+        " VALUES (?, ?, ?, ?)",
+        [(1, IA_ARCHIVE, "no.gapped", "a"), (3, IA_ARCHIVE, "no.gapped", "b")],
     )
 
     with pytest.raises(ValueError, match="not contiguous"):

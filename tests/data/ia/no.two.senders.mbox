@@ -1,15 +1,18 @@
 From sender@example.com
 From: Kari<k@example.no>
+Message-ID: <two.senders.1@example.no>
 
 one
 
 From sender@example.com
 From: Kari <k@example.no>
+Message-ID: <two.senders.2@example.no>
 
 two
 
 From sender@example.com
 From: Ola <o@example.no>
+Message-ID: <two.senders.3@example.no>
 
 three
 

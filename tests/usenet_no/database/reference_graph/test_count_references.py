@@ -173,21 +173,6 @@ def test_a_target_held_by_both_archives_is_one_newsgroup(
     assert edges == [("no.graph.cites.dup", "no.graph.dup.target", 1)]
 
 
-def test_messages_without_id_are_not_collapsed(mbox_data, database, load_archives):
-    """Two id-less replies cite the same origin, and both count."""
-    connection = load_archives(
-        database,
-        [
-            (mbox_data / "ia/no.graph.origins.mbox", IA_ARCHIVE),
-            (mbox_data / "ia/no.graph.nameless.mbox", IA_ARCHIVE),
-        ],
-    )
-
-    edges = count_references(connection, [(IA_ARCHIVE, None)])
-
-    assert edges == [("no.graph.nameless", "no.graph.origins", 2)]
-
-
 def test_messages_without_references_make_no_edges(mbox_data, database, load_archives):
     connection = load_archives(
         database, [(mbox_data / "ia/no.graph.origins.mbox", IA_ARCHIVE)]
