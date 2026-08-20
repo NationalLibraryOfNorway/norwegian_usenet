@@ -32,6 +32,14 @@ The pairs currently in [cut_off_newsgroup_names.csv](../../data/output/01_extrac
 | no.tungregn | no.tungregning |
 | no.typograf | no.typografi |
 
+## Unescaped "From " lines in the IA archive
+
+An mbox file separates its messages with an envelope line beginning with `From `, and escapes a body line that begins the same way by writing `>From `. The IA sources do not: a message body that opens a line with `From ` keeps it as it stands, and `mailbox.mbox` starts a new message at every one of them.
+
+Every IA envelope line carries the Google Groups id the archive was scraped with, a `From ` and a signed integer, so `usenet_no.mbox_utils.StrictMbox` accepts only a line of that form and reads the rest as body text. That leaves 3497 `From ` lines across the archive, each of which was checked: none is followed by a header block, so none of them begins a message.
+
+[04_parse_internet_archive.py](04_parse_internet_archive.py) escapes them on the way out, so every `From ` line in `data/input/internet_archive/utf_8_data` is an envelope line and the file reads as a plain mbox. The NB sources hold one message per file, so they raise no such question.
+
 ## Encodings
 
 Neither archive declares its encoding, so both parse scripts detect it with chardet (`usenet_no.archives.encoding`) and fall back to latin-1 when nothing is detected, or when the detected encoding is one chardet is known to misreport on the short NB message files (VISCII, EUC-TW). Both detect one encoding per file in `unzipped_data`; the IA files are one mbox per newsgroup, the NB files one message each. Both scripts write what they detected to `encodings.json` next to the archive's data directories, keyed by the source file's path under `unzipped_data`.

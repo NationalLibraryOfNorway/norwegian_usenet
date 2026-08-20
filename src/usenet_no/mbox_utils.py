@@ -27,6 +27,28 @@ IA_SOURCE_ENVELOPE = re.compile(rb"From -?\d+$")
 # PLACEHOLDER_ENVELOPE where it did not.
 WRITTEN_ENVELOPE = re.compile(rb"From (-?\d+|MAILER-DAEMON)$")
 
+# A carriage return that no newline follows. Reading a file line by line passes
+# over it, while email's parser ends the line there, so a header value holding
+# one reads as a line that is no header at all, and the fields below it are lost.
+LONE_CARRIAGE_RETURN = re.compile(rb"\r(?!\n)")
+
+# One with a header line right after it, which is a line ending the source wrote:
+# some posters' clients ended a header line with a carriage return alone.
+CARRIAGE_RETURN_BEFORE_HEADER = re.compile(rb"\r(?!\n)(?=[\041-\071\073-\176]+:)")
+
+# The blank line a message's headers end at, in either line ending.
+BLANK_LINE = re.compile(rb"\r?\n\r?\n")
+
+# A header line: a field name of printable ASCII but the colon, then the colon.
+HEADER_LINE = re.compile(rb"[\041-\071\073-\176]+:")
+
+# Bytes no field name can hold, with one right after them. A few IA messages
+# carry a run of control bytes in front of a header line that is otherwise good.
+JUNK_BEFORE_FIELD_NAME = re.compile(rb"^[^\041-\176]+(?=[\041-\071\073-\176]+:)")
+
+# What a folded header line, the rest of the value above it, begins with.
+FOLD = (b" ", b"\t")
+
 
 @dataclass
 class RawMessage:
@@ -136,6 +158,56 @@ def open_source_mbox(mbox_file: Path) -> StrictMbox:
 def open_mbox(mbox_file: Path) -> StrictMbox:
     """Open an mbox file that write_mbox wrote."""
     return StrictMbox(mbox_file, WRITTEN_ENVELOPE)
+
+
+def repair_header_line_endings(raw_message: bytes) -> bytes:
+    """One message's bytes with the lone carriage returns in its header block made good.
+
+    One with a header line after it ended that line, and becomes a newline; one
+    inside a header value is taken out, so the value stays a single line. The
+    body is left as it stands, where no header line depends on a line ending.
+    """
+    blank_line = BLANK_LINE.search(raw_message)
+    end_of_headers = blank_line.start() if blank_line else len(raw_message)
+    headers = CARRIAGE_RETURN_BEFORE_HEADER.sub(b"\n", raw_message[:end_of_headers])
+    return LONE_CARRIAGE_RETURN.sub(b"", headers) + raw_message[end_of_headers:]
+
+
+def _repaired_header_line(line: bytes, field_above: bool) -> bytes:
+    """One header line email's parser can read, or the line as it stands.
+
+    Junk in front of a field name is taken off. A line that is no field either
+    way is folded into the line above, which needs a field to fold it into.
+    """
+    if HEADER_LINE.match(line) or line.startswith(FOLD):
+        return line
+    without_junk = JUNK_BEFORE_FIELD_NAME.sub(b"", line)
+    if HEADER_LINE.match(without_junk):
+        return without_junk
+    return b" " + line if field_above else line
+
+
+def repair_mangled_header_lines(raw_message: bytes) -> bytes:
+    """One message's bytes with the header lines email's parser would stop at made good.
+
+    That parser ends the headers at the first line that is neither a field nor a
+    folded value, and reads the rest of the message as body, so every field
+    below such a line is lost. A message whose headers no blank line ends is
+    left as it stands, there being no telling its headers from its body.
+    """
+    blank_line = BLANK_LINE.search(raw_message)
+    if blank_line is None:
+        return raw_message
+    end_of_headers = blank_line.start()
+    repaired = []
+    field_above = False
+    for position, line in enumerate(raw_message[:end_of_headers].split(b"\n")):
+        if position == 0 and line.startswith(b"From "):
+            repaired.append(line)
+            continue
+        repaired.append(_repaired_header_line(line, field_above))
+        field_above = field_above or bool(HEADER_LINE.match(repaired[-1]))
+    return b"\n".join(repaired) + raw_message[end_of_headers:]
 
 
 def escape_from_lines(text: str) -> str:

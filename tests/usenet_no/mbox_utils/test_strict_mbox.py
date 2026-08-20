@@ -120,3 +120,17 @@ def test_open_source_mbox_rejects_the_placeholder_envelope(tmp_path):
     mbox_file = _write(tmp_path, "no.written.mbox", WRITTEN)
 
     assert len(open_source_mbox(mbox_file)) == 1
+
+
+def test_a_body_line_that_carries_an_id_does_start_a_message(tmp_path):
+    """The limit of the rule. No IA source line takes this form outside an envelope."""
+    text = (
+        "From 6051272061054231474\n"
+        "X-Google-Thread: 10d1ce\n"
+        "From: ola@uio.no\n"
+        "\n"
+        "From 42\n"
+    )
+    mbox_file = _write(tmp_path, "no.source.mbox", text)
+
+    assert len(open_source_mbox(mbox_file)) == 2
