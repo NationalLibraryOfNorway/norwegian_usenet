@@ -8,7 +8,6 @@ that carry it.
 
 import argparse
 import logging
-from itertools import chain
 from pathlib import Path
 
 from tqdm import tqdm
@@ -16,9 +15,10 @@ from tqdm import tqdm
 from usenet_no.archives.encoding import load_file_encodings
 from usenet_no.archives.header_fields import (
     count_header_fields,
-    iter_mbox_header_blocks,
+    iter_mbox_message_headers,
     write_header_field_counts,
 )
+from usenet_no.mbox_utils import IA_SOURCE_ENVELOPE
 
 logger = logging.getLogger(__name__)
 
@@ -59,11 +59,12 @@ if __name__ == "__main__":
     )
 
     counts = count_header_fields(
-        chain.from_iterable(
-            iter_mbox_header_blocks(args.unzipped_dir / key, encoding)
-            for key, encoding in tqdm(
-                sorted(encodings.items()), desc="Reading message headers"
-            )
+        message.header_block
+        for key, encoding in tqdm(
+            sorted(encodings.items()), desc="Reading message headers"
+        )
+        for message in iter_mbox_message_headers(
+            args.unzipped_dir / key, encoding, IA_SOURCE_ENVELOPE
         )
     )
 
