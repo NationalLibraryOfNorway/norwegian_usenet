@@ -2,9 +2,8 @@ from usenet_no.database import IA_ARCHIVE, NB_ARCHIVE
 from usenet_no.database.replacement_chars import load_replacement_char_pairs
 
 
-def test_loads_the_damaged_pair_from_the_database(mbox_data, database, load_archives):
+def test_loads_the_damaged_pair_from_the_database(mbox_data, load_archives):
     connection = load_archives(
-        database,
         [
             (mbox_data / "ia/no.replacement.chars.mbox", IA_ARCHIVE),
             (mbox_data / "nb/no.replacement.chars.mbox", NB_ARCHIVE),
@@ -22,9 +21,8 @@ def test_loads_the_damaged_pair_from_the_database(mbox_data, database, load_arch
     assert pair.ia_body == "Bl�b�rsyltet�y p� loffen. �L OG P�LSER."
 
 
-def test_archives_that_agree_have_no_pairs(mbox_data, database, load_archives):
+def test_archives_that_agree_have_no_pairs(mbox_data, load_archives):
     connection = load_archives(
-        database,
         [
             (mbox_data / "ia/no.identical.across.archives.mbox", IA_ARCHIVE),
             (mbox_data / "nb/no.identical.across.archives.mbox", NB_ARCHIVE),

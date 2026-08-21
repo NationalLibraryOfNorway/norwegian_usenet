@@ -1,3 +1,4 @@
 # mbox is whitespace-sensitive: never rewrite line endings on checkout
 *.mbox -text
-data/output/02_build_database/usenet.db filter=lfs diff=lfs merge=lfs -text
+data/output/02_build_database/ia.db filter=lfs diff=lfs merge=lfs -text
+data/output/02_build_database/nb.db filter=lfs diff=lfs merge=lfs -text

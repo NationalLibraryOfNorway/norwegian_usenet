@@ -1,4 +1,4 @@
-"""Read the mbox files of both archives into the database."""
+"""Read one archive's mbox files into its database."""
 
 import logging
 import mailbox
@@ -33,7 +33,6 @@ CREATE TABLE users (
 -- text that turned out to carry addresses and message ids in the clear.
 CREATE TABLE messages (
     id              INTEGER PRIMARY KEY,
-    archive         TEXT NOT NULL,
     newsgroup       TEXT NOT NULL,
     message_id_hash TEXT NOT NULL,
     user_id         INTEGER REFERENCES users(id),
@@ -51,7 +50,7 @@ CREATE TABLE message_references (
 );
 
 CREATE INDEX idx_users_email_hash ON users(email_hash);
-CREATE INDEX idx_messages_archive_newsgroup ON messages(archive, newsgroup);
+CREATE INDEX idx_messages_newsgroup ON messages(newsgroup);
 CREATE INDEX idx_messages_message_id_hash ON messages(message_id_hash);
 CREATE INDEX idx_messages_user_id ON messages(user_id);
 CREATE INDEX idx_messages_date ON messages(date);
@@ -67,7 +66,6 @@ UserKey = tuple[str | None, str | None]
 class ExtractedMessage:
     """The fields we keep from a single Usenet message."""
 
-    archive: str
     newsgroup: str
     message_id_hash: str
     from_name_hash: str | None
@@ -83,9 +81,7 @@ def create_schema(connection: sqlite3.Connection) -> None:
     connection.commit()
 
 
-def extract_message(
-    message: mailbox.mboxMessage, archive: str, newsgroup: str
-) -> ExtractedMessage:
+def extract_message(message: mailbox.mboxMessage, newsgroup: str) -> ExtractedMessage:
     """Pull the stored fields out of a single message.
 
     Emails are lowercased before hashing so that address variants collapse to
@@ -105,7 +101,6 @@ def extract_message(
     body = get_message_body(message=message)
 
     return ExtractedMessage(
-        archive=archive,
         newsgroup=newsgroup,
         message_id_hash=make_hash(message_id),
         from_name_hash=make_hash(from_name) if from_name else None,
@@ -119,17 +114,11 @@ def extract_message(
     )
 
 
-def extract_messages_from_mbox_file(
-    mbox_file_and_archive: tuple[Path, str],
-) -> list[ExtractedMessage]:
-    """Extract every message in one mbox file. Takes a tuple so it can be mapped over a process pool."""
-    mbox_file, archive = mbox_file_and_archive
+def extract_messages_from_mbox_file(mbox_file: Path) -> list[ExtractedMessage]:
+    """Extract every message in one mbox file."""
     newsgroup = mbox_file.stem
     mbox = mailbox.mbox(str(mbox_file), factory=message_factory)
-    return [
-        extract_message(message=message, archive=archive, newsgroup=newsgroup)
-        for message in mbox
-    ]
+    return [extract_message(message=message, newsgroup=newsgroup) for message in mbox]
 
 
 def load_user_ids(connection: sqlite3.Connection) -> dict[UserKey, int]:
@@ -189,7 +178,6 @@ def insert_messages(
         message_rows.append(
             (
                 row_id,
-                message.archive,
                 message.newsgroup,
                 message.message_id_hash,
                 user_id,
@@ -208,8 +196,8 @@ def insert_messages(
     )
     cursor.executemany(
         "INSERT INTO messages"
-        " (id, archive, newsgroup, message_id_hash, user_id, date, body_hash)"
-        " VALUES (?, ?, ?, ?, ?, ?, ?)",
+        " (id, newsgroup, message_id_hash, user_id, date, body_hash)"
+        " VALUES (?, ?, ?, ?, ?, ?)",
         message_rows,
     )
     cursor.executemany(

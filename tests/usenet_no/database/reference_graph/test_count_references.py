@@ -5,10 +5,9 @@ from usenet_no.database.reference_graph import (
 )
 
 
-def test_every_reference_counts(mbox_data, database, load_archives):
+def test_every_reference_counts(mbox_data, load_archives):
     """Three replies cite the same origin, so the edge weighs three."""
     connection = load_archives(
-        database,
         [
             (mbox_data / "ia/no.graph.origins.mbox", IA_ARCHIVE),
             (mbox_data / "ia/no.graph.replies.mbox", IA_ARCHIVE),
@@ -20,10 +19,9 @@ def test_every_reference_counts(mbox_data, database, load_archives):
     assert edges == [("no.graph.replies", "no.graph.origins", 3)]
 
 
-def test_two_targets_in_one_message_count_twice(mbox_data, database, load_archives):
+def test_two_targets_in_one_message_count_twice(mbox_data, load_archives):
     """One reply cites both origins, so the edge weighs two."""
     connection = load_archives(
-        database,
         [
             (mbox_data / "ia/no.graph.origins.mbox", IA_ARCHIVE),
             (mbox_data / "ia/no.graph.two.targets.mbox", IA_ARCHIVE),
@@ -35,10 +33,9 @@ def test_two_targets_in_one_message_count_twice(mbox_data, database, load_archiv
     assert edges == [("no.graph.two.targets", "no.graph.origins", 2)]
 
 
-def test_direction_is_kept(mbox_data, database, load_archives):
+def test_direction_is_kept(mbox_data, load_archives):
     """Each group cites the other once, which is two edges, not one of weight two."""
     connection = load_archives(
-        database,
         [
             (mbox_data / "ia/no.graph.mutual.a.mbox", IA_ARCHIVE),
             (mbox_data / "ia/no.graph.mutual.b.mbox", IA_ARCHIVE),
@@ -53,12 +50,10 @@ def test_direction_is_kept(mbox_data, database, load_archives):
     ]
 
 
-def test_unresolved_references_go_to_the_unknown_newsgroup(
-    mbox_data, database, load_archives
-):
+def test_unresolved_references_go_to_the_unknown_newsgroup(mbox_data, load_archives):
     """Two replies cite messages nobody kept: one ghost once, one ghost twice."""
     connection = load_archives(
-        database, [(mbox_data / "ia/no.graph.cites.ghosts.mbox", IA_ARCHIVE)]
+        [(mbox_data / "ia/no.graph.cites.ghosts.mbox", IA_ARCHIVE)]
     )
 
     edges = count_references(connection, [(IA_ARCHIVE, None)])
@@ -66,9 +61,9 @@ def test_unresolved_references_go_to_the_unknown_newsgroup(
     assert edges == [("no.graph.cites.ghosts", UNKNOWN_NEWSGROUP, 3)]
 
 
-def test_references_within_a_newsgroup_make_no_edge(mbox_data, database, load_archives):
+def test_references_within_a_newsgroup_make_no_edge(mbox_data, load_archives):
     connection = load_archives(
-        database, [(mbox_data / "ia/no.graph.internal.thread.mbox", IA_ARCHIVE)]
+        [(mbox_data / "ia/no.graph.internal.thread.mbox", IA_ARCHIVE)]
     )
 
     edges = count_references(connection, [(IA_ARCHIVE, None)])
@@ -76,12 +71,9 @@ def test_references_within_a_newsgroup_make_no_edge(mbox_data, database, load_ar
     assert edges == []
 
 
-def test_a_crossposted_target_feeds_every_holding_newsgroup(
-    mbox_data, database, load_archives
-):
+def test_a_crossposted_target_feeds_every_holding_newsgroup(mbox_data, load_archives):
     """One reference to a message held by two groups adds one to both edges."""
     connection = load_archives(
-        database,
         [
             (mbox_data / "ia/no.graph.crossed.a.mbox", IA_ARCHIVE),
             (mbox_data / "ia/no.graph.crossed.b.mbox", IA_ARCHIVE),
@@ -100,12 +92,9 @@ def test_a_crossposted_target_feeds_every_holding_newsgroup(
     ]
 
 
-def test_a_crossposted_source_counts_from_each_newsgroup(
-    mbox_data, database, load_archives
-):
+def test_a_crossposted_source_counts_from_each_newsgroup(mbox_data, load_archives):
     """The same reply is held by two groups, and each group's copy is a source."""
     connection = load_archives(
-        database,
         [
             (mbox_data / "ia/no.graph.origins.mbox", IA_ARCHIVE),
             (mbox_data / "ia/no.graph.xpost.here.mbox", IA_ARCHIVE),
@@ -121,12 +110,9 @@ def test_a_crossposted_source_counts_from_each_newsgroup(
     ]
 
 
-def test_the_same_message_in_both_archives_counts_once(
-    mbox_data, database, load_archives
-):
+def test_the_same_message_in_both_archives_counts_once(mbox_data, load_archives):
     """Both archives hold the same reply in the same group, which is one message."""
     connection = load_archives(
-        database,
         [
             (mbox_data / "ia/no.graph.origins.mbox", IA_ARCHIVE),
             (mbox_data / "ia/no.graph.same.reply.mbox", IA_ARCHIVE),
@@ -139,11 +125,8 @@ def test_the_same_message_in_both_archives_counts_once(
     assert edges == [("no.graph.same.reply", "no.graph.origins", 1)]
 
 
-def test_a_repeated_id_in_one_references_list_counts_once(
-    mbox_data, database, load_archives
-):
+def test_a_repeated_id_in_one_references_list_counts_once(mbox_data, load_archives):
     connection = load_archives(
-        database,
         [
             (mbox_data / "ia/no.graph.origins.mbox", IA_ARCHIVE),
             (mbox_data / "ia/no.graph.stutter.mbox", IA_ARCHIVE),
@@ -155,12 +138,9 @@ def test_a_repeated_id_in_one_references_list_counts_once(
     assert edges == [("no.graph.stutter", "no.graph.origins", 1)]
 
 
-def test_a_target_held_by_both_archives_is_one_newsgroup(
-    mbox_data, database, load_archives
-):
+def test_a_target_held_by_both_archives_is_one_newsgroup(mbox_data, load_archives):
     """The cited posting is in the same group in both archives: one edge of weight one."""
     connection = load_archives(
-        database,
         [
             (mbox_data / "ia/no.graph.dup.target.mbox", IA_ARCHIVE),
             (mbox_data / "nb/no.graph.dup.target.mbox", NB_ARCHIVE),
@@ -173,20 +153,17 @@ def test_a_target_held_by_both_archives_is_one_newsgroup(
     assert edges == [("no.graph.cites.dup", "no.graph.dup.target", 1)]
 
 
-def test_messages_without_references_make_no_edges(mbox_data, database, load_archives):
-    connection = load_archives(
-        database, [(mbox_data / "ia/no.graph.origins.mbox", IA_ARCHIVE)]
-    )
+def test_messages_without_references_make_no_edges(mbox_data, load_archives):
+    connection = load_archives([(mbox_data / "ia/no.graph.origins.mbox", IA_ARCHIVE)])
 
     edges = count_references(connection, [(IA_ARCHIVE, None)])
 
     assert edges == []
 
 
-def test_the_archive_scope_decides_what_resolves(mbox_data, database, load_archives):
+def test_the_archive_scope_decides_what_resolves(mbox_data, load_archives):
     """The cited origin is held only by ia, so nb alone reads it as unknown."""
     connection = load_archives(
-        database,
         [
             (mbox_data / "ia/no.graph.origins.mbox", IA_ARCHIVE),
             (mbox_data / "nb/no.graph.late.reply.mbox", NB_ARCHIVE),
@@ -200,10 +177,9 @@ def test_the_archive_scope_decides_what_resolves(mbox_data, database, load_archi
     assert both == [("no.graph.late.reply", "no.graph.origins", 1)]
 
 
-def test_the_date_span_is_respected(mbox_data, database, load_archives):
+def test_the_date_span_is_respected(mbox_data, load_archives):
     """Replies outside the span are dropped, and targets outside it are unknown."""
     connection = load_archives(
-        database,
         [
             (mbox_data / "ia/no.graph.dated.origin.mbox", IA_ARCHIVE),
             (mbox_data / "ia/no.graph.dated.replies.mbox", IA_ARCHIVE),

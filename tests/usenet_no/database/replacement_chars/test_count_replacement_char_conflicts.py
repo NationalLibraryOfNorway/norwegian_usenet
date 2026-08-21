@@ -2,9 +2,8 @@ from usenet_no.database import IA_ARCHIVE, NB_ARCHIVE
 from usenet_no.database.replacement_chars import count_replacement_char_conflicts
 
 
-def test_counts_conflicts_per_newsgroup(mbox_data, database, load_archives):
+def test_counts_conflicts_per_newsgroup(mbox_data, load_archives):
     connection = load_archives(
-        database,
         [
             (mbox_data / "ia/no.replacement.chars.mbox", IA_ARCHIVE),
             (mbox_data / "nb/no.replacement.chars.mbox", NB_ARCHIVE),
@@ -25,9 +24,8 @@ def test_counts_conflicts_per_newsgroup(mbox_data, database, load_archives):
     assert counts.equal_with_char_replacement == 1
 
 
-def test_newsgroups_without_conflicts_are_left_out(mbox_data, database, load_archives):
+def test_newsgroups_without_conflicts_are_left_out(mbox_data, load_archives):
     connection = load_archives(
-        database,
         [
             (mbox_data / "ia/no.identical.across.archives.mbox", IA_ARCHIVE),
             (mbox_data / "nb/no.identical.across.archives.mbox", NB_ARCHIVE),
@@ -42,9 +40,8 @@ def test_newsgroups_without_conflicts_are_left_out(mbox_data, database, load_arc
     )
 
 
-def test_counts_multiple_newsgroups(mbox_data, database, load_archives):
+def test_counts_multiple_newsgroups(mbox_data, load_archives):
     connection = load_archives(
-        database,
         [
             (mbox_data / "ia/no.across.archives.mbox", IA_ARCHIVE),
             (mbox_data / "ia/no.replacement.chars.mbox", IA_ARCHIVE),

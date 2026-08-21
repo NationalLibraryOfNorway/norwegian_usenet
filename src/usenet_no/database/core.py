@@ -1,4 +1,4 @@
-"""Connect to the database, and the row id and date span arithmetic its queries share."""
+"""Connect to the archives' databases, and the row id and date span arithmetic their queries share."""
 
 import sqlite3
 from collections import defaultdict
@@ -7,10 +7,66 @@ from pathlib import Path
 IA_ARCHIVE = "ia"
 NB_ARCHIVE = "nb"
 
+# Each archive has a database of its own, so `archive` is not a column there.
+# Attaching both under their archive name and reading them through these views
+# puts it back, as the value that says which file a row came from.
+ARCHIVE_VIEWS = f"""
+CREATE TEMP VIEW messages AS
+    SELECT '{IA_ARCHIVE}' AS archive, id, newsgroup, message_id_hash, user_id, date, body_hash
+    FROM {IA_ARCHIVE}.messages
+    UNION ALL
+    SELECT '{NB_ARCHIVE}', id, newsgroup, message_id_hash, user_id, date, body_hash
+    FROM {NB_ARCHIVE}.messages;
+
+CREATE TEMP VIEW users AS
+    SELECT '{IA_ARCHIVE}' AS archive, id, name_hash, email_hash FROM {IA_ARCHIVE}.users
+    UNION ALL
+    SELECT '{NB_ARCHIVE}', id, name_hash, email_hash FROM {NB_ARCHIVE}.users;
+
+CREATE TEMP VIEW message_references AS
+    SELECT '{IA_ARCHIVE}' AS archive, message_row_id, referenced_id_hash
+    FROM {IA_ARCHIVE}.message_references
+    UNION ALL
+    SELECT '{NB_ARCHIVE}', message_row_id, referenced_id_hash
+    FROM {NB_ARCHIVE}.message_references;
+"""
+
+# Joining the sender in, for the counts that identify a user by email. Row ids
+# are handed out per archive, so a user id only means anything together with the
+# archive it was read from.
+MESSAGES_WITH_SENDER = (
+    "messages JOIN users"
+    " ON messages.user_id = users.id AND messages.archive = users.archive"
+)
+
+# The same, for the references of a message: both tables are per archive.
+MESSAGES_WITH_REFERENCES = (
+    "messages JOIN message_references"
+    " ON message_references.message_row_id = messages.id"
+    " AND message_references.archive = messages.archive"
+)
+
 
 def connect(database_file: Path) -> sqlite3.Connection:
+    """Open one archive's database."""
     connection = sqlite3.connect(database_file)
     connection.execute("PRAGMA foreign_keys = ON")
+    return connection
+
+
+def connect_archives(
+    ia_database_file: Path, nb_database_file: Path
+) -> sqlite3.Connection:
+    """Open both archives' databases as one connection, read through the archive views.
+
+    The two files are attached under their archive names, and `messages`,
+    `users` and `message_references` are views over both, each row carrying the
+    `archive` it came from.
+    """
+    connection = sqlite3.connect(":memory:")
+    connection.execute(f"ATTACH DATABASE ? AS {IA_ARCHIVE}", (str(ia_database_file),))
+    connection.execute(f"ATTACH DATABASE ? AS {NB_ARCHIVE}", (str(nb_database_file),))
+    connection.executescript(ARCHIVE_VIEWS)
     return connection
 
 

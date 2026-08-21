@@ -2,14 +2,13 @@ from usenet_no.database import IA_ARCHIVE
 from usenet_no.database.statistics import count_messages_without_sender
 
 
-def test_counts_messages_with_no_from_header(mbox_data, database, load_archives):
+def test_counts_messages_with_no_from_header(mbox_data, load_archives):
     """A message with no From header has no user, and is counted here.
 
     no.missing.sender.mbox carries an empty envelope sender and no From header,
     which is how such messages appear in the archives.
     """
     connection = load_archives(
-        database,
         [
             (mbox_data / "ia/no.known.sender.mbox", IA_ARCHIVE),
             (mbox_data / "ia/no.missing.sender.mbox", IA_ARCHIVE),
@@ -19,20 +18,18 @@ def test_counts_messages_with_no_from_header(mbox_data, database, load_archives)
     assert count_messages_without_sender(connection) == [("ia", "no.missing.sender", 2)]
 
 
-def test_no_rows_when_every_message_has_a_sender(mbox_data, database, load_archives):
+def test_no_rows_when_every_message_has_a_sender(mbox_data, load_archives):
     mbox_file = mbox_data / "ia/no.known.sender.mbox"
-    connection = load_archives(database, [(mbox_file, IA_ARCHIVE)])
+    connection = load_archives([(mbox_file, IA_ARCHIVE)])
 
     assert count_messages_without_sender(connection) == []
 
 
-def test_an_escaped_from_line_in_a_body_is_not_counted(
-    mbox_data, database, load_archives
-):
+def test_an_escaped_from_line_in_a_body_is_not_counted(mbox_data, load_archives):
     """no.from.line.in.body.mbox holds two messages, both with a From header,
     and a signature line starting with "From " that write_mbox escaped.
     """
     mbox_file = mbox_data / "ia/no.from.line.in.body.mbox"
-    connection = load_archives(database, [(mbox_file, IA_ARCHIVE)])
+    connection = load_archives([(mbox_file, IA_ARCHIVE)])
 
     assert count_messages_without_sender(connection) == []

@@ -26,7 +26,7 @@ import logging
 import sqlite3
 from typing import NamedTuple
 
-from usenet_no.database.core import date_span_clause
+from usenet_no.database.core import MESSAGES_WITH_REFERENCES, date_span_clause
 from usenet_no.database.overlap import ArchiveDatespan
 
 logger = logging.getLogger(__name__)
@@ -100,9 +100,7 @@ def _count_edges(
                 messages.newsgroup AS from_newsgroup,
                 message_references.referenced_id_hash AS referenced_id_hash,
                 targets.newsgroup AS target_newsgroup
-            FROM messages
-            JOIN message_references
-                ON message_references.message_row_id = messages.id
+            FROM {MESSAGES_WITH_REFERENCES}
             LEFT JOIN messages AS targets
                 ON targets.message_id_hash = message_references.referenced_id_hash
                 AND {target_scope}
@@ -184,8 +182,7 @@ def _create_reference_pair_table(
         " SELECT DISTINCT"
         "     messages.message_id_hash,"
         "     message_references.referenced_id_hash"
-        " FROM messages"
-        " JOIN message_references ON message_references.message_row_id = messages.id"
+        f" FROM {MESSAGES_WITH_REFERENCES}"
         f" WHERE {scope}",
         parameters,
     )
