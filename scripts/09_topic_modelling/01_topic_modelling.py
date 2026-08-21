@@ -47,7 +47,7 @@ if __name__ == "__main__":
         "--method",
         type=str,
         choices=METHODS,
-        default="senstopic",
+        default="topeax",
         help="Turftopic model to fit",
     )
     parser.add_argument(
