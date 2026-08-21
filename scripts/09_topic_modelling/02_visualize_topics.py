@@ -6,7 +6,11 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 
-from usenet_no.embed_messages import load_embeddings_and_docs
+from usenet_no.embed_messages import (
+    ARCHIVE_CHOICES,
+    archive_sources,
+    load_embeddings_and_docs,
+)
 from usenet_no.plot_utils import (
     hsl_to_hex,
     with_square_legend_swatch,
@@ -77,7 +81,13 @@ if __name__ == "__main__":
         type=str,
         default="no.religion",
         metavar="NEWSGROUP",
-        help="The newsgroup the run was fitted on, read from both archives",
+        help="The newsgroup the run was fitted on",
+    )
+    parser.add_argument(
+        "--archive",
+        choices=ARCHIVE_CHOICES,
+        default="nb",
+        help="Select the run that was fitted on this archive (default: %(default)s)",
     )
     parser.add_argument(
         "--save-fig",
@@ -94,6 +104,7 @@ if __name__ == "__main__":
         args.model,
         args.method,
         args.newsgroup,
+        args.archive,
         args.nr_topics,
     )
     topics_path = run_dir / "document_topics.npy"
@@ -102,7 +113,7 @@ if __name__ == "__main__":
         raise SystemExit(
             f"No topic modelling run at {run_dir}. "
             "Run scripts/09_topic_modelling/01_topic_modelling.py with the same "
-            "--method, --newsgroup and --nr-topics first."
+            "--method, --newsgroup, --archive and --nr-topics first."
         )
 
     # A reducing method has already placed every document in two dimensions, and
@@ -118,18 +129,19 @@ if __name__ == "__main__":
             args.embeddings_directory
             / "umap_embeddings"
             / args.model
-            / f"{args.newsgroup}.npy"
+            / f"{args.newsgroup}_{args.archive}.npy"
         )
         axis_title = "UMAP"
         regenerate_hint = (
             "Regenerate it with "
-            "scripts/08_make_embeddings/02_umap_reduce_embeddings.py --overwrite."
+            "scripts/08_make_embeddings/02_umap_reduce_embeddings.py "
+            f"--selection {args.newsgroup} --archive {args.archive} --overwrite."
         )
         if not coordinates_path.exists():
             raise SystemExit(
                 f"No UMAP embeddings at {coordinates_path}. "
                 "Run scripts/08_make_embeddings/02_umap_reduce_embeddings.py "
-                f"with --selection {args.newsgroup} first."
+                f"with --selection {args.newsgroup} --archive {args.archive} first."
             )
 
     logger.info("Loading coordinates from %s", coordinates_path)
@@ -140,6 +152,7 @@ if __name__ == "__main__":
         args.ia_directory,
         args.nb_directory,
         selection=[args.newsgroup],
+        sources=archive_sources(args.archive),
     )
     logger.info("Loaded %d messages total", len(embedding_indexer))
 
@@ -218,7 +231,7 @@ if __name__ == "__main__":
         )
 
     fig.update_layout(
-        title=f"{args.newsgroup} message embeddings "
+        title=f"{args.newsgroup} message embeddings, {args.archive} "
         f"(color={args.method} topic, shape=source)",
         xaxis_title=f"{axis_title} 1",
         yaxis_title=f"{axis_title} 2",

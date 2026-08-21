@@ -5,7 +5,11 @@ from pathlib import Path
 import numpy as np
 import plotly.graph_objects as go
 
-from usenet_no.embed_messages import load_embeddings_and_docs
+from usenet_no.embed_messages import (
+    ARCHIVE_CHOICES,
+    archive_sources,
+    load_embeddings_and_docs,
+)
 from usenet_no.plot_utils import (
     hsl_to_hex,
     with_square_legend_swatch,
@@ -59,19 +63,27 @@ if __name__ == "__main__":
         help="Newsgroup names to include (default: %(default)s)",
     )
     parser.add_argument(
+        "--archive",
+        choices=ARCHIVE_CHOICES,
+        default="nb",
+        help="Plot the messages of this archive (default: %(default)s)",
+    )
+    parser.add_argument(
         "--flatten-legend",
         action="store_true",
-        help="Give every newsgroup one legend entry covering both archives, instead "
-        "of one per newsgroup and archive",
+        help="Give every newsgroup one legend entry covering every archive plotted, "
+        "instead of one per newsgroup and archive",
     )
     args = parser.parse_args()
     logger.info(args)
 
     embedding_dir = args.embeddings_directory / args.model
 
+    sources = archive_sources(args.archive)
+
     umap_cache_dir = args.embeddings_directory / "umap_embeddings" / args.model
     cache_name = "_".join(sorted(args.selection))
-    umap_cache = umap_cache_dir / f"{cache_name}.npy"
+    umap_cache = umap_cache_dir / f"{cache_name}_{args.archive}.npy"
 
     logger.info("Loading UMAP embeddings from %s", umap_cache)
     umap_2d = np.load(umap_cache)
@@ -81,6 +93,7 @@ if __name__ == "__main__":
         args.ia_directory,
         args.nb_directory,
         selection=args.selection,
+        sources=sources,
     )
     logger.info("Loaded %d messages total", len(embedding_indexer))
 
@@ -88,7 +101,8 @@ if __name__ == "__main__":
         raise SystemExit(
             f"{umap_cache} has {len(umap_2d)} rows but the selection loaded "
             f"{len(embedding_indexer)} messages. Regenerate it with "
-            "scripts/08_make_embeddings/02_umap_reduce_embeddings.py --overwrite."
+            "scripts/08_make_embeddings/02_umap_reduce_embeddings.py "
+            f"--archive {args.archive} --overwrite."
         )
 
     newsgroups_indexer = np.array([s.rsplit("_", 1)[0] for s in embedding_indexer])
@@ -121,7 +135,7 @@ if __name__ == "__main__":
                 (newsgroups_indexer == ng) & (sources_indexer == source),
             )
             for ng in unique_newsgroups
-            for source in symbol_map
+            for source in sources
         ]
 
     fig = go.Figure()
@@ -152,7 +166,8 @@ if __name__ == "__main__":
         )
 
     fig.update_layout(
-        title="Norwegian Usenet message embeddings (color=newsgroup, shape=source)",
+        title=f"Norwegian Usenet message embeddings, {args.archive} "
+        "(color=newsgroup, shape=source)",
         xaxis_title="UMAP 1",
         yaxis_title="UMAP 2",
         width=1000,
