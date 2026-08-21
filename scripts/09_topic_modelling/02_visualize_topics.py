@@ -102,8 +102,8 @@ if __name__ == "__main__":
     run_dir = make_run_dir(
         args.topics_directory,
         args.model,
-        args.method,
         args.newsgroup,
+        args.method,
         args.archive,
         args.nr_topics,
     )
