@@ -198,6 +198,10 @@ if __name__ == "__main__":
     point_symbols = np.array(
         [symbol_map[stem.rsplit("_", 1)[1]] for stem in embedding_indexer]
     )
+    # Only a figure holding both archives tells them apart by marker shape. With
+    # one archive every marker is alike, so the legend can show that shape
+    # itself and the title has nothing to explain.
+    shapes_differ = args.archive == "both"
 
     hover_texts = np.array(
         [
@@ -213,12 +217,10 @@ if __name__ == "__main__":
     # and the shape of every marker in it says which archive that message is from.
     for t in unique_topics:
         mask = topics == t
-        x, y, symbols, text = with_square_legend_swatch(
-            coordinates[mask, 0],
-            coordinates[mask, 1],
-            point_symbols[mask],
-            hover_texts[mask],
-        )
+        x, y = coordinates[mask, 0], coordinates[mask, 1]
+        symbols, text = point_symbols[mask], hover_texts[mask]
+        if shapes_differ:
+            x, y, symbols, text = with_square_legend_swatch(x, y, symbols, text)
         fig.add_trace(
             go.Scattergl(
                 x=x,
@@ -236,9 +238,12 @@ if __name__ == "__main__":
             )
         )
 
+    marker_key = f"color={args.method} topic"
+    if shapes_differ:
+        marker_key += ", shape=source"
+
     fig.update_layout(
-        title=f"{args.newsgroup} message embeddings, {args.archive} "
-        f"(color={args.method} topic, shape=source)",
+        title=f"{args.newsgroup} message embeddings, {args.archive} ({marker_key})",
         xaxis_title=f"{axis_title} 1",
         yaxis_title=f"{axis_title} 2",
         width=1100,

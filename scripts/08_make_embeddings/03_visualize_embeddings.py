@@ -110,6 +110,10 @@ if __name__ == "__main__":
 
     symbol_map = {"nb": "circle", "ia": "triangle-up"}
     point_symbols = np.array([symbol_map[source] for source in sources_indexer])
+    # Only a figure holding both archives tells them apart by marker shape. With
+    # one archive every marker is alike, so the legend can show that shape
+    # itself and the title has nothing to explain.
+    shapes_differ = args.archive == "both"
     unique_newsgroups = sorted(set(newsgroups_indexer.tolist()))
     color_map = {
         ng: hsl_to_hex(int(i * 360 / len(unique_newsgroups)), 70, 50)
@@ -145,8 +149,9 @@ if __name__ == "__main__":
             continue
         x, y = umap_2d[mask, 0], umap_2d[mask, 1]
         symbols, text = point_symbols[mask], hover_texts[mask]
-        # An unflattened trace holds one archive, so its swatch already says which.
-        if args.flatten_legend:
+        # An unflattened trace holds one archive, so its swatch already says
+        # which, and so does every trace when only one archive is plotted.
+        if args.flatten_legend and shapes_differ:
             x, y, symbols, text = with_square_legend_swatch(x, y, symbols, text)
         fig.add_trace(
             go.Scattergl(
@@ -165,9 +170,12 @@ if __name__ == "__main__":
             )
         )
 
+    marker_key = "color=newsgroup"
+    if shapes_differ:
+        marker_key += ", shape=source"
+
     fig.update_layout(
-        title=f"Norwegian Usenet message embeddings, {args.archive} "
-        "(color=newsgroup, shape=source)",
+        title=f"Norwegian Usenet message embeddings, {args.archive} ({marker_key})",
         xaxis_title="UMAP 1",
         yaxis_title="UMAP 2",
         width=1000,
