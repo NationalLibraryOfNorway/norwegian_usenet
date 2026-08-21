@@ -6,7 +6,7 @@ import sys
 from dataclasses import asdict
 from pathlib import Path
 
-from usenet_no.database import IA_ARCHIVE, NB_ARCHIVE, connect
+from usenet_no.database import IA_ARCHIVE, NB_ARCHIVE, connect_archives
 from usenet_no.database.core import load_id_spans, load_message_positions
 from usenet_no.database.statistics import get_date_span
 from usenet_no.replacement_chars.recovery import (
@@ -46,10 +46,16 @@ if __name__ == "__main__":
         help="Directory containing Internet Archive (IA) .mbox files",
     )
     parser.add_argument(
-        "--database-file",
+        "--ia-database-file",
         type=Path,
-        default=Path("data/output/02_build_database/usenet.db"),
-        help="Path to the SQLite database file, which says which IA messages fall in the NB date span",
+        default=Path("data/output/02_build_database/ia.db"),
+        help="Path to the SQLite database file of the IA archive",
+    )
+    parser.add_argument(
+        "--nb-database-file",
+        type=Path,
+        default=Path("data/output/02_build_database/nb.db"),
+        help="Path to the SQLite database file of the NB archive, whose date span the IA messages are filtered by",
     )
     parser.add_argument(
         "--nb-directory",
@@ -106,7 +112,7 @@ if __name__ == "__main__":
     # The IA archive runs past the NB one at both ends, and a word can only be
     # recovered from a vocabulary the NB archive covers, so only IA messages
     # inside the NB date span are counted.
-    connection = connect(args.database_file)
+    connection = connect_archives(args.ia_database_file, args.nb_database_file)
     nb_date_span = get_date_span(connection, NB_ARCHIVE)
     ia_positions = load_message_positions(connection, IA_ARCHIVE, nb_date_span)
     ia_message_counts = {

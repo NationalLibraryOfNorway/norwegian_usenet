@@ -3,7 +3,7 @@ import json
 import logging
 from pathlib import Path
 
-from usenet_no.database import connect
+from usenet_no.database import connect_archives
 from usenet_no.database.conflicts import find_across_archive_conflicts
 
 logger = logging.getLogger(__name__)
@@ -15,10 +15,16 @@ if __name__ == "__main__":
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
-        "--database-file",
+        "--ia-database-file",
         type=Path,
-        default=Path("data/output/02_build_database/usenet.db"),
-        help="Path to the SQLite database file",
+        default=Path("data/output/02_build_database/ia.db"),
+        help="Path to the SQLite database file of the IA archive",
+    )
+    parser.add_argument(
+        "--nb-database-file",
+        type=Path,
+        default=Path("data/output/02_build_database/nb.db"),
+        help="Path to the SQLite database file of the NB archive",
     )
     parser.add_argument(
         "--output-file",
@@ -45,7 +51,7 @@ if __name__ == "__main__":
         )
         exit(0)
 
-    connection = connect(args.database_file)
+    connection = connect_archives(args.ia_database_file, args.nb_database_file)
     conflicts = find_across_archive_conflicts(connection)
     connection.close()
 

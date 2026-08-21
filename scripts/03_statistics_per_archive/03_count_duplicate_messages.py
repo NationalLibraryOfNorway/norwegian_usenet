@@ -1,6 +1,6 @@
 """Count true duplicate messages (same Message-ID and body) within each mbox file.
 
-Reads the database built in step 02: every copy of a message is stored as its
+Reads the databases built in step 02: every copy of a message is stored as its
 own row there, so the duplicates are rows sharing (archive, newsgroup,
 message_id_hash, body_hash).
 
@@ -13,7 +13,7 @@ import json
 import logging
 from pathlib import Path
 
-from usenet_no.database import connect
+from usenet_no.database import connect_archives
 from usenet_no.database.duplicates import find_true_duplicates
 
 logger = logging.getLogger(__name__)
@@ -25,10 +25,16 @@ if __name__ == "__main__":
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
-        "--database-file",
+        "--ia-database-file",
         type=Path,
-        default=Path("data/output/02_build_database/usenet.db"),
-        help="Path to the shared SQLite database file",
+        default=Path("data/output/02_build_database/ia.db"),
+        help="Path to the SQLite database file of the IA archive",
+    )
+    parser.add_argument(
+        "--nb-database-file",
+        type=Path,
+        default=Path("data/output/02_build_database/nb.db"),
+        help="Path to the SQLite database file of the NB archive",
     )
     parser.add_argument(
         "--output-file",
@@ -55,7 +61,7 @@ if __name__ == "__main__":
         )
         exit(0)
 
-    connection = connect(args.database_file)
+    connection = connect_archives(args.ia_database_file, args.nb_database_file)
     duplicates = find_true_duplicates(connection)
     connection.close()
 

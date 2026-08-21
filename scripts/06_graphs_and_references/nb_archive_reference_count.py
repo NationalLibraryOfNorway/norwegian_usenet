@@ -1,6 +1,6 @@
 """Count the references made in the NB archive, split by where they resolve.
 
-Reads the database built in step 02 and writes a .json file of four counts. A
+Reads the databases built in step 02 and writes a .json file of four counts. A
 reference is a (referring message, referenced id) pair with the newsgroup left
 out, counted once however many newsgroups or archives hold either end of it: the
 total, the ones pointing at a message NB holds, the ones NB has lost but IA
@@ -14,7 +14,7 @@ import json
 import logging
 from pathlib import Path
 
-from usenet_no.database import IA_ARCHIVE, NB_ARCHIVE, connect
+from usenet_no.database import IA_ARCHIVE, NB_ARCHIVE, connect_archives
 from usenet_no.database.reference_graph import count_reference_resolution
 
 logger = logging.getLogger(__name__)
@@ -26,10 +26,16 @@ def main() -> None:
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
-        "--database-file",
+        "--ia-database-file",
         type=Path,
-        default=Path("data/output/02_build_database/usenet.db"),
-        help="Path to the SQLite database file",
+        default=Path("data/output/02_build_database/ia.db"),
+        help="Path to the SQLite database file of the IA archive",
+    )
+    parser.add_argument(
+        "--nb-database-file",
+        type=Path,
+        default=Path("data/output/02_build_database/nb.db"),
+        help="Path to the SQLite database file of the NB archive",
     )
     parser.add_argument(
         "--output-file",
@@ -43,7 +49,7 @@ def main() -> None:
     logging.basicConfig(level=logging.INFO)
     logger.info("Args: %s", args)
 
-    connection = connect(args.database_file)
+    connection = connect_archives(args.ia_database_file, args.nb_database_file)
     resolution = count_reference_resolution(
         connection, (NB_ARCHIVE, None), (IA_ARCHIVE, None)
     )

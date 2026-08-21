@@ -3,7 +3,7 @@ import csv
 import logging
 from pathlib import Path
 
-from usenet_no.database import NB_ARCHIVE, connect
+from usenet_no.database import NB_ARCHIVE, connect_archives
 from usenet_no.database.comparison import compare_content_per_group
 from usenet_no.database.statistics import get_date_span
 
@@ -26,10 +26,16 @@ if __name__ == "__main__":
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
-        "--database-file",
+        "--ia-database-file",
         type=Path,
-        default=Path("data/output/02_build_database/usenet.db"),
-        help="Path to the SQLite database file",
+        default=Path("data/output/02_build_database/ia.db"),
+        help="Path to the SQLite database file of the IA archive",
+    )
+    parser.add_argument(
+        "--nb-database-file",
+        type=Path,
+        default=Path("data/output/02_build_database/nb.db"),
+        help="Path to the SQLite database file of the NB archive",
     )
     parser.add_argument(
         "--output-file",
@@ -49,7 +55,7 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     logger.info("Args: %s", args)
 
-    connection = connect(args.database_file)
+    connection = connect_archives(args.ia_database_file, args.nb_database_file)
     nb_date_span = get_date_span(connection, NB_ARCHIVE)
     logger.info("NB date span: %s to %s", *nb_date_span)
 
