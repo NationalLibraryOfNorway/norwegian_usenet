@@ -82,10 +82,14 @@ def layout_positions(graph: nx.DiGraph) -> dict[str, tuple[float, float]]:
     pull it into place, so it is left out of the physics and set out in a row
     under the graph instead.
     """
-    joined = graph.subgraph([node for node, degree in graph.degree() if degree > 0])
+    # Sorted, because the layout starts the vertices off on a circle in the
+    # order the graph holds them, and a subgraph hands them over in the order of
+    # a set, which is a different order in every process.
+    joined_nodes = sorted(node for node, degree in graph.degree() if degree > 0)
+    joined = graph.subgraph(joined_nodes)
 
     collapsed = nx.Graph()
-    collapsed.add_nodes_from(joined.nodes)
+    collapsed.add_nodes_from(joined_nodes)
     for source, target, attributes in joined.edges(data=True):
         already = collapsed.get_edge_data(source, target, {"references": 0})
         collapsed.add_edge(

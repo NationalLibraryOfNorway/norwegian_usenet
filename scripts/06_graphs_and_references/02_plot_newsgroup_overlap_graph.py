@@ -50,9 +50,13 @@ def layout_positions(graph: nx.Graph) -> dict[str, tuple[float, float]]:
     few users to be joined to anything has nothing to pull it into place, so it
     is left out of the physics and set out in a row under the graph instead.
     """
-    joined = nx.Graph(
-        graph.subgraph([node for node, degree in graph.degree() if degree > 0])
-    )
+    # Sorted, because the layout starts the vertices off on a circle in the
+    # order the graph holds them, and a subgraph hands them over in the order of
+    # a set, which is a different order in every process.
+    joined_nodes = sorted(node for node, degree in graph.degree() if degree > 0)
+    joined = nx.Graph()
+    joined.add_nodes_from(joined_nodes)
+    joined.add_edges_from(graph.subgraph(joined_nodes).edges(data=True))
 
     # The layout reads the weight as the distance an edge would like to be
     # drawn at, which is the opposite of what jaccard says: the more two
