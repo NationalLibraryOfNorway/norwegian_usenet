@@ -1,6 +1,6 @@
 # Step 03: counting messages and users in each archive
 
-The counting scripts read `data/output/02_build_database/usenet.db`, and each drawing script reads what the script before it wrote. Messages whose date could not be parsed are excluded from the date filtered statistics.
+The counting scripts read `data/output/02_build_database/ia.db` and `data/output/02_build_database/nb.db`, and each drawing script reads what the script before it wrote. Messages whose date could not be parsed are excluded from the date filtered statistics.
 
 - [01_count_messages_per_group.py](01_count_messages_per_group.py) counts messages per newsgroup for each of IA, date filtered IA and NB archives. Creates `data/output/03_statistics_per_archive/messages_per_group_ia.csv`, `data/output/03_statistics_per_archive/messages_per_group_ia_date_filtered.csv`  and `data/output/03_statistics_per_archive/messages_per_group_nb.csv`. Run with `--overwrite` to rewrite output files that are already there; without the flag each of them is skipped.
 - [02_plot_messages_per_group.py](02_plot_messages_per_group.py) plots messages in the top 20 groups vs the rest, and the distribution of newsgroups by message count, reading the `messages_per_group_*.csv` files. Prints group statistics to stdout and saves .png files to `data/output/03_statistics_per_archive/plot_messages_per_group/`.
