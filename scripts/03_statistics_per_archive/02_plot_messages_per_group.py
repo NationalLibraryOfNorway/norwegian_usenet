@@ -1,4 +1,8 @@
-"""Plot message counts per newsgroup, for full IA data and IA filtered to the NB date span."""
+"""Plot message counts per newsgroup, for full IA data and IA filtered to the NB date span.
+
+Anything held up against NB is read off the date filtered IA counts, since the
+full IA runs past the NB archive at both ends.
+"""
 
 import argparse
 from pathlib import Path
@@ -15,41 +19,33 @@ def load_group_counts(path: Path) -> pd.DataFrame:
     return df.sort_values("message_count", ascending=False)
 
 
-def print_group_stats(ia_dfs: list, df_nb: pd.DataFrame) -> None:
-    for label, df_ia in ia_dfs:
-        shared = set(df_ia["newsgroup"]) & set(df_nb["newsgroup"])
-        print(
-            f"{label} — groups: {len(df_ia)}, total messages: {df_ia['message_count'].sum():,}"
-        )
-        print(f"  Groups in both: {len(shared)}")
-        print(f"  IA only:        {len(set(df_ia['newsgroup']) - shared)}")
-        print(f"  NB only:       {len(set(df_nb['newsgroup']) - shared)}")
-        print()
-    print(
-        f"NB — groups: {len(df_nb)}, total messages: {df_nb['message_count'].sum():,}"
-    )
+def print_archive_size(df: pd.DataFrame, label: str) -> None:
+    print(f"{label} — groups: {len(df)}, total messages: {df['message_count'].sum():,}")
+
+
+def print_group_overlap(df_ia: pd.DataFrame, df_nb: pd.DataFrame) -> None:
+    shared = set(df_ia["newsgroup"]) & set(df_nb["newsgroup"])
+    print("IA date-filtered against NB")
+    print(f"  Groups in both: {len(shared)}")
+    print(f"  IA only:        {len(set(df_ia['newsgroup']) - shared)}")
+    print(f"  NB only:        {len(set(df_nb['newsgroup']) - shared)}")
 
 
 def print_top_groups(
-    ia_dfs: list, df_nb: pd.DataFrame, sort_col: str, sort_label: str
+    df_ia: pd.DataFrame, df_nb: pd.DataFrame, sort_col: str, sort_label: str
 ) -> None:
-    for label, df_ia in ia_dfs:
-        merged = df_ia.merge(df_nb, on="newsgroup", suffixes=("_ia", "_nb"))
-        merged["pct_ia"] = (
-            merged["message_count_ia"] / df_ia["message_count"].sum() * 100
-        )
-        merged["pct_nb"] = (
-            merged["message_count_nb"] / df_nb["message_count"].sum() * 100
-        )
-        result = (
-            merged[["newsgroup", "pct_ia", "pct_nb"]]
-            .sort_values(sort_col, ascending=False)
-            .reset_index(drop=True)
-        )
-        result["pct_ia"] = result["pct_ia"].map("{:.2f}%".format)
-        result["pct_nb"] = result["pct_nb"].map("{:.2f}%".format)
-        print(f"\nTop 20 newsgroups by {sort_label} share — {label}")
-        print(result.head(20).to_string())
+    merged = df_ia.merge(df_nb, on="newsgroup", suffixes=("_ia", "_nb"))
+    merged["pct_ia"] = merged["message_count_ia"] / df_ia["message_count"].sum() * 100
+    merged["pct_nb"] = merged["message_count_nb"] / df_nb["message_count"].sum() * 100
+    result = (
+        merged[["newsgroup", "pct_ia", "pct_nb"]]
+        .sort_values(sort_col, ascending=False)
+        .reset_index(drop=True)
+    )
+    result["pct_ia"] = result["pct_ia"].map("{:.2f}%".format)
+    result["pct_nb"] = result["pct_nb"].map("{:.2f}%".format)
+    print(f"\nTop 20 newsgroups by {sort_label} share — IA date-filtered against NB")
+    print(result.head(20).to_string())
 
 
 def plot_top_vs_rest(df: pd.DataFrame, title: str, out_path: Path) -> None:
@@ -136,11 +132,18 @@ def main() -> None:
     ia_full = load_group_counts(args.ia_csv)
     ia_filtered = load_group_counts(args.ia_date_filtered_csv)
     df_nb = load_group_counts(args.nb_csv)
-    ia_dfs = [("Full IA", ia_full), ("IA date-filtered", ia_filtered)]
 
-    print_group_stats(ia_dfs, df_nb)
-    print_top_groups(ia_dfs, df_nb, "pct_ia", "IA")
-    print_top_groups(ia_dfs, df_nb, "pct_nb", "NB")
+    for label, df in [
+        ("Full IA", ia_full),
+        ("IA date-filtered", ia_filtered),
+        ("NB", df_nb),
+    ]:
+        print_archive_size(df, label)
+    print()
+
+    print_group_overlap(ia_filtered, df_nb)
+    print_top_groups(ia_filtered, df_nb, "pct_ia", "IA")
+    print_top_groups(ia_filtered, df_nb, "pct_nb", "NB")
 
     plot_top_vs_rest(
         ia_full,

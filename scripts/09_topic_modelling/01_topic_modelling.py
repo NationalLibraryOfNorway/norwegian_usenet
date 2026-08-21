@@ -6,7 +6,11 @@ from pathlib import Path
 
 import numpy as np
 
-from usenet_no.embed_messages import load_embeddings_and_docs
+from usenet_no.embed_messages import (
+    ARCHIVE_CHOICES,
+    archive_sources,
+    load_embeddings_and_docs,
+)
 from usenet_no.topic_modelling import (
     METHODS,
     assign_topics,
@@ -43,7 +47,7 @@ if __name__ == "__main__":
         "--method",
         type=str,
         choices=METHODS,
-        default="senstopic",
+        default="topeax",
         help="Turftopic model to fit",
     )
     parser.add_argument(
@@ -93,7 +97,13 @@ if __name__ == "__main__":
         type=str,
         default="no.religion",
         metavar="NEWSGROUP",
-        help="The newsgroup to model, read from both archives",
+        help="The newsgroup to model",
+    )
+    parser.add_argument(
+        "--archive",
+        choices=ARCHIVE_CHOICES,
+        default="nb",
+        help="Fit on the messages of this archive (default: %(default)s)",
     )
     parser.add_argument(
         "--overwrite",
@@ -109,8 +119,9 @@ if __name__ == "__main__":
     output_dir = make_run_dir(
         args.output_directory,
         args.model,
-        args.method,
         args.newsgroup,
+        args.method,
+        args.archive,
         args.nr_topics,
     )
     # The counts are the last file a run writes, so an interrupted one is refitted.
@@ -128,6 +139,7 @@ if __name__ == "__main__":
         args.ia_directory,
         args.nb_directory,
         selection=[args.newsgroup],
+        sources=archive_sources(args.archive),
     )
     logger.info(
         "Loaded %d documents with embeddings of shape %s", len(docs), embeddings.shape

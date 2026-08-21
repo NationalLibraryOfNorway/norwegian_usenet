@@ -32,12 +32,13 @@ OUTLIER_TOPIC = -1
 def make_run_dir(
     topics_directory: Path,
     model: str,
-    method: str,
     newsgroup: str,
+    method: str,
+    archive: str,
     nr_topics: int | None,
 ) -> Path:
     """Point at the directory a run of these settings reads and writes."""
-    run_dir = topics_directory / model / method / newsgroup
+    run_dir = topics_directory / model / newsgroup / method / archive
     if nr_topics is not None:
         run_dir = run_dir / f"nr{nr_topics}"
     return run_dir

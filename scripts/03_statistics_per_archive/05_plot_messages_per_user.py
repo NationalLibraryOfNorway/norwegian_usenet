@@ -1,4 +1,8 @@
-"""Plot message counts per user (anonymized with hashed identifiers), for full IA data and IA filtered to the NB date span."""
+"""Plot message counts per user (anonymized with hashed identifiers), for full IA data and IA filtered to the NB date span.
+
+Anything held up against NB is read off the date filtered IA counts, since the
+full IA runs past the NB archive at both ends.
+"""
 
 import argparse
 from pathlib import Path
@@ -29,10 +33,9 @@ def print_stats(df: pd.DataFrame, label: str) -> None:
     print(f"  Users with email:   {df['hashed_email'].notna().sum():,}")
 
 
-def print_top_poster_counts(ia_dfs: list, df_nb: pd.DataFrame, n: int) -> None:
-    for label, df_ia in ia_dfs:
-        print(f"\nTop {n} posters — {label}")
-        print(df_ia.head(n).reset_index().post_count.apply(space_fmt))
+def print_top_poster_counts(df_ia: pd.DataFrame, df_nb: pd.DataFrame, n: int) -> None:
+    print(f"\nTop {n} posters — IA date-filtered")
+    print(df_ia.head(n).reset_index().post_count.apply(space_fmt))
     print(f"Number of posts by top {n} posters in Norwegian Web Archive data")
     print(df_nb.head(n).reset_index().post_count.apply(space_fmt))
 
@@ -110,29 +113,26 @@ def top_shared(
     return result[["hashed_email", "pct_ia", "pct_nb"]]
 
 
-def print_shared_users(ia_dfs: list, df_nb: pd.DataFrame) -> None:
+def print_shared_users(df_ia: pd.DataFrame, df_nb: pd.DataFrame) -> None:
     nb_by_email = df_nb.groupby("hashed_email")["post_count"].sum().reset_index()
     total_nb = df_nb["post_count"].sum()
     n = 10
 
-    for label, df_ia in ia_dfs:
-        ia_by_email = df_ia.groupby("hashed_email")["post_count"].sum().reset_index()
-        shared = ia_by_email.merge(
-            nb_by_email, on="hashed_email", suffixes=("_ia", "_nb")
-        )
-        total_ia = df_ia["post_count"].sum()
+    ia_by_email = df_ia.groupby("hashed_email")["post_count"].sum().reset_index()
+    shared = ia_by_email.merge(nb_by_email, on="hashed_email", suffixes=("_ia", "_nb"))
+    total_ia = df_ia["post_count"].sum()
 
-        print(f"\n{label}")
-        print(f"Users in both IA and NB (by email): {len(shared):,}")
-        print(
-            f"  IA-only users:  {len(ia_by_email[~ia_by_email['hashed_email'].isin(shared['hashed_email'])]):,}"
-        )
-        print(
-            f"  NB-only users: {len(nb_by_email[~nb_by_email['hashed_email'].isin(shared['hashed_email'])]):,}"
-        )
-        for sort_col, sort_label in [("post_count_ia", "IA"), ("post_count_nb", "NB")]:
-            print(f"Top {n} shared users by {sort_label} post count")
-            print(top_shared(shared, total_ia, total_nb, n, sort_col).to_string())
+    print("\nIA date-filtered against NB")
+    print(f"Users in both IA and NB (by email): {len(shared):,}")
+    print(
+        f"  IA-only users:  {len(ia_by_email[~ia_by_email['hashed_email'].isin(shared['hashed_email'])]):,}"
+    )
+    print(
+        f"  NB-only users: {len(nb_by_email[~nb_by_email['hashed_email'].isin(shared['hashed_email'])]):,}"
+    )
+    for sort_col, sort_label in [("post_count_ia", "IA"), ("post_count_nb", "NB")]:
+        print(f"Top {n} shared users by {sort_label} post count")
+        print(top_shared(shared, total_ia, total_nb, n, sort_col).to_string())
 
 
 def main() -> None:
@@ -172,16 +172,19 @@ def main() -> None:
     ia_full = load_user_counts(args.ia_csv)
     ia_filtered = load_user_counts(args.ia_date_filtered_csv)
     df_nb = load_user_counts(args.nb_csv)
-    ia_dfs = [("Full IA", ia_full), ("IA date-filtered", ia_filtered)]
 
-    for label, df_ia in ia_dfs:
-        print_stats(df_ia, label)
-        nb_pct = df_nb["post_count"].sum() / df_ia["post_count"].sum() * 100
-        print(f"  NB is {nb_pct:.1f}% the size by post count")
+    for label, df in [
+        ("Full IA", ia_full),
+        ("IA date-filtered", ia_filtered),
+        ("NB", df_nb),
+    ]:
+        print_stats(df, label)
         print()
-    print_stats(df_nb, "NB")
 
-    print_top_poster_counts(ia_dfs, df_nb, n=20)
+    nb_pct = df_nb["post_count"].sum() / ia_filtered["post_count"].sum() * 100
+    print(f"NB is {nb_pct:.1f}% the size of the date-filtered IA by post count")
+
+    print_top_poster_counts(ia_filtered, df_nb, n=20)
 
     n = 100
     plot_top_vs_rest(
@@ -204,7 +207,6 @@ def main() -> None:
     )
 
     cumulative_dfs = [
-        (ia_full, "IA full period"),
         (ia_filtered, "IA 1994-1997"),
         (df_nb, "NB"),
     ]
@@ -213,7 +215,7 @@ def main() -> None:
         [(ia_full, "Full IA"), (ia_filtered, "IA date-filtered"), (df_nb, "NB")]
     )
 
-    print_shared_users(ia_dfs, df_nb)
+    print_shared_users(ia_filtered, df_nb)
 
 
 if __name__ == "__main__":

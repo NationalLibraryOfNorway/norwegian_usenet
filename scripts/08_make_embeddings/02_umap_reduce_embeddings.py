@@ -5,7 +5,11 @@ from pathlib import Path
 import numpy as np
 import umap
 
-from usenet_no.embed_messages import load_embeddings_and_docs
+from usenet_no.embed_messages import (
+    ARCHIVE_CHOICES,
+    archive_sources,
+    load_embeddings_and_docs,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -54,6 +58,12 @@ if __name__ == "__main__":
         help="Newsgroup names to include (default: %(default)s)",
     )
     parser.add_argument(
+        "--archive",
+        choices=ARCHIVE_CHOICES,
+        default="nb",
+        help="Reduce the messages of this archive (default: %(default)s)",
+    )
+    parser.add_argument(
         "--random-state", type=int, default=42, help="UMAP random state"
     )
     parser.add_argument(
@@ -71,7 +81,7 @@ if __name__ == "__main__":
     umap_cache_dir.mkdir(parents=True, exist_ok=True)
 
     cache_name = "_".join(sorted(args.selection))
-    umap_cache = umap_cache_dir / f"{cache_name}.npy"
+    umap_cache = umap_cache_dir / f"{cache_name}_{args.archive}.npy"
 
     if umap_cache.exists() and not args.overwrite:
         logger.info(
@@ -85,6 +95,7 @@ if __name__ == "__main__":
         args.ia_directory,
         args.nb_directory,
         selection=args.selection,
+        sources=archive_sources(args.archive),
     )
     logger.info("Loaded %d messages total", len(embedding_indexer))
 

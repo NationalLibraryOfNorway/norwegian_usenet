@@ -15,6 +15,13 @@ from usenet_no.mbox_utils import (
 
 logger = logging.getLogger(__name__)
 
+ARCHIVE_CHOICES = ("nb", "ia", "both")
+
+
+def archive_sources(archive: str) -> tuple[str, ...]:
+    """The mbox sources one of `ARCHIVE_CHOICES` reads."""
+    return ("nb", "ia") if archive == "both" else (archive,)
+
 
 def embed_mbox_file(
     mbox_file: Path,
@@ -83,7 +90,9 @@ def load_embeddings_and_docs(
     ia_directory: Path,
     nb_directory: Path,
     selection: list[str],
+    sources: Collection[str],
 ) -> tuple[np.ndarray, list[str], list[str]]:
+    """Load the embeddings and message bodies of `selection`, from `sources` only."""
     source_dirs = {"ia": ia_directory, "nb": nb_directory}
 
     embedding_files = sorted(
@@ -101,7 +110,7 @@ def load_embeddings_and_docs(
             logger.warning("Unknown source '%s' in %s, skipping", source, emb_file.name)
             continue
 
-        if mbox_stem not in selection:
+        if source not in sources or mbox_stem not in selection:
             continue
         embeddings = np.load(emb_file)
 
