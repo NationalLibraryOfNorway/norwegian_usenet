@@ -94,6 +94,12 @@ if __name__ == "__main__":
         action="store_true",
         help="If flagged, will also save the figure as a .png in the run directory",
     )
+    parser.add_argument(
+        "--no-show",
+        action="store_true",
+        help="If flagged, will not open the figure in a browser, which is what a "
+        "run only meant to write the .png of --save-fig wants",
+    )
     args = parser.parse_args()
     logger.info("Args: %s", args)
 
@@ -246,4 +252,5 @@ if __name__ == "__main__":
         fig.write_image(figure_path, scale=2)
         logger.info("Saved the figure to %s", figure_path)
 
-    fig.show()
+    if not args.no_show:
+        fig.show()
