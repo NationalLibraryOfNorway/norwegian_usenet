@@ -2,7 +2,13 @@ import logging
 import sqlite3
 from dataclasses import dataclass
 
-from usenet_no.database.core import IA_ARCHIVE, NB_ARCHIVE, date_span_clause
+from usenet_no.database.core import (
+    IA_ARCHIVE,
+    MESSAGES_WITH_REFERENCES,
+    MESSAGES_WITH_SENDER,
+    NB_ARCHIVE,
+    date_span_clause,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -14,9 +20,6 @@ IA_REFERENCES = "ia_references"
 NB_REFERENCES = "nb_references"
 SHARED_NEWSGROUPS = "shared_newsgroups"
 SHARED_EMAILS = "shared_emails"
-
-# Joining the sender in, for the counts that identify a user by email
-MESSAGES_WITH_SENDER = "messages JOIN users ON messages.user_id = users.id"
 
 
 @dataclass(frozen=True)
@@ -72,8 +75,7 @@ def _create_reference_table(
     connection.execute(
         f"INSERT INTO {table}"
         " SELECT DISTINCT message_references.referenced_id_hash"
-        " FROM message_references"
-        " JOIN messages ON message_references.message_row_id = messages.id"
+        f" FROM {MESSAGES_WITH_REFERENCES}"
         f" WHERE messages.archive = ?{clause}",
         (archive, *span_parameters),
     )

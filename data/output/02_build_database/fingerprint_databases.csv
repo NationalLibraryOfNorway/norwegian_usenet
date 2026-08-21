@@ -1,0 +1,21 @@
+label,value,count
+ia schema,e001aac1567306b3b36658d19cea328b,
+ia users,d419461b4123e9d2cb67a5159be8f870,236756
+ia messages,796eea8d77db94d4eca91ffc307f16e3,5981974
+ia message_references,980cf2427f27e40f69b475ed80730adc,25230944
+ia processing order,ff0ebbd20f96338334f27971456d78de,331
+ia first three,"no.ai, no.alkohol, no.alt.activeworlds",
+ia last three,"no.vr, no.www, no.x",
+ia messages per file,cecf21e3d3acdd6c22982ee647075be4,331
+"ia messages, no ids",1484b595bb97cfbfaebf398e7858e22c,5981974
+"ia users, no ids",0f9dadf415c1a2bb77624aebeed4ddf4,236756
+nb schema,e001aac1567306b3b36658d19cea328b,
+nb users,58b5e4700815d402744aae21a42b2c39,49335
+nb messages,1b0ea0e14cac6c01974de65e73a63419,613016
+nb message_references,dab5a240a420fb3a372ede73b54c1280,2151810
+nb processing order,181dc4e751dfe1cff43c765607388fde,139
+nb first three,"no.ai, no.alkohol, no.alt.amiga",
+nb last three,"no.vr, no.www, no.x",
+nb messages per file,10d93117f9d2dd719f9eea0e48fef182,139
+"nb messages, no ids",f592a9d5f315be706b630fcd50278cd3,613016
+"nb users, no ids",57eaf70d5fc392036abb583ea4ffd3ba,49335

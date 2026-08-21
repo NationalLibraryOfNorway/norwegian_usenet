@@ -1,7 +1,7 @@
 import logging
 import sqlite3
 
-from usenet_no.database.core import date_span_clause
+from usenet_no.database.core import MESSAGES_WITH_SENDER, date_span_clause
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +33,7 @@ def count_messages_per_user(
     return list(
         connection.execute(
             "SELECT users.name_hash, users.email_hash, COUNT(*)"
-            " FROM messages JOIN users ON messages.user_id = users.id"
+            f" FROM {MESSAGES_WITH_SENDER}"
             f" WHERE messages.archive = ?{clause}"
             " GROUP BY messages.user_id"
             " ORDER BY users.email_hash, users.name_hash",
@@ -56,7 +56,7 @@ def count_messages_per_email(
     return list(
         connection.execute(
             "SELECT users.email_hash, COUNT(*) AS post_count"
-            " FROM messages JOIN users ON messages.user_id = users.id"
+            f" FROM {MESSAGES_WITH_SENDER}"
             f" WHERE messages.archive = ? AND users.email_hash IS NOT NULL{clause}"
             " GROUP BY users.email_hash"
             " ORDER BY post_count DESC, users.email_hash",

@@ -1,9 +1,10 @@
-"""User overlap between newsgroups, from the message database built in step 02.
+"""User overlap between newsgroups, from the message databases built in step 02.
 
 A user is one `users.email_hash`. The `users` table holds one row per (name,
-email) pair, so a person who spelled their name two ways has several ids there;
-grouping on the hashed email instead keeps them a single user. The plain address
-is never read, so everything here can be published as it is.
+email) pair, so a person who spelled their name two ways has several ids there,
+and a person who posted in both archives has one in each database; grouping on
+the hashed email instead keeps them a single user. The plain address is never
+read, so everything here can be published as it is.
 
 Who posted where is collected as a one-hot user x newsgroup matrix, which the
 Jaccard step reduces to one row per pair of newsgroups.
@@ -16,7 +17,7 @@ from typing import NamedTuple
 import numpy as np
 from scipy.sparse import coo_matrix, csr_matrix
 
-from usenet_no.database.core import date_span_clause
+from usenet_no.database.core import MESSAGES_WITH_SENDER, date_span_clause
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +61,7 @@ def find_newsgroups_per_user(
     return list(
         connection.execute(
             "SELECT DISTINCT users.email_hash, messages.newsgroup"
-            " FROM messages JOIN users ON messages.user_id = users.id"
+            f" FROM {MESSAGES_WITH_SENDER}"
             f" WHERE ({' OR '.join(conditions)}) AND users.email_hash IS NOT NULL"
             " ORDER BY users.email_hash, messages.newsgroup",
             parameters,

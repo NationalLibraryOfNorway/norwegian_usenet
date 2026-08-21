@@ -4,11 +4,8 @@ from usenet_no.database.comparison import compare_message_ids
 SPAN = ("1996-01-06", "1996-01-20")
 
 
-def test_counts_message_id_overlap_between_the_archives(
-    mbox_data, database, load_archives
-):
+def test_counts_message_id_overlap_between_the_archives(mbox_data, load_archives):
     connection = load_archives(
-        database,
         [
             (mbox_data / "ia/no.id.overlap.mbox", IA_ARCHIVE),
             (mbox_data / "nb/no.id.overlap.mbox", NB_ARCHIVE),
@@ -24,12 +21,9 @@ def test_counts_message_id_overlap_between_the_archives(
     assert results["ids_nb_only"] == 1
 
 
-def test_counts_references_the_other_archive_resolves(
-    mbox_data, database, load_archives
-):
+def test_counts_references_the_other_archive_resolves(mbox_data, load_archives):
     """A reply cites a posting its own archive lost but the other one kept."""
     connection = load_archives(
-        database,
         [
             (mbox_data / "ia/no.id.overlap.mbox", IA_ARCHIVE),
             (mbox_data / "ia/no.ia.citations.mbox", IA_ARCHIVE),
@@ -44,10 +38,9 @@ def test_counts_references_the_other_archive_resolves(
     assert results["nb_refs_resolved_by_ia"] == 1
 
 
-def test_counts_ghost_references_by_who_cited_them(mbox_data, database, load_archives):
+def test_counts_ghost_references_by_who_cited_them(mbox_data, load_archives):
     """Ghosts are cited ids that neither archive holds a message for."""
     connection = load_archives(
-        database,
         [
             (mbox_data / "ia/no.id.overlap.mbox", IA_ARCHIVE),
             (mbox_data / "ia/no.ia.citations.mbox", IA_ARCHIVE),
@@ -63,12 +56,8 @@ def test_counts_ghost_references_by_who_cited_them(mbox_data, database, load_arc
     assert results["ghost_cited_by_both"] == 1
 
 
-def test_date_filtering_restricts_ia_ids_and_their_references(
-    mbox_data, database, load_archives
-):
-    connection = load_archives(
-        database, [(mbox_data / "ia/no.dated.citations.mbox", IA_ARCHIVE)]
-    )
+def test_date_filtering_restricts_ia_ids_and_their_references(mbox_data, load_archives):
+    connection = load_archives([(mbox_data / "ia/no.dated.citations.mbox", IA_ARCHIVE)])
 
     results = compare_message_ids(connection, ia_date_span=SPAN)
 
@@ -77,10 +66,9 @@ def test_date_filtering_restricts_ia_ids_and_their_references(
     assert results["ghost_cited_by_ia_only"] == 1
 
 
-def test_date_filtering_leaves_nb_alone(mbox_data, database, load_archives):
+def test_date_filtering_leaves_nb_alone(mbox_data, load_archives):
     """The date-filtered comparison asks what IA adds over the span NB covers."""
     connection = load_archives(
-        database,
         [
             (mbox_data / "ia/no.dated.citations.mbox", IA_ARCHIVE),
             (mbox_data / "nb/no.dated.ids.mbox", NB_ARCHIVE),
@@ -93,9 +81,9 @@ def test_date_filtering_leaves_nb_alone(mbox_data, database, load_archives):
     assert filtered["nb_ids"] == 2
 
 
-def test_repeated_message_ids_are_counted_once(mbox_data, database, load_archives):
+def test_repeated_message_ids_are_counted_once(mbox_data, load_archives):
     connection = load_archives(
-        database, [(mbox_data / "nb/no.repeated.message.mbox", NB_ARCHIVE)]
+        [(mbox_data / "nb/no.repeated.message.mbox", NB_ARCHIVE)]
     )
 
     results = compare_message_ids(connection)

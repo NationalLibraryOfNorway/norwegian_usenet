@@ -1,6 +1,6 @@
 """Count messages per date in each archive.
 
-Counts come from the database built in step 02, where the Date header of every
+Counts come from the databases built in step 02, where the Date header of every
 message was already parsed and normalized. Messages whose date could not be
 parsed are stored with no date, and are reported here in a row labelled
 "unknown", as they were when the counts were read from the mbox files.
@@ -12,7 +12,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from usenet_no.database import IA_ARCHIVE, NB_ARCHIVE, connect
+from usenet_no.database import IA_ARCHIVE, NB_ARCHIVE, connect_archives
 from usenet_no.database.statistics import count_messages_per_date
 from usenet_no.date_parsing import UNKNOWN_DATE
 
@@ -25,10 +25,16 @@ if __name__ == "__main__":
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
-        "--database-file",
+        "--ia-database-file",
         type=Path,
-        default=Path("data/output/02_build_database/usenet.db"),
-        help="Path to the SQLite database file",
+        default=Path("data/output/02_build_database/ia.db"),
+        help="Path to the SQLite database file of the IA archive",
+    )
+    parser.add_argument(
+        "--nb-database-file",
+        type=Path,
+        default=Path("data/output/02_build_database/nb.db"),
+        help="Path to the SQLite database file of the NB archive",
     )
     parser.add_argument(
         "--ia-output-file",
@@ -52,7 +58,7 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     logger.info("Args: %s", args)
 
-    connection = connect(args.database_file)
+    connection = connect_archives(args.ia_database_file, args.nb_database_file)
 
     for archive, output_file in [
         (IA_ARCHIVE, args.ia_output_file),

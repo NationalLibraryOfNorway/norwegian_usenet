@@ -9,7 +9,7 @@ Two questions, kept apart because they mean different things:
   archives never agree on a body, most often because the archives decoded the
   same characters differently.
 
-Both read the database built in step 02. Redundant copies that agree on the
+Both read the databases built in step 02. Redundant copies that agree on the
 body are not conflicts at all; those are counted in `usenet_no.database.duplicates`.
 """
 

@@ -1,13 +1,14 @@
-# Step 02: loading both archives into the database
+# Step 02: loading each archive into a database of its own
 
-- [01_build_database.py](01_build_database.py) reads the .mbox files of both archives and writes `data/output/02_build_database/usenet.db` in one pass. It holds one row per message, with names, emails and message ids as hashes only, so it can be shared. Run with `--overwrite` to delete an existing database file and build it again; without the flag the script exits without doing anything when the file is already there.
+- [01_build_databases.py](01_build_databases.py) reads the .mbox files of one archive at a time and writes `data/output/02_build_database/ia.db` and `data/output/02_build_database/nb.db`. Each holds one row per message of that archive, with names, emails and message ids as hashes only, so they can be shared. Run with `--overwrite` to delete existing database files and build them again; without the flag an archive whose file is already there is skipped.
 
 ## The tables
 
-Every hash column holds a 16 character hex digest, from `blake2b` with an 8 byte
-digest, of the UTF-8 plain text. A hash is traced back to its plain text through
-the mbox files, by the position `messages.id` gives. The schema is in
-[`src/usenet_no/database/build.py`](../../src/usenet_no/database/build.py).
+Both databases have the same schema, and the archive a row belongs to is the
+file it is in. Every hash column holds a 16 character hex digest, from `blake2b`
+with an 8 byte digest, of the UTF-8 plain text. A hash is traced back to its
+plain text through the mbox files, by the position `messages.id` gives. The
+schema is in [`src/usenet_no/database/build.py`](../../src/usenet_no/database/build.py).
 
 ```sql
 CREATE TABLE users (
@@ -18,9 +19,8 @@ CREATE TABLE users (
 
 CREATE TABLE messages (
     id              INTEGER PRIMARY KEY,
-    archive         TEXT NOT NULL,
     newsgroup       TEXT NOT NULL,
-    message_id_hash TEXT,
+    message_id_hash TEXT NOT NULL,
     user_id         INTEGER REFERENCES users(id),
     date            TEXT,
     body_hash       TEXT
@@ -32,7 +32,7 @@ CREATE TABLE message_references (
 );
 
 CREATE INDEX idx_users_email_hash ON users(email_hash);
-CREATE INDEX idx_messages_archive_newsgroup ON messages(archive, newsgroup);
+CREATE INDEX idx_messages_newsgroup ON messages(newsgroup);
 CREATE INDEX idx_messages_message_id_hash ON messages(message_id_hash);
 CREATE INDEX idx_messages_user_id ON messages(user_id);
 CREATE INDEX idx_messages_date ON messages(date);
@@ -43,22 +43,14 @@ CREATE INDEX idx_references_hash ON message_references(referenced_id_hash);
 
 `messages`, one row per message read from an mbox file:
 
-| Column            | Type    | Null | Description                                                                                      |
-| ----------------- | ------- | ---- | ------------------------------------------------------------------------------------------------ |
-| `id`              | INTEGER | no   | Row id. Minus the lowest id of its (archive, newsgroup), it is the message's position in its mbox file |
-| `archive`         | TEXT    | no   | `ia` or `nb`                                                                                     |
-| `newsgroup`       | TEXT    | no   | Stem of the mbox file the message was read from                                                  |
-| `message_id_hash` | TEXT    | yes  | Hash of the Message-ID header; NULL when the header is missing or unparseable                    |
-| `user_id`         | INTEGER | yes  | `users.id` of the sender; NULL when the From field gave neither a name nor an email              |
-| `date`            | TEXT    | yes  | `YYYY-MM-DD`; NULL when the Date header could not be parsed                                      |
-| `body_hash`       | TEXT    | yes  | Hash of the message body; NULL when the body is empty. The body itself is not stored |
-
-28 messages have a NULL `message_id_hash`, all of them from IA. Every one of them
-does carry a Message-ID line in the mbox file, but a mangled From or Subject
-header earlier in the message contains a raw newline, which ends the header block
-where the parser is concerned: the Message-ID, and every header after it, is read
-as part of the body instead. The same goes for their Date, which is NULL for 27 of
-the 28.
+| Column            | Type    | Null | Description                                                                          |
+| ----------------- | ------- | ---- | ------------------------------------------------------------------------------------ |
+| `id`              | INTEGER | no   | Row id. Minus the lowest id of its newsgroup, it is the message's position in its mbox file |
+| `newsgroup`       | TEXT    | no   | Stem of the mbox file the message was read from                                      |
+| `message_id_hash` | TEXT    | no   | Hash of the Message-ID header                                                        |
+| `user_id`         | INTEGER | yes  | `users.id` of the sender; NULL when the From field gave neither a name nor an email  |
+| `date`            | TEXT    | yes  | `YYYY-MM-DD`; NULL when the Date header could not be parsed                          |
+| `body_hash`       | TEXT    | yes  | Hash of the message body; NULL when the body is empty. The body itself is not stored  |
 
 `users`, one row per (name, email) pair:
 
@@ -67,6 +59,11 @@ the 28.
 | `id`         | INTEGER | no   | Row id, referenced by `messages.user_id`            |
 | `name_hash`  | TEXT    | yes  | Hash of the display name; NULL when there is none   |
 | `email_hash` | TEXT    | yes  | Hash of the lowercased address; NULL when there is none |
+
+A sender who posted in both archives is a row in each database, under a
+different id, so an id only means anything together with the archive it was read
+from. The two rows carry the same hashes, which is what the comparisons match a
+user on.
 
 `message_references`, one row per (message, referenced id) pair from the References header:
 
@@ -79,30 +76,44 @@ the 28.
 
 Built from both archives in full:
 
-| Table                | Rows       |
-| -------------------- | ---------- |
-| `messages`           | 6 594 990  |
-| `users`              | 250 829    |
-| `message_references` | 27 382 713 |
+| Table                | `ia.db`    | `nb.db`   |
+| -------------------- | ---------- | --------- |
+| `messages`           | 5 981 974  | 613 016   |
+| `users`              | 236 756    | 49 335    |
+| `message_references` | 25 230 944 | 2 151 810 |
+
+## Reading the two together
+
+The analysis scripts read both files through `connect_archives`, which attaches
+them under their archive names and reads `messages`, `users` and
+`message_references` as views over the two, each row carrying the `archive` it
+came from. That is what lets a comparison between the archives be one query,
+and the date-filtered IA subset be a WHERE clause instead of a copy on disk.
 
 ## Checking a database built somewhere else
 
 A message's position in its mbox file is its row id minus the lowest row id of its
-(archive, newsgroup), so the ids are not just labels: the replacement-character pairs
+newsgroup, so the ids are not just labels: the replacement-character pairs
 and the embeddings both use them to find bodies. Two databases holding the same messages
 under different ids will read the wrong bodies without reporting anything wrong, because
 the message counts still agree.
 
-The scripts below print a fingerprint of the rows themselves rather than of the .db file,
-which is not byte-reproducible between builds. Run one on each machine and compare the
-output. They read the database read-only, and use nothing outside the standard library,
-so they can be copied to a machine that has neither this repository nor its dependencies.
+[02_fingerprint_databases.py](02_fingerprint_databases.py) prints a fingerprint of the rows
+themselves rather than of the .db files, which are not byte-reproducible between builds. Run
+it on each machine and compare the output. It reads the databases read-only, and uses nothing
+outside the standard library, so it can be copied to a machine that has neither this
+repository nor its dependencies.
 
-Each also writes its fingerprint to a CSV of `label`, `value` and `count` in
-`data/output/02_build_database/`. When that file is already there it is read before it is
-rewritten, and every label whose value or count changed is printed as `before -> after`,
-so rebuilding the database on one machine shows what the rebuild changed.
+It hashes the rows of both archives twice: once as they are with the row ids included, and
+once with the ids left out, ordered by their contents instead. If every line of the first
+matches, the two sets of databases are interchangeable. The second is what a difference is
+read against: the build hands out row ids per mbox file in the order the files are read, so
+a build that read them in another order holds the same messages under different ids, and
+says so by matching there while the first differs.
 
-- [02_fingerprint_database.py](02_fingerprint_database.py) hashes every table, row ids included. Start here: if every line matches, the two databases are interchangeable. Writes `data/output/02_build_database/fingerprint_database.csv`
-- [03_fingerprint_database_content.py](03_fingerprint_database_content.py) says whether a difference is in the data or only in the ids it was given, by hashing the message and user rows with the ids left out, next to the order the mbox files were read in. Writes `data/output/02_build_database/fingerprint_database_content.csv`
-- [04_fingerprint_database_per_archive.py](04_fingerprint_database_per_archive.py) splits the fingerprint by archive. Every IA file is read before any NB file, so a sender first seen in IA is numbered while IA is being read: this says which parse a difference came from. Writes `data/output/02_build_database/fingerprint_database_per_archive.csv`
+Both hashes go into `data/output/02_build_database/fingerprint_databases.csv`, a CSV of
+`label`, `value` and `count`, with every label naming the archive it came from. Every label
+is written on every run, since a hash means nothing except against the one an earlier run
+wrote. When the file is already there it is read before it is rewritten, and every label
+whose value or count changed is printed as `before -> after`, followed by one line per
+changed table saying whether its rows differ or only their ids.

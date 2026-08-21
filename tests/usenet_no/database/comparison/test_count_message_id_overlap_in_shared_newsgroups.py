@@ -8,10 +8,9 @@ SPAN = ("1996-01-06", "1996-01-20")
 
 
 def test_leaves_out_the_ids_of_a_newsgroup_only_one_archive_has(
-    mbox_data, database, load_archives
+    mbox_data, load_archives
 ):
     connection = load_archives(
-        database,
         [
             (mbox_data / "ia/no.shared.group.mbox", IA_ARCHIVE),
             (mbox_data / "ia/no.ia.only.group.mbox", IA_ARCHIVE),
@@ -26,11 +25,8 @@ def test_leaves_out_the_ids_of_a_newsgroup_only_one_archive_has(
     )
 
 
-def test_no_shared_newsgroups_leaves_nothing_to_count(
-    mbox_data, database, load_archives
-):
+def test_no_shared_newsgroups_leaves_nothing_to_count(mbox_data, load_archives):
     connection = load_archives(
-        database,
         [
             (mbox_data / "ia/no.ia.only.group.mbox", IA_ARCHIVE),
             (mbox_data / "nb/no.id.overlap.mbox", NB_ARCHIVE),
@@ -42,9 +38,8 @@ def test_no_shared_newsgroups_leaves_nothing_to_count(
     )
 
 
-def test_date_filtering_restricts_ia_but_not_nb(mbox_data, database, load_archives):
+def test_date_filtering_restricts_ia_but_not_nb(mbox_data, load_archives):
     connection = load_archives(
-        database,
         [
             (mbox_data / "ia/no.dated.ids.mbox", IA_ARCHIVE),
             (mbox_data / "nb/no.dated.ids.mbox", NB_ARCHIVE),
@@ -61,10 +56,9 @@ def test_date_filtering_restricts_ia_but_not_nb(mbox_data, database, load_archiv
 
 
 def test_the_temporary_table_is_dropped_so_the_count_can_be_repeated(
-    mbox_data, database, load_archives
+    mbox_data, load_archives
 ):
     connection = load_archives(
-        database,
         [
             (mbox_data / "ia/no.shared.group.mbox", IA_ARCHIVE),
             (mbox_data / "nb/no.shared.group.mbox", NB_ARCHIVE),

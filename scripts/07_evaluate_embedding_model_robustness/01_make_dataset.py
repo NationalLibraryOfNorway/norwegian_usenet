@@ -3,7 +3,7 @@ import logging
 import sys
 from pathlib import Path
 
-from usenet_no.database import connect
+from usenet_no.database import connect_archives
 from usenet_no.database.replacement_chars import load_replacement_char_pairs
 from usenet_no.replacement_chars.robustness import (
     deduplicate_pairs,
@@ -26,10 +26,16 @@ if __name__ == "__main__":
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
-        "--database-file",
+        "--ia-database-file",
         type=Path,
-        default=Path("data/output/02_build_database/usenet.db"),
-        help="Path to the SQLite database file",
+        default=Path("data/output/02_build_database/ia.db"),
+        help="Path to the SQLite database file of the IA archive",
+    )
+    parser.add_argument(
+        "--nb-database-file",
+        type=Path,
+        default=Path("data/output/02_build_database/nb.db"),
+        help="Path to the SQLite database file of the NB archive",
     )
     parser.add_argument(
         "--ia-directory",
@@ -85,7 +91,7 @@ if __name__ == "__main__":
         )
         sys.exit(0)
 
-    connection = connect(args.database_file)
+    connection = connect_archives(args.ia_database_file, args.nb_database_file)
     pairs = list(
         load_replacement_char_pairs(connection, args.ia_directory, args.nb_directory)
     )

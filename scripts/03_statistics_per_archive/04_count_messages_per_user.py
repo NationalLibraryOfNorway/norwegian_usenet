@@ -1,6 +1,6 @@
 """Count messages per user for IA, date-filtered IA and NB.
 
-Counts come from the database built in step 02, which already holds the hash of
+Counts come from the databases built in step 02, which already holds the hash of
 each sender's name and email, so no separate plain-text-to-hash mapping is
 needed. Only hashes are written out, so the results can be published as they
 are. The date-filtered variant is a WHERE clause restricting IA to the NB date
@@ -16,7 +16,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from usenet_no.database import IA_ARCHIVE, NB_ARCHIVE, connect
+from usenet_no.database import IA_ARCHIVE, NB_ARCHIVE, connect_archives
 from usenet_no.database.statistics import count_messages_per_user, get_date_span
 
 logger = logging.getLogger(__name__)
@@ -28,10 +28,16 @@ if __name__ == "__main__":
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
-        "--database-file",
+        "--ia-database-file",
         type=Path,
-        default=Path("data/output/02_build_database/usenet.db"),
-        help="Path to the SQLite database file",
+        default=Path("data/output/02_build_database/ia.db"),
+        help="Path to the SQLite database file of the IA archive",
+    )
+    parser.add_argument(
+        "--nb-database-file",
+        type=Path,
+        default=Path("data/output/02_build_database/nb.db"),
+        help="Path to the SQLite database file of the NB archive",
     )
     parser.add_argument(
         "--nb-output-file",
@@ -63,7 +69,7 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     logger.info("Args: %s", args)
 
-    connection = connect(args.database_file)
+    connection = connect_archives(args.ia_database_file, args.nb_database_file)
     nb_date_span = get_date_span(connection, NB_ARCHIVE)
 
     for archive, date_span, output_file in [

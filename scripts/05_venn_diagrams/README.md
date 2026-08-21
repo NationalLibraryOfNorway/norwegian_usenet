@@ -1,6 +1,6 @@
 # Step 05: venn diagrams
 
-Every script here reads `data/output/02_build_database/usenet.db` and draws the overlap between the two archives as venn diagrams. The IA archive is always restricted to the NB date span, which is read from the database, so there is no full period figure.
+Every script here reads `data/output/02_build_database/ia.db` and `data/output/02_build_database/nb.db` and draws the overlap between the two archives as venn diagrams. The IA archive is always restricted to the NB date span, which is read from the database, so there is no full period figure.
 
 Each script writes both the figure and the counts behind it, as `<name>.png` and `<name>.json` in `data/output/05_venn_diagrams/`. Nothing is cached: every run queries the database again and overwrites what is there.
 

@@ -2,7 +2,7 @@
 
 The scripts are independent of each other and can be run in any order, except the numbered ones: the plot reads what the count writes.
 
-**Scripts that only read `data/output/02_build_database/usenet.db`**:
+**Scripts that only read `data/output/02_build_database/ia.db` and `data/output/02_build_database/nb.db`**:
 - [message_body_overlap_per_newsgroup.py](message_body_overlap_per_newsgroup.py) compares message body overlap by exact text match, per newsgroup, between NB and the IA archive restricted to the NB date span. Creates one row per newsgroup (`newsgroup`, `ia_only`, `nb_only`, `both`) in `data/output/04_compare_message_bodies/ia_nb_content_comparison.csv`. Run with `--overwrite` to rewrite that file; without the flag nothing is written when it is already there.
 - [conflicting_message_bodies.py](conflicting_message_bodies.py) finds Message-IDs held by both archives whose copies never agree on a body. Creates `data/output/04_compare_message_bodies/conflicting_message_ids_across_archives.jsonl`. Run with `--overwrite` to rewrite that file; without the flag the script exits without doing anything when it is already there.
 
