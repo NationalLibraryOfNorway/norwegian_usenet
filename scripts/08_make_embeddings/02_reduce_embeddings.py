@@ -4,11 +4,14 @@ from pathlib import Path
 
 import numpy as np
 import umap
+from sklearn.manifold import TSNE
 
 from usenet_no.embed_messages import (
     ARCHIVE_CHOICES,
+    REDUCTION_CHOICES,
     archive_sources,
     load_embeddings_and_docs,
+    reduction_cache_path,
 )
 
 logger = logging.getLogger(__name__)
@@ -16,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Reduce message embeddings to 2-dim vectors with UMAP",
+        description="Reduce message embeddings to 2-dim vectors with UMAP or t-SNE",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
@@ -64,12 +67,25 @@ if __name__ == "__main__":
         help="Reduce the messages of this archive (default: %(default)s)",
     )
     parser.add_argument(
-        "--random-state", type=int, default=42, help="UMAP random state"
+        "--reduction",
+        choices=REDUCTION_CHOICES,
+        default="umap",
+        help="Reduce with this algorithm (default: %(default)s)",
+    )
+    parser.add_argument(
+        "--perplexity",
+        type=float,
+        default=50.0,
+        help="Neighbourhood size t-SNE reduces against, ignored by UMAP "
+        "(default: %(default)s)",
+    )
+    parser.add_argument(
+        "--random-state", type=int, default=42, help="Random state of the reduction"
     )
     parser.add_argument(
         "--overwrite",
         action="store_true",
-        help="Recompute and overwrite the cached UMAP embeddings",
+        help="Recompute and overwrite the cached embeddings",
     )
 
     args = parser.parse_args()
@@ -77,16 +93,20 @@ if __name__ == "__main__":
 
     embedding_dir = args.embeddings_directory / args.model
 
-    umap_cache_dir = args.embeddings_directory / "umap_embeddings" / args.model
-    umap_cache_dir.mkdir(parents=True, exist_ok=True)
+    cache_path = reduction_cache_path(
+        args.embeddings_directory,
+        args.model,
+        args.selection,
+        args.archive,
+        args.reduction,
+    )
+    cache_path.parent.mkdir(parents=True, exist_ok=True)
 
-    cache_name = "_".join(sorted(args.selection))
-    umap_cache = umap_cache_dir / f"{cache_name}_{args.archive}.npy"
-
-    if umap_cache.exists() and not args.overwrite:
+    if cache_path.exists() and not args.overwrite:
         logger.info(
-            "UMAP embeddings already exist at %s, rerun with --overwrite to regenerate",
-            umap_cache,
+            "Reduced embeddings already exist at %s, rerun with --overwrite to "
+            "regenerate",
+            cache_path,
         )
         exit(0)
 
@@ -99,7 +119,18 @@ if __name__ == "__main__":
     )
     logger.info("Loaded %d messages total", len(embedding_indexer))
 
-    logger.info("Computing UMAP embeddings (random_state=%d)", args.random_state)
-    umap_2d = umap.UMAP(random_state=args.random_state).fit_transform(embeddings)
-    np.save(umap_cache, umap_2d)
-    logger.info("Saved UMAP embeddings to %s", umap_cache)
+    logger.info(
+        "Computing %s embeddings (random_state=%d)", args.reduction, args.random_state
+    )
+    if args.reduction == "umap":
+        reducer = umap.UMAP(random_state=args.random_state)
+    else:
+        reducer = TSNE(
+            n_components=2,
+            perplexity=args.perplexity,
+            init="pca",
+            random_state=args.random_state,
+        )
+    embeddings_2d = reducer.fit_transform(embeddings)
+    np.save(cache_path, embeddings_2d)
+    logger.info("Saved %s embeddings to %s", args.reduction, cache_path)

@@ -84,7 +84,7 @@ Builds the edges between newsgroups, from the users they share and the reference
 Measures how robust an embedding model is to the U+FFFD (`�`) damage in the IA archive, by embedding the damaged IA body and the intact NB body of the same message and comparing them. See [scripts/07_evaluate_embedding_model_robustness/README.md](scripts/07_evaluate_embedding_model_robustness/README.md) for details.
 
 #### Step 08: embed messages
-Filters the IA archive to the NB date span, selects newsgroups, makes text embeddings for their messages, reduces them to 2 dimensions with UMAP, and plots them. See [scripts/08_make_embeddings/README.md](scripts/08_make_embeddings/README.md) for details.
+Filters the IA archive to the NB date span, selects newsgroups, makes text embeddings for their messages, reduces them to 2 dimensions with UMAP or t-SNE, and plots them. See [scripts/08_make_embeddings/README.md](scripts/08_make_embeddings/README.md) for details.
 
 #### Step 09: topic modelling
 Finds topics in one newsgroup with turftopic, over the embeddings from the previous step, and plots the messages coloured by topic. See [scripts/09_topic_modelling/README.md](scripts/09_topic_modelling/README.md) for details.

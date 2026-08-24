@@ -8,8 +8,11 @@ import plotly.graph_objects as go
 
 from usenet_no.embed_messages import (
     ARCHIVE_CHOICES,
+    REDUCTION_AXIS_TITLES,
+    REDUCTION_CHOICES,
     archive_sources,
     load_embeddings_and_docs,
+    reduction_cache_path,
 )
 from usenet_no.plot_utils import (
     hsl_to_hex,
@@ -90,6 +93,15 @@ if __name__ == "__main__":
         help="Select the run that was fitted on this archive (default: %(default)s)",
     )
     parser.add_argument(
+        "--reduction",
+        choices=REDUCTION_CHOICES,
+        default="umap",
+        help="Plot a method that finds its topics in the embeddings as they are "
+        "over the step 08 embeddings reduced with this algorithm, ignored by the "
+        f"methods that reduce themselves ({', '.join(REDUCING_METHODS)}) "
+        "(default: %(default)s)",
+    )
+    parser.add_argument(
         "--save-fig",
         action="store_true",
         help="If flagged, will also save the figure as a .png in the run directory",
@@ -131,23 +143,24 @@ if __name__ == "__main__":
             "Refit the run in scripts/09_topic_modelling/01_topic_modelling.py."
         )
     else:
-        coordinates_path = (
-            args.embeddings_directory
-            / "umap_embeddings"
-            / args.model
-            / f"{args.newsgroup}_{args.archive}.npy"
+        coordinates_path = reduction_cache_path(
+            args.embeddings_directory,
+            args.model,
+            [args.newsgroup],
+            args.archive,
+            args.reduction,
         )
-        axis_title = "UMAP"
-        regenerate_hint = (
-            "Regenerate it with "
-            "scripts/08_make_embeddings/02_umap_reduce_embeddings.py "
-            f"--selection {args.newsgroup} --archive {args.archive} --overwrite."
+        axis_title = REDUCTION_AXIS_TITLES[args.reduction]
+        step_08_run = (
+            "scripts/08_make_embeddings/02_reduce_embeddings.py "
+            f"--selection {args.newsgroup} --archive {args.archive} "
+            f"--reduction {args.reduction}"
         )
+        regenerate_hint = f"Regenerate it with {step_08_run} --overwrite."
         if not coordinates_path.exists():
             raise SystemExit(
-                f"No UMAP embeddings at {coordinates_path}. "
-                "Run scripts/08_make_embeddings/02_umap_reduce_embeddings.py "
-                f"with --selection {args.newsgroup} --archive {args.archive} first."
+                f"No {axis_title} embeddings at {coordinates_path}. "
+                f"Run {step_08_run} first."
             )
 
     logger.info("Loading coordinates from %s", coordinates_path)
