@@ -7,8 +7,11 @@ import plotly.graph_objects as go
 
 from usenet_no.embed_messages import (
     ARCHIVE_CHOICES,
+    REDUCTION_AXIS_TITLES,
+    REDUCTION_CHOICES,
     archive_sources,
     load_embeddings_and_docs,
+    reduction_cache_path,
 )
 from usenet_no.plot_utils import (
     hsl_to_hex,
@@ -21,7 +24,8 @@ logger = logging.getLogger(__name__)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Visualize pre-computed UMAP message embeddings with Plotly",
+        description="Visualize pre-computed 2-dimensional message embeddings "
+        "with Plotly",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
@@ -69,10 +73,25 @@ if __name__ == "__main__":
         help="Plot the messages of this archive (default: %(default)s)",
     )
     parser.add_argument(
+        "--reduction",
+        choices=REDUCTION_CHOICES,
+        default="umap",
+        help="Plot the embeddings 02 reduced with this algorithm "
+        "(default: %(default)s)",
+    )
+    parser.add_argument(
         "--flatten-legend",
         action="store_true",
         help="Give every newsgroup one legend entry covering every archive plotted, "
-        "instead of one per newsgroup and archive",
+        "instead of one per newsgroup and archive. A figure of one archive holds "
+        "one entry per newsgroup either way",
+    )
+    parser.add_argument(
+        "--save-fig",
+        action="store_true",
+        help="If flagged, will also save the figure as a .png next to the cache "
+        "it is plotted from, holding the scatter alone and none of the message "
+        "texts the interactive figure shows on hover",
     )
     args = parser.parse_args()
     logger.info(args)
@@ -81,12 +100,16 @@ if __name__ == "__main__":
 
     sources = archive_sources(args.archive)
 
-    umap_cache_dir = args.embeddings_directory / "umap_embeddings" / args.model
-    cache_name = "_".join(sorted(args.selection))
-    umap_cache = umap_cache_dir / f"{cache_name}_{args.archive}.npy"
+    cache_path = reduction_cache_path(
+        args.embeddings_directory,
+        args.model,
+        args.selection,
+        args.archive,
+        args.reduction,
+    )
 
-    logger.info("Loading UMAP embeddings from %s", umap_cache)
-    umap_2d = np.load(umap_cache)
+    logger.info("Loading %s embeddings from %s", args.reduction, cache_path)
+    embeddings_2d = np.load(cache_path)
 
     _, embedding_indexer, text_indexer = load_embeddings_and_docs(
         embedding_dir,
@@ -97,12 +120,12 @@ if __name__ == "__main__":
     )
     logger.info("Loaded %d messages total", len(embedding_indexer))
 
-    if len(umap_2d) != len(embedding_indexer):
+    if len(embeddings_2d) != len(embedding_indexer):
         raise SystemExit(
-            f"{umap_cache} has {len(umap_2d)} rows but the selection loaded "
+            f"{cache_path} has {len(embeddings_2d)} rows but the selection loaded "
             f"{len(embedding_indexer)} messages. Regenerate it with "
-            "scripts/08_make_embeddings/02_umap_reduce_embeddings.py "
-            f"--archive {args.archive} --overwrite."
+            "scripts/08_make_embeddings/02_reduce_embeddings.py "
+            f"--archive {args.archive} --reduction {args.reduction} --overwrite."
         )
 
     newsgroups_indexer = np.array([s.rsplit("_", 1)[0] for s in embedding_indexer])
@@ -128,8 +151,9 @@ if __name__ == "__main__":
     )
 
     # A flattened legend holds every newsgroup once, and the shape of each marker
-    # in its trace is what says which archive that message is from.
-    if args.flatten_legend:
+    # in its trace is what says which archive that message is from. One archive
+    # has nothing to tell apart, so its legend is flat whatever the flag says.
+    if args.flatten_legend or not shapes_differ:
         traces = [(ng, ng, newsgroups_indexer == ng) for ng in unique_newsgroups]
     else:
         traces = [
@@ -147,7 +171,7 @@ if __name__ == "__main__":
     for name, newsgroup, mask in traces:
         if not mask.any():
             continue
-        x, y = umap_2d[mask, 0], umap_2d[mask, 1]
+        x, y = embeddings_2d[mask, 0], embeddings_2d[mask, 1]
         symbols, text = point_symbols[mask], hover_texts[mask]
         # An unflattened trace holds one archive, so its swatch already says
         # which, and so does every trace when only one archive is plotted.
@@ -174,13 +198,27 @@ if __name__ == "__main__":
     if shapes_differ:
         marker_key += ", shape=source"
 
+    axis_title = REDUCTION_AXIS_TITLES[args.reduction]
+
+    # Naming the archive is worth the room only where the figure holds more
+    # than one of them.
+    archive_key = f", {args.archive}" if shapes_differ else ""
+
     fig.update_layout(
-        title=f"Norwegian Usenet message embeddings, {args.archive} ({marker_key})",
-        xaxis_title="UMAP 1",
-        yaxis_title="UMAP 2",
+        title=f"Norwegian Usenet message embeddings{archive_key} ({marker_key})",
+        xaxis_title=f"{axis_title} 1",
+        yaxis_title=f"{axis_title} 2",
         width=1000,
         height=700,
         legend={"font": {"size": 9}},
         hoverlabel={"align": "left"},
     )
+
+    if args.save_fig:
+        figure_path = cache_path.with_suffix(".png")
+        static_fig = go.Figure(fig)
+        static_fig.update_traces(text=None, hovertemplate=None, hoverinfo="skip")
+        static_fig.write_image(figure_path, scale=2)
+        logger.info("Saved the figure to %s", figure_path)
+
     fig.show()
