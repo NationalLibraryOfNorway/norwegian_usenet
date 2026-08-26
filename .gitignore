@@ -189,8 +189,7 @@ hidden
 
 data/output/07_evaluate_embedding_model_robustness/replacement_char_eval_pairs.jsonl
 
-data/output/08_make_embeddings/*
-!data/output/08_make_embeddings/newsgroups_for_selection.jsonl
+*.npy
 
 # Of a topic modelling run, only the per-source topic counts are kept. The
 # embeddings and the topic table are turftopic's own output, and the fitted

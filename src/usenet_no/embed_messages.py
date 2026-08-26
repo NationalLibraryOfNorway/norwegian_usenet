@@ -17,10 +17,37 @@ logger = logging.getLogger(__name__)
 
 ARCHIVE_CHOICES = ("nb", "ia", "both")
 
+REDUCTION_CHOICES = ("umap", "tsne")
+
+# What the axes of a figure plotted over each reduction are called.
+REDUCTION_AXIS_TITLES = {"umap": "UMAP", "tsne": "t-SNE"}
+
 
 def archive_sources(archive: str) -> tuple[str, ...]:
     """The mbox sources one of `ARCHIVE_CHOICES` reads."""
     return ("nb", "ia") if archive == "both" else (archive,)
+
+
+def reduction_cache_path(
+    embeddings_directory: Path,
+    model: str,
+    selection: Collection[str],
+    archive: str,
+    reduction: str,
+) -> Path:
+    """Point at the file the 2-dimensional embeddings of these settings cache in."""
+    if reduction not in REDUCTION_CHOICES:
+        raise ValueError(
+            f"Unknown reduction {reduction!r}, pick one of "
+            f"{', '.join(REDUCTION_CHOICES)}"
+        )
+    cache_name = "_".join(sorted(selection))
+    return (
+        embeddings_directory
+        / f"{reduction}_embeddings"
+        / model
+        / f"{cache_name}_{archive}.npy"
+    )
 
 
 def embed_mbox_file(
