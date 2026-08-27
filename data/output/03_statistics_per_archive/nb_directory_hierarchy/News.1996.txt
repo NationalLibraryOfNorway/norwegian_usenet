@@ -1,0 +1,123 @@
+News.1996
+└── no
+    ├── ai
+    ├── alkohol
+    ├── alt
+    │   ├── arkiv
+    │   ├── config
+    │   ├── diskusjoner
+    │   ├── fan
+    │   │   └── de-lillos
+    │   ├── flame
+    │   ├── frustrasjoner
+    │   ├── gledesutbrudd
+    │   ├── god
+    │   │   └── jul
+    │   ├── gullkorn
+    │   ├── irc-treff
+    │   ├── katter
+    │   ├── mat
+    │   │   └── drikke
+    │   ├── motorsykler
+    │   ├── pompel-og-pilt
+    │   ├── radio-tv
+    │   │   └── irma-1000
+    │   └── tegneserier
+    ├── audio
+    ├── bil
+    ├── biz
+    │   ├── annonser
+    │   └── diskusjoner
+    ├── bolig
+    ├── c
+    ├── ef
+    ├── elektronikk
+    ├── embnet
+    ├── eunet
+    │   ├── diverse
+    │   ├── drift
+    │   └── hjelp
+    ├── film
+    ├── general
+    ├── havforskning
+    ├── irc
+    ├── it
+    │   └── emacs
+    ├── jus
+    ├── kjemi
+    ├── kryptografi
+    ├── linux
+    ├── lisp
+    ├── litteratur
+    ├── mac
+    ├── mail
+    │   ├── diverse
+    │   └── drift
+    ├── marked
+    │   ├── bil
+    │   ├── bolig
+    │   ├── data
+    │   └── jobb
+    ├── ms-windows
+    ├── multimedia
+    ├── musikk
+    │   ├── gitar
+    │   └── klassisk
+    ├── net
+    ├── news
+    │   ├── diverse
+    │   └── drift
+    ├── norsk
+    ├── nuug
+    ├── org
+    │   ├── dnd
+    │   ├── efn
+    │   │   └── diskusjon
+    │   ├── isoc-no
+    │   └── nobug
+    │       └── diverse
+    ├── pc
+    ├── perl
+    ├── prat
+    │   ├── aksjer
+    │   └── narkotika
+    ├── psykologi
+    ├── radio-tv
+    ├── reiser
+    ├── religion
+    ├── slekt
+    │   └── etterlysning
+    ├── sources
+    │   ├── list
+    │   └── wanted
+    ├── speider
+    ├── spill
+    │   ├── rollespill
+    │   └── sjakk
+    ├── sport
+    │   └── diverse
+    ├── standard
+    ├── stortinget
+    ├── student
+    │   ├── nett
+    │   └── samfund
+    ├── svar
+    ├── sykkel
+    ├── tegnsett
+    ├── tele
+    ├── telepost
+    ├── tungregning
+    ├── typografi
+    ├── uninett
+    │   ├── diverse
+    │   ├── drift
+    │   ├── fik
+    │   ├── hjelp
+    │   ├── katalog
+    │   └── skole
+    ├── unix
+    ├── vitser
+    ├── vr
+    └── x
+
+120 directories

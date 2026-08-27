@@ -1,0 +1,110 @@
+NEWS
+└── KZ2001-0147
+    └── NEWS
+        ├── AI
+        ├── ALKOHOL
+        ├── ALT
+        │   ├── AMIGA
+        │   ├── ARKIV
+        │   ├── CONFIG
+        │   ├── DISKUSJO
+        │   ├── FLAME
+        │   ├── FRUSTRAS
+        │   ├── GLEDESUT
+        │   ├── GOD
+        │   │   └── JUL
+        │   ├── IRCTREFF
+        │   ├── KATTER
+        │   ├── MAT
+        │   │   └── DRIKKE
+        │   ├── MOTORSYK
+        │   ├── POMPELOG
+        │   ├── RADIO_TV
+        │   │   └── IRMA1000
+        │   └── TEGNESER
+        ├── AUDIO
+        ├── BIL
+        ├── BIZ
+        │   ├── ANNONSER
+        │   └── DISKUSJO
+        ├── BOLIG
+        ├── C
+        ├── EF
+        ├── ELEKTRON
+        ├── EMBNET
+        ├── EUNET
+        │   ├── DIVERSE
+        │   ├── DRIFT
+        │   └── HJELP
+        ├── FILM
+        ├── GENERAL
+        ├── HAVFORSK
+        ├── IRC
+        ├── JUS
+        ├── KJEMI
+        ├── KRYPTOGR
+        ├── LINUX
+        ├── LISP
+        ├── LITTERAT
+        ├── MAC
+        ├── MAIL
+        │   ├── DIVERSE
+        │   └── DRIFT
+        ├── MARKED
+        │   ├── DATA
+        │   └── JOBB
+        ├── MSWINDOW
+        ├── MULTIMED
+        ├── MUSIKK
+        │   └── GITAR
+        ├── NET
+        ├── NEWS
+        │   ├── DIVERSE
+        │   └── DRIFT
+        ├── NORSK
+        ├── NUUG
+        ├── ORG
+        │   ├── DECUS
+        │   ├── EFN
+        │   │   └── DISKUSJO
+        │   └── NOBUG
+        │       └── DIVERSE
+        ├── PC
+        ├── PERL
+        ├── PSYKOLOG
+        ├── RADIO_TV
+        ├── REISER
+        ├── RELIGION
+        ├── SLEKT
+        ├── SOURCES
+        │   ├── LIST
+        │   └── WANTED
+        ├── SPEIDER
+        ├── SPILL
+        ├── SPORT
+        │   └── DIVERSE
+        ├── STANDARD
+        ├── STORTING
+        ├── STUDENT
+        │   ├── NETT
+        │   └── SAMFUND
+        ├── SVAR
+        ├── SYKKEL
+        ├── TEGNSETT
+        ├── TELE
+        ├── TELEPOST
+        ├── TUNGREGN
+        ├── TYPOGRAF
+        ├── UNINETT
+        │   ├── DIVERSE
+        │   ├── DRIFT
+        │   ├── FIK
+        │   ├── HJELP
+        │   ├── KATALOG
+        │   └── SKOLE
+        ├── UNIX
+        ├── VITSER
+        ├── VR
+        └── X
+
+107 directories
