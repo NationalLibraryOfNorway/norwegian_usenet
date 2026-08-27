@@ -26,7 +26,8 @@ data/
     ├── 02_build_database/
     │   ├── ia.db                              # SQLite database of the IA archive, hashes only (scripts/02_build_database/01_build_databases.py)
     │   ├── nb.db                              # SQLite database of the NB archive, hashes only (scripts/02_build_database/01_build_databases.py)
-    │   └── fingerprint_databases.csv          # Hash of every table of each archive, with and without the row ids (scripts/02_build_database/02_fingerprint_databases.py)
+    │   ├── fingerprint_databases.csv          # Hash of every table of each archive, with and without the row ids (scripts/02_build_database/02_fingerprint_databases.py)
+    │   └── nb_source_file_counts.csv          # NB source files and nb.db rows per newsgroup (scripts/02_build_database/03_compare_nb_database_against_source_files.py)
     ├── 03_statistics_per_archive/
     ├── 04_compare_message_bodies/
     ├── 05_venn_diagrams/
@@ -67,6 +68,8 @@ Extracts the NB tar archives and the IA zip files, and writes both archives as u
 Messages are stored one row per message per newsgroup, with nothing dropped or merged, so the databases are a faithful transcription of the mbox files.
 
 [02_fingerprint_databases.py](scripts/02_build_database/02_fingerprint_databases.py) hashes the rows of both databases, with the row ids and without them, writes the fingerprint to `data/output/02_build_database/`, and prints every value that changed since the last run, which is how databases built on another machine are checked against these. A difference in the ids alone, which is what reading the mbox files in another order gives, is reported as such. See [scripts/02_build_database/README.md](scripts/02_build_database/README.md) for details.
+
+[03_compare_nb_database_against_source_files.py](scripts/02_build_database/03_compare_nb_database_against_source_files.py) counts the NB source files, one per message, behind each newsgroup and compares that against the rows `nb.db` holds for it. Both counts are 613 016 messages, and every one of the 139 newsgroups matches.
 
 #### Step 03: counting messages and users within each archive
 Counts messages per newsgroup, user and date in each archive, finds duplicates, conflicting Message-IDs and messages without a sender, and plots those counts. See [scripts/03_statistics_per_archive/README.md](scripts/03_statistics_per_archive/README.md) for details.

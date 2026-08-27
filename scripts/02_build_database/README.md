@@ -117,3 +117,25 @@ is written on every run, since a hash means nothing except against the one an ea
 wrote. When the file is already there it is read before it is rewritten, and every label
 whose value or count changed is printed as `before -> after`, followed by one line per
 changed table saying whether its rows differ or only their ids.
+
+## Checking the NB database against the source files
+
+The NB sources hold one message per file, so counting those files gives a message count that
+owes nothing to the database or to the mbox files it was built from. The IA sources are mbox
+files themselves, so they have no equivalent count to check against.
+
+[03_compare_nb_database_against_source_files.py](03_compare_nb_database_against_source_files.py)
+walks `data/input/nb/unzipped_data` the way
+[02_parse_nb_archive.py](../01_extract_and_parse_usenet_data/02_parse_nb_archive.py) does,
+counting the source files behind each mbox file stem, and compares that against
+`SELECT newsgroup, COUNT(*) FROM messages` in `nb.db`. Cut-off newsgroup names are corrected
+from `cut_off_newsgroup_names.csv` first, so a stem is counted under the name the mbox file,
+and thus the `newsgroup` column, carries.
+
+Both counts per newsgroup go to `data/output/02_build_database/nb_source_file_counts.csv`, a
+CSV of `newsgroup`, `source_files` and `rows`. Every newsgroup whose two counts differ is
+printed, and the script exits non-zero when any of them does. Both counts are currently
+613 016 messages, and every one of the 139 newsgroups matches.
+
+[05_sanity_check_nb_message_count.py](../01_extract_and_parse_usenet_data/05_sanity_check_nb_message_count.py)
+makes the same comparison against the mbox files rather than the database.
