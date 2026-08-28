@@ -82,7 +82,7 @@ Compares the IA and NB archives by message body overlap, finds Message-IDs whose
 Draws the overlap between the archives as venn diagrams, over newsgroups, users, messages and outward references, with the IA archive restricted to the NB date span. See [scripts/05_venn_diagrams/README.md](scripts/05_venn_diagrams/README.md) for details.
 
 #### Step 06: graphs and references
-Builds the edges between newsgroups, from the users they share and the references running between them, and draws the graphs they make. See [scripts/06_graphs_and_references/README.md](scripts/06_graphs_and_references/README.md) for details.
+Builds the edges between newsgroups, from the users they share and the references running between them, and draws the graphs they make, as .html figures and as .gexf files to be opened in Gephi. See [scripts/06_graphs_and_references/README.md](scripts/06_graphs_and_references/README.md) for details.
 
 #### Step 07: evaluate embedding model robustness
 Measures how robust an embedding model is to the U+FFFD (`�`) damage in the IA archive, by embedding the damaged IA body and the intact NB body of the same message and comparing them. See [scripts/07_evaluate_embedding_model_robustness/README.md](scripts/07_evaluate_embedding_model_robustness/README.md) for details.
