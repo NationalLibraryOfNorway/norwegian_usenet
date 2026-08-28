@@ -8,7 +8,7 @@ from tqdm import tqdm
 from usenet_no.database import IA_ARCHIVE, NB_ARCHIVE, connect_archives
 from usenet_no.database.core import load_id_spans, load_message_positions
 from usenet_no.database.statistics import get_date_span
-from usenet_no.embed_messages import embed_mbox_file
+from usenet_no.embed_messages import ARCHIVE_CHOICES, archive_sources, embed_mbox_file
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +18,7 @@ logging.getLogger("httpx").setLevel(logging.WARNING)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Embed messages from selected newsgroups in IA and NB archives",
+        description="Embed messages from selected newsgroups in the IA and NB archives",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
@@ -65,6 +65,12 @@ if __name__ == "__main__":
         help="List of newsgroups to embed",
     )
     parser.add_argument(
+        "--archive",
+        choices=ARCHIVE_CHOICES,
+        default="nb",
+        help="Embed the messages of this archive (default: %(default)s)",
+    )
+    parser.add_argument(
         "--model",
         type=str,
         default="codefuse-ai/F2LLM-v2-0.6B",
@@ -86,6 +92,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
     logger.info("Args: %s", args)
 
+    sources = archive_sources(args.archive)
+
     model_output_dir = args.output_directory / args.model
     model_output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -93,48 +101,55 @@ if __name__ == "__main__":
     # inside the NB date span are embedded. They are read from the archive's own
     # mbox files at the positions the database gives, rather than from a filtered
     # copy of those files.
-    connection = connect_archives(args.ia_database_file, args.nb_database_file)
-    nb_date_span = get_date_span(connection, NB_ARCHIVE)
-    logger.info("NB date span: %s to %s", *nb_date_span)
-    ia_positions = load_message_positions(connection, IA_ARCHIVE, nb_date_span)
-    ia_message_counts = {
-        newsgroup: count
-        for (archive, newsgroup), (_min_id, count) in load_id_spans(connection).items()
-        if archive == IA_ARCHIVE
-    }
-    connection.close()
+    if "ia" in sources:
+        connection = connect_archives(args.ia_database_file, args.nb_database_file)
+        nb_date_span = get_date_span(connection, NB_ARCHIVE)
+        logger.info("NB date span: %s to %s", *nb_date_span)
+        ia_positions = load_message_positions(connection, IA_ARCHIVE, nb_date_span)
+        ia_message_counts = {
+            newsgroup: count
+            for (archive, newsgroup), (_min_id, count) in load_id_spans(
+                connection
+            ).items()
+            if archive == IA_ARCHIVE
+        }
+        connection.close()
 
     logger.info("Loading model %s", args.model)
     model = SentenceTransformer(args.model, trust_remote_code=True)
 
     for newsgroup in tqdm(args.selection, desc="Embedding messages in mbox files"):
-        nb_mbox_file = args.nb_directory / f"{newsgroup}.mbox"
-        if nb_mbox_file.exists():
-            embed_mbox_file(
-                nb_mbox_file,
-                "nb",
-                model,
-                model_output_dir,
-                args.overwrite,
-                args.batch_size,
-            )
-        else:
-            logger.warning("%s does not exist, can't embed messages", nb_mbox_file)
+        if "nb" in sources:
+            nb_mbox_file = args.nb_directory / f"{newsgroup}.mbox"
+            if nb_mbox_file.exists():
+                embed_mbox_file(
+                    nb_mbox_file,
+                    "nb",
+                    model,
+                    model_output_dir,
+                    args.overwrite,
+                    args.batch_size,
+                )
+            else:
+                logger.warning("%s does not exist, can't embed messages", nb_mbox_file)
 
-        ia_mbox_file = args.ia_directory / f"{newsgroup}.mbox"
+        if "ia" in sources:
+            ia_mbox_file = args.ia_directory / f"{newsgroup}.mbox"
 
-        if not ia_mbox_file.exists():
-            logger.warning("%s does not exist, can't embed messages", ia_mbox_file)
-        elif newsgroup not in ia_positions:
-            logger.warning("%s holds no message inside the NB date span", ia_mbox_file)
-        else:
-            embed_mbox_file(
-                ia_mbox_file,
-                "ia",
-                model,
-                model_output_dir,
-                args.overwrite,
-                args.batch_size,
-                positions=ia_positions[newsgroup],
-                expected_message_count=ia_message_counts[newsgroup],
-            )
+            if not ia_mbox_file.exists():
+                logger.warning("%s does not exist, can't embed messages", ia_mbox_file)
+            elif newsgroup not in ia_positions:
+                logger.warning(
+                    "%s holds no message inside the NB date span", ia_mbox_file
+                )
+            else:
+                embed_mbox_file(
+                    ia_mbox_file,
+                    "ia",
+                    model,
+                    model_output_dir,
+                    args.overwrite,
+                    args.batch_size,
+                    positions=ia_positions[newsgroup],
+                    expected_message_count=ia_message_counts[newsgroup],
+                )
