@@ -34,6 +34,7 @@ import pandas as pd
 from pyvis.network import Network
 
 from usenet_no.database.reference_graph import UNKNOWN_NEWSGROUP
+from usenet_no.gephi import write_graph_gexf
 from usenet_no.interactive_graph import (
     SURFACE,
     build_network,
@@ -285,7 +286,7 @@ if __name__ == "__main__":
         default=Path(
             "data/output/06_graphs_and_references/plot_newsgroup_reference_graph"
         ),
-        help="Directory to write the HTML figure to",
+        help="Directory to write the HTML figure and the .gexf file to",
     )
     parser.add_argument(
         "--overwrite",
@@ -301,13 +302,16 @@ if __name__ == "__main__":
     # does not overwrite the picture drawn at another.
     unknown_tag = "_no_unknown" if args.exclude_unknown else ""
     general_tag = "_no_general" if args.exclude_general else ""
-    output_file = args.output_directory / (
+    figure_file = args.output_directory / (
         f"{args.edges_file.stem}{unknown_tag}{general_tag}"
         f"_min{args.min_references}.html"
     )
-    if output_file.exists() and not args.overwrite:
+    gephi_file = figure_file.with_suffix(".gexf")
+    if figure_file.exists() and gephi_file.exists() and not args.overwrite:
         logger.info(
-            "Existing file found at %s; use --overwrite to regenerate", output_file
+            "Existing files found at %s and %s; use --overwrite to regenerate",
+            figure_file,
+            gephi_file,
         )
         raise SystemExit(0)
 
@@ -329,6 +333,7 @@ if __name__ == "__main__":
             f"{args.edges_file.stem}, "
             f"at least {args.min_references} references per drawn edge"
         ),
-        output_file=output_file,
+        output_file=figure_file,
     )
-    logger.info("See the graph in %s", output_file)
+    write_graph_gexf(graph, gephi_file, weight_attribute="references")
+    logger.info("See the graph in %s, and in Gephi from %s", figure_file, gephi_file)
