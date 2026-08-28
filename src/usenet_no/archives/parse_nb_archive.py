@@ -1,6 +1,7 @@
 import csv
 import logging
 import tarfile
+from collections import defaultdict
 from collections.abc import Iterable, Iterator
 from pathlib import Path
 
@@ -85,6 +86,47 @@ def iter_newsgroup_sources(
             message_files.append(each)
     if message_files:
         yield stem, message_files
+
+
+def collect_source_files_per_newsgroup(
+    unzipped_dir: Path, corrections: dict[str, str]
+) -> dict[str, list[Path]]:
+    """Map each mbox file stem to the source files behind it, in the order they are written.
+
+    Walks the extracted NB sources the way
+    scripts/01_extract_and_parse_usenet_data/02_parse_nb_archive.py does, so a
+    stem collects the files of every tar archive that carries the newsgroup, and
+    a file's place in its list is the message's position in the mbox file.
+    """
+    sources: dict[str, list[Path]] = defaultdict(list)
+    for directory in sorted(unzipped_dir.iterdir()):
+        if not directory.is_dir():
+            continue
+        newsgroups_parent_dir = find_newsgroups_parent_dir(directory)
+        if newsgroups_parent_dir is None:
+            logger.warning("Found no newsgroups directory in %s", directory)
+            continue
+        for newsgroup_dir in sorted(newsgroups_parent_dir.iterdir()):
+            if not newsgroup_dir.is_dir():
+                continue
+            stem = correct_stem(f"no.{newsgroup_dir.name.lower()}", corrections)
+            for sub_stem, message_files in iter_newsgroup_sources(
+                newsgroup_dir, stem, corrections
+            ):
+                sources[sub_stem].extend(message_files)
+    return dict(sources)
+
+
+def count_source_files_per_newsgroup(
+    unzipped_dir: Path, corrections: dict[str, str]
+) -> dict[str, int]:
+    """Count the source files behind each mbox file stem, without reading any of them."""
+    return {
+        stem: len(message_files)
+        for stem, message_files in collect_source_files_per_newsgroup(
+            unzipped_dir, corrections
+        ).items()
+    }
 
 
 def write_messages_to_mbox(

@@ -7,10 +7,12 @@ The scripts for preparing the data for analysis live in this directory.
 - [03_scrape_internet_archive.py](03_scrape_internet_archive.py) fetches and downloads all zip files from `https://archive.org/download/usenet-no` (stored in `data/input/internet_archive/zipped_data` by default). Run with `--overwrite` to fetch the file listing and every zip file again; without the flag a zip file already downloaded is skipped.
 - [04_parse_internet_archive.py](04_parse_internet_archive.py) unzips and reads all mbox files from the scrape output. Files are decoded and re-encoded to UTF-8 and written to `data/input/internet_archive/utf_8_data`. Run with `--overwrite` to decode every file again from scratch; without the flag a file already written, whose detected encoding is in `encodings.json`, is skipped.
 - [05_sanity_check_nb_message_count.py](05_sanity_check_nb_message_count.py) checks that each NB mbox file holds as many messages as the number of source files it was written from. Exits non-zero when they disagree. The IA sources are mbox files themselves, so they have no equivalent count to check against.
-- [06_count_nb_header_fields.py](06_count_nb_header_fields.py) reads the header block of every NB source file listed in `data/input/nb/encodings.json`, decoding it with the encoding detected there, and writes one row per message header field with the number of messages carrying it to `data/output/01_extract_and_parse_usenet_data/nb_header_field_counts.csv`.
-- [07_count_ia_header_fields.py](07_count_ia_header_fields.py) counts the same fields in the IA sources, which are one mbox file per newsgroup rather than one file per message: every mbox file listed in `data/input/internet_archive/encodings.json` is split into messages, and each message's header block is decoded with the encoding detected for the file it is in. Writes `data/output/01_extract_and_parse_usenet_data/ia_header_field_counts.csv`.
+- [06_count_non_ascii_nb_message_ids.py](06_count_non_ascii_nb_message_ids.py) reads the Message-ID line of every NB source file as raw bytes and writes, per source, how many files it read, how many carry no Message-ID and how many carry one with a byte outside ASCII, to `data/output/01_extract_and_parse_usenet_data/non_ascii_nb_message_ids.txt`. Every file it reports, with a non-ascii id or with no Message-ID line, is named on a line of its own.
+- [07_count_nb_header_fields.py](07_count_nb_header_fields.py) reads the header block of every NB source file listed in `data/input/nb/encodings.json`, decoding it with the encoding detected there, and writes one row per message header field with the number of messages carrying it to `data/output/01_extract_and_parse_usenet_data/nb_header_field_counts.csv`.
+- [08_count_ia_header_fields.py](08_count_ia_header_fields.py) counts the same fields in the IA sources, which are one mbox file per newsgroup rather than one file per message: every mbox file listed in `data/input/internet_archive/encodings.json` is split into messages, and each message's header block is decoded with the encoding detected for the file it is in. Writes `data/output/01_extract_and_parse_usenet_data/ia_header_field_counts.csv`.
+- [09_show_message_in_mbox.py](09_show_message_in_mbox.py) takes the path of one NB source message file below `data/input/nb/unzipped_data` and prints the message it was written to, as `data/input/nb/utf_8_data/<newsgroup>.mbox` holds it and as `get_message_body` reads it. It replays the traversal [02_parse_nb_archive.py](02_parse_nb_archive.py) performs to find the mbox file the source file went into and the message's position in it, so that script has to have been run first. A utility for looking one message up, not a step of the pipeline: it writes nothing and nothing later reads from it.
 
-Neither counting script changes the archive data. Both match field names case-insensitively and report each field under the spelling most of its messages use; a field repeated within one message counts once. The core fields, the ones the analysis reads a message by, are `Date`, `From`, `Message-ID`, `Newsgroups` and `Subject`; every message of both archives carries all five.
+Neither header field script changes the archive data. Both match field names case-insensitively and report each field under the spelling most of its messages use; a field repeated within one message counts once. The core fields, the ones the analysis reads a message by, are `Date`, `From`, `Message-ID`, `Newsgroups` and `Subject`; every message of both archives carries all five.
 
 ## Cut-off newsgroup names
 
@@ -34,6 +36,24 @@ The pairs currently in [cut_off_newsgroup_names.csv](../../data/output/01_extrac
 | no.storting | no.stortinget |
 | no.tungregn | no.tungregning |
 | no.typograf | no.typografi |
+
+## Message ids outside ASCII
+
+The database hashes message ids from chardet-decoded text, so an id carrying a byte
+outside ASCII would hash to something else if it were read as raw bytes instead.
+[06_count_non_ascii_nb_message_ids.py](06_count_non_ascii_nb_message_ids.py) read the
+Message-ID line of every file below `data/input/nb/unzipped_data` as raw bytes: none of
+them holds a byte outside ASCII. It reads 613 017 files, one more than the 613 016
+messages the parse writes, because it counts a `.DS_Store` that macOS left in
+`NEWS/KZ2001-0147/NEWS/`; the parse reads only the directories below that one, so it
+skips the file. That `.DS_Store` is one of the six files reported without a Message-ID
+line. The other five are message files: `no/mac/24156`, `no/slekt/16977` and
+`no/marked/26936` on 04041212, and `no/slekt/etterlysning/807` and
+`no/slekt/etterlysning/808` on News.1996. `nb_header_field_counts.csv` nonetheless
+reports a Message-ID on every message, so those five read differently as raw bytes than
+through the decoded parse. The counts per source, and the path of every file reported,
+are in
+[non_ascii_nb_message_ids.txt](../../data/output/01_extract_and_parse_usenet_data/non_ascii_nb_message_ids.txt).
 
 ## Unescaped "From " lines in the IA archive
 

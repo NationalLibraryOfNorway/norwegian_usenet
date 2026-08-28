@@ -10,43 +10,17 @@ Exits non-zero when the two disagree.
 
 import argparse
 import logging
-from collections import defaultdict
 from pathlib import Path
 
 from tqdm import tqdm
 
 from usenet_no.archives.parse_nb_archive import (
-    correct_stem,
-    find_newsgroups_parent_dir,
-    iter_newsgroup_sources,
+    count_source_files_per_newsgroup,
     load_newsgroup_corrections,
 )
 from usenet_no.mbox_utils import open_mbox
 
 logger = logging.getLogger(__name__)
-
-
-def count_source_files_per_newsgroup(
-    unzipped_dir: Path, corrections: dict[str, str]
-) -> dict[str, int]:
-    """Replay 02_parse_nb_archive.py's traversal, counting source files per mbox stem."""
-    counts: dict[str, int] = defaultdict(int)
-    for directory in sorted(unzipped_dir.iterdir()):
-        if not directory.is_dir():
-            continue
-        newsgroups_parent_dir = find_newsgroups_parent_dir(directory)
-        if newsgroups_parent_dir is None:
-            logger.warning("Found no newsgroups directory in %s", directory)
-            continue
-        for newsgroup_dir in sorted(newsgroups_parent_dir.iterdir()):
-            if not newsgroup_dir.is_dir():
-                continue
-            stem = correct_stem(f"no.{newsgroup_dir.name.lower()}", corrections)
-            for sub_stem, message_files in iter_newsgroup_sources(
-                newsgroup_dir, stem, corrections
-            ):
-                counts[sub_stem] += len(message_files)
-    return dict(counts)
 
 
 def count_messages(mbox_file: Path) -> int:

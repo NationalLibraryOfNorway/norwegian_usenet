@@ -1,0 +1,153 @@
+04041212
+└── no
+    ├── ai
+    ├── alkohol
+    ├── alt
+    │   ├── arkiv
+    │   ├── config
+    │   ├── diskusjoner
+    │   ├── fan
+    │   │   └── de-lillos
+    │   ├── flame
+    │   ├── frustrasjoner
+    │   ├── gledesutbrudd
+    │   ├── god
+    │   │   └── jul
+    │   ├── irc-treff
+    │   ├── katter
+    │   ├── mat
+    │   │   └── drikke
+    │   ├── motorsykler
+    │   ├── pompel-og-pilt
+    │   ├── radio-tv
+    │   │   └── irma-1000
+    │   ├── sjokolade
+    │   └── tegneserier
+    ├── amiga
+    ├── audio
+    ├── bibsys
+    ├── bil
+    ├── biz
+    │   ├── annonser
+    │   │   └── data
+    │   ├── diskusjoner
+    │   └── nettilbydere
+    ├── bolig
+    ├── c
+    ├── ef
+    ├── elektronikk
+    ├── embnet
+    ├── film
+    ├── folklore
+    │   ├── edb
+    │   ├── generelt
+    │   └── overtro
+    ├── general
+    ├── havforskning
+    ├── hobby
+    │   └── diverse
+    ├── irc
+    ├── it
+    │   ├── diverse
+    │   ├── emacs
+    │   └── os
+    │       └── os2
+    ├── jus
+    ├── kjemi
+    ├── kryptografi
+    ├── linux
+    ├── lisp
+    ├── litteratur
+    ├── mac
+    ├── mail
+    │   ├── diverse
+    │   └── drift
+    ├── marked
+    │   ├── bil
+    │   ├── bolig
+    │   ├── data
+    │   ├── diskusjon
+    │   └── jobb
+    ├── media
+    ├── medisin
+    ├── ms-windows
+    ├── multimedia
+    ├── musikk
+    │   ├── gitar
+    │   └── klassisk
+    ├── net
+    ├── news
+    │   ├── diverse
+    │   └── drift
+    ├── norsk
+    │   └── fagord
+    ├── nuug
+    ├── org
+    │   ├── decus
+    │   ├── dnd
+    │   ├── efn
+    │   │   └── diskusjon
+    │   ├── isoc-no
+    │   └── nobug
+    │       └── diverse
+    ├── pc
+    ├── perl
+    ├── prat
+    │   ├── aksjer
+    │   ├── narkotika
+    │   ├── politikk
+    │   ├── seksualitet
+    │   └── ufo
+    ├── pressemeldinger
+    │   └── diskusjon
+    ├── psykologi
+    ├── radio-tv
+    ├── reiser
+    ├── religion
+    ├── skole
+    │   └── diverse
+    ├── slekt
+    │   ├── etterlysning
+    │   └── programmer
+    ├── sources
+    │   ├── list
+    │   └── wanted
+    ├── speider
+    ├── spill
+    │   ├── rollespill
+    │   └── sjakk
+    ├── sport
+    │   ├── diverse
+    │   ├── fotball
+    │   ├── orientering
+    │   └── volleyball
+    ├── standard
+    ├── stortinget
+    ├── student
+    │   ├── nett
+    │   └── samfund
+    ├── svar
+    ├── sykkel
+    ├── tegnsett
+    ├── tele
+    ├── test
+    ├── tex
+    ├── tungregning
+    ├── typografi
+    ├── uninett
+    │   ├── diverse
+    │   ├── drift
+    │   ├── fik
+    │   ├── hjelp
+    │   ├── katalog
+    │   └── skole
+    ├── unix
+    ├── video
+    ├── vit
+    │   └── diverse
+    ├── vitser
+    ├── vr
+    ├── www
+    └── x
+
+150 directories

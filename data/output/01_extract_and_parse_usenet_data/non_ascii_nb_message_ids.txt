@@ -1,0 +1,10 @@
+  no Message-ID: 04041212/no/mac/24156
+  no Message-ID: 04041212/no/slekt/16977
+  no Message-ID: 04041212/no/marked/26936
+04041212: 269495 files, 3 without Message-ID, 0 with non-ascii Message-ID
+  no Message-ID: NEWS/KZ2001-0147/NEWS/.DS_Store
+NEWS: 137021 files, 1 without Message-ID, 0 with non-ascii Message-ID
+  no Message-ID: News.1996/no/slekt/etterlysning/808
+  no Message-ID: News.1996/no/slekt/etterlysning/807
+News.1996: 206500 files, 2 without Message-ID, 0 with non-ascii Message-ID
+News.1997.til.040497: 1 files, 0 without Message-ID, 0 with non-ascii Message-ID
