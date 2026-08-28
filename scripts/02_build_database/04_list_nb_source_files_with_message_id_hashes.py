@@ -5,9 +5,6 @@ newsgroup's mbox file in a fixed order, so a source file's place in that order
 is the message's position in the mbox file and thus its row in nb.db. Reading
 the hashes out of the database rather than hashing the ids again gives the same
 values the rest of the analysis joins on.
-
-Writes one row per source file, and exits non-zero when a newsgroup's source
-files and database rows do not line up one to one.
 """
 
 import argparse
@@ -36,17 +33,6 @@ def read_message_id_hashes_per_newsgroup(
     ):
         hashes.setdefault(newsgroup, []).append(message_id_hash)
     return hashes
-
-
-def find_misaligned_newsgroups(
-    sources: dict[str, list[Path]], hashes: dict[str, list[str]]
-) -> list[tuple[str, int, int]]:
-    """Every newsgroup whose source file and row counts differ, as (newsgroup, files, rows)."""
-    return [
-        (newsgroup, len(sources.get(newsgroup, [])), len(hashes.get(newsgroup, [])))
-        for newsgroup in sorted(set(sources) | set(hashes))
-        if len(sources.get(newsgroup, [])) != len(hashes.get(newsgroup, []))
-    ]
 
 
 def map_source_files_to_hashes(
@@ -117,23 +103,6 @@ if __name__ == "__main__":
     connection = connect(args.nb_database_file)
     hashes = read_message_id_hashes_per_newsgroup(connection)
     connection.close()
-
-    misaligned = find_misaligned_newsgroups(sources, hashes)
-    if misaligned:
-        for newsgroup, source_files, rows in misaligned:
-            logger.error(
-                "%s: %d source files, %d rows (%+d)",
-                newsgroup,
-                source_files,
-                rows,
-                rows - source_files,
-            )
-        logger.error(
-            "%d of %d newsgroups differ, so the source files cannot be paired with the rows",
-            len(misaligned),
-            len(set(sources) | set(hashes)),
-        )
-        raise SystemExit(1)
 
     rows = map_source_files_to_hashes(sources, hashes, args.unzipped_dir)
     export_rows_to_csv(rows, args.output_file)

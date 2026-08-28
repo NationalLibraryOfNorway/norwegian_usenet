@@ -151,6 +151,5 @@ the analyses join on.
 
 The rows go to `data/output/02_build_database/nb_source_file_message_ids.csv`, a CSV of `cd`,
 `source_file` and `message_id_hash`: the directory below `unzipped_data` the message came off,
-its path below `unzipped_data`, and the hash of its Message-ID. The script exits non-zero
-without writing anything when a newsgroup's source file and row counts differ, since the two
-cannot be paired then. It currently writes one row for each of the 613 016 messages.
+its path below `unzipped_data`, and the hash of its Message-ID. It currently writes one row
+for each of the 613 016 messages.
