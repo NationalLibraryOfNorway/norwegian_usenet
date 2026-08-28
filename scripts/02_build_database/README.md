@@ -139,3 +139,18 @@ printed, and the script exits non-zero when any of them does. Both counts are cu
 
 [05_sanity_check_nb_message_count.py](../01_extract_and_parse_usenet_data/05_sanity_check_nb_message_count.py)
 makes the same comparison against the mbox files rather than the database.
+
+## The message id hash of each source file
+
+[04_list_nb_source_files_with_message_id_hashes.py](04_list_nb_source_files_with_message_id_hashes.py)
+walks `data/input/nb/unzipped_data` the same way, and pairs each source file with the row it
+was read into: the files behind an mbox file stem come back in the order the parse appended
+them, so the file at a position holds the message the row at that position in `nb.db` was
+built from. The hash is read out of the database rather than made again, so it is the value
+the analyses join on.
+
+The rows go to `data/output/02_build_database/nb_source_file_message_ids.csv`, a CSV of `cd`,
+`source_file` and `message_id_hash`: the directory below `unzipped_data` the message came off,
+its path below `unzipped_data`, and the hash of its Message-ID. The script exits non-zero
+without writing anything when a newsgroup's source file and row counts differ, since the two
+cannot be paired then. It currently writes one row for each of the 613 016 messages.
