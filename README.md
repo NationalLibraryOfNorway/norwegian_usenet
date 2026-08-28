@@ -27,7 +27,8 @@ data/
     │   ├── ia.db                              # SQLite database of the IA archive, hashes only (scripts/02_build_database/01_build_databases.py)
     │   ├── nb.db                              # SQLite database of the NB archive, hashes only (scripts/02_build_database/01_build_databases.py)
     │   ├── fingerprint_databases.csv          # Hash of every table of each archive, with and without the row ids (scripts/02_build_database/02_fingerprint_databases.py)
-    │   └── nb_source_file_counts.csv          # NB source files and nb.db rows per newsgroup (scripts/02_build_database/03_compare_nb_database_against_source_files.py)
+    │   ├── nb_source_file_counts.csv          # NB source files and nb.db rows per newsgroup (scripts/02_build_database/03_compare_nb_database_against_source_files.py)
+    │   └── nb_source_file_message_ids.csv     # CD, source file path and message id hash per NB message (scripts/02_build_database/04_list_nb_source_files_with_message_id_hashes.py)
     ├── 03_statistics_per_archive/
     ├── 04_compare_message_bodies/
     ├── 05_venn_diagrams/

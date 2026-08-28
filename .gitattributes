@@ -2,3 +2,4 @@
 *.mbox -text
 data/output/02_build_database/ia.db filter=lfs diff=lfs merge=lfs -text
 data/output/02_build_database/nb.db filter=lfs diff=lfs merge=lfs -text
+data/output/02_build_database/nb_source_file_message_ids.csv filter=lfs diff=lfs merge=lfs -text
