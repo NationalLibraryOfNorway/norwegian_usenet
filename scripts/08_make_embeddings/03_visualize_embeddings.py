@@ -75,7 +75,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--reduction",
         choices=REDUCTION_CHOICES,
-        default="umap",
+        default="tsne",
         help="Plot the embeddings 02 reduced with this algorithm "
         "(default: %(default)s)",
     )

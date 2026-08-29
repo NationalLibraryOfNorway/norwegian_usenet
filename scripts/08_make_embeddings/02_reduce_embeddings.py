@@ -69,7 +69,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--reduction",
         choices=REDUCTION_CHOICES,
-        default="umap",
+        default="tsne",
         help="Reduce with this algorithm (default: %(default)s)",
     )
     parser.add_argument(
