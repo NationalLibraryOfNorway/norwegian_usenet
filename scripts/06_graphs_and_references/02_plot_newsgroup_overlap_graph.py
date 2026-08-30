@@ -10,8 +10,9 @@ closest to those. The distance an edge asks for is 1 - jaccard, so the more two
 newsgroups overlap the closer together they are drawn, and a cluster in the
 picture is a set of newsgroups sharing users with each other. The same distance
 is the length each edge pulls towards under the physics the figure is drawn
-with, so a newsgroup dragged aside takes the ones it shares users with along
-and the graph settles back at those distances when it is let go.
+with, so a newsgroup dragged aside takes the ones it shares users with along.
+It is left where it is dropped, until a double-click hands it back to the
+physics and the graph settles around it again.
 """
 
 import argparse
@@ -149,13 +150,14 @@ def plot_overlap_graph(
     add_newsgroups(network, graph, positions)
     add_overlaps(network, graph)
 
+    # A vertex pulled out of the crowd to be read is left where it is put.
     write_graph_html(
         network,
         title,
         subtitle,
         [*graph_notes(graph), HOW_TO_READ],
         output_file,
-        pin_on_drop=False,
+        pin_on_drop=True,
     )
 
 

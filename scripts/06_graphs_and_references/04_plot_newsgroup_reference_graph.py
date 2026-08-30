@@ -232,8 +232,7 @@ def plot_reference_graph(
     add_newsgroups(network, graph, positions)
     add_references(network, graph)
 
-    # The reference graph is one crowd of newsgroups referencing each other, so
-    # a vertex pulled out of it to be read is left where it is put.
+    # A vertex pulled out of the crowd to be read is left where it is put.
     write_graph_html(
         network, title, subtitle, graph_notes(graph), output_file, pin_on_drop=True
     )

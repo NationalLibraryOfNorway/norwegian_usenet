@@ -4,7 +4,7 @@ The scripts are numbered in pairs: each drawing script reads the edge list the s
 
 Each drawing script writes its graph twice: as the .html figure described below, and as a .gexf file to be opened in [Gephi](https://gephi.org/). The .gexf file holds the graph itself, the vertices and edges with the attributes they were built from, and names the jaccard overlap or the reference count as the weight Gephi ranks and filters on. Nothing of how the figure is drawn goes in it, so Gephi lays the graph out itself.
 
-Both figures are drawn with vis-network, which brings its own physics: each edge is a spring pulling towards the distance the layout placed it at, so a newsgroup dragged aside takes the ones it is joined to along. In the reference graph a newsgroup is left where it is dropped, since it is one crowd of newsgroups referencing each other; double-clicking it hands it back to the physics.
+Both figures are drawn with vis-network, which brings its own physics: each edge is a spring pulling towards the distance the layout placed it at, so a newsgroup dragged aside takes the ones it is joined to along. A newsgroup is left where it is dropped; double-clicking it hands it back to the physics.
 
 A newsgroup joined to nothing has no edge to hold it, so it is left out of the physics and set out in a row under the graph instead. Above the graph stands what it holds: how many connected sub-graphs the newsgroups with edges fall into, and how many are joined to nothing. Each figure carries the drawing library within it, so it can be opened without a network.
 
