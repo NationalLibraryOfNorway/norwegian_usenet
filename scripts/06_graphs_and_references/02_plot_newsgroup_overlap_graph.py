@@ -190,7 +190,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--min-shared-users",
         type=int,
-        default=5,
+        default=0,
         help="Join two newsgroups only if they share at least this many users",
     )
     parser.add_argument(
