@@ -109,8 +109,14 @@ def layout_positions(graph: nx.DiGraph) -> dict[str, tuple[float, float]]:
 
 
 def edge_widths(graph: nx.DiGraph) -> dict[tuple[str, str], float]:
-    """Scale each edge's reference count into a line width, on a log scale."""
+    """Scale each edge's reference count into a line width, on a log scale.
+
+    A threshold can leave a graph with no edges at all, which has no widths.
+    """
     weights = {edge: graph.edges[edge]["references"] for edge in graph.edges}
+    if not weights:
+        return {}
+
     lightest = math.log10(min(weights.values()))
     heaviest = math.log10(max(weights.values()))
     span = (heaviest - lightest) or 1
