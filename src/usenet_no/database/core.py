@@ -8,28 +8,13 @@ IA_ARCHIVE = "ia"
 NB_ARCHIVE = "nb"
 
 # Each archive has a database of its own, so `archive` is not a column there.
-# Attaching both under their archive name and reading them through these views
-# puts it back, as the value that says which file a row came from.
-ARCHIVE_VIEWS = f"""
-CREATE TEMP VIEW messages AS
-    SELECT '{IA_ARCHIVE}' AS archive, id, newsgroup, message_id_hash, user_id, date, body_hash
-    FROM {IA_ARCHIVE}.messages
-    UNION ALL
-    SELECT '{NB_ARCHIVE}', id, newsgroup, message_id_hash, user_id, date, body_hash
-    FROM {NB_ARCHIVE}.messages;
-
-CREATE TEMP VIEW users AS
-    SELECT '{IA_ARCHIVE}' AS archive, id, name_hash, email_hash FROM {IA_ARCHIVE}.users
-    UNION ALL
-    SELECT '{NB_ARCHIVE}', id, name_hash, email_hash FROM {NB_ARCHIVE}.users;
-
-CREATE TEMP VIEW message_references AS
-    SELECT '{IA_ARCHIVE}' AS archive, message_row_id, referenced_id_hash
-    FROM {IA_ARCHIVE}.message_references
-    UNION ALL
-    SELECT '{NB_ARCHIVE}', message_row_id, referenced_id_hash
-    FROM {NB_ARCHIVE}.message_references;
-"""
+# Attaching them under their archive name and reading them through a view per
+# table puts it back, as the value that says which file a row came from.
+ARCHIVE_TABLE_COLUMNS = {
+    "messages": "id, newsgroup, message_id_hash, user_id, date, body_hash",
+    "users": "id, name_hash, email_hash",
+    "message_references": "message_row_id, referenced_id_hash",
+}
 
 # Joining the sender in, for the counts that identify a user by email. Row ids
 # are handed out per archive, so a user id only means anything together with the
@@ -45,6 +30,19 @@ MESSAGES_WITH_REFERENCES = (
     " ON message_references.message_row_id = messages.id"
     " AND message_references.archive = messages.archive"
 )
+
+
+def _archive_views(archives: list[str]) -> str:
+    """The temp views reading the attached archives as one table apiece."""
+    return "".join(
+        f"CREATE TEMP VIEW {table} AS "
+        + " UNION ALL ".join(
+            f"SELECT '{archive}' AS archive, {columns} FROM {archive}.{table}"
+            for archive in archives
+        )
+        + ";\n"
+        for table, columns in ARCHIVE_TABLE_COLUMNS.items()
+    )
 
 
 def connect(database_file: Path) -> sqlite3.Connection:
@@ -66,7 +64,20 @@ def connect_archives(
     connection = sqlite3.connect(":memory:")
     connection.execute(f"ATTACH DATABASE ? AS {IA_ARCHIVE}", (str(ia_database_file),))
     connection.execute(f"ATTACH DATABASE ? AS {NB_ARCHIVE}", (str(nb_database_file),))
-    connection.executescript(ARCHIVE_VIEWS)
+    connection.executescript(_archive_views([IA_ARCHIVE, NB_ARCHIVE]))
+    return connection
+
+
+def connect_archive(database_file: Path, archive: str) -> sqlite3.Connection:
+    """Open one archive's database on its own, read through the archive views.
+
+    The file is attached under its archive name, and `messages`, `users` and
+    `message_references` are views over it carrying `archive` as a column, so a
+    query written for both archives reads this one the same way.
+    """
+    connection = sqlite3.connect(":memory:")
+    connection.execute(f"ATTACH DATABASE ? AS {archive}", (str(database_file),))
+    connection.executescript(_archive_views([archive]))
     return connection
 
 

@@ -22,12 +22,15 @@ anything together with the archive it was read from. `connect_archives` opens
 both files at once and reads them through views that add that archive back as a
 column, which is what lets the two be compared in one query, and lets the
 date-filtered IA subset be a WHERE clause instead of a copy on disk.
+`connect_archive` opens one of them through the same views, for the counts that
+read a single archive.
 """
 
 from usenet_no.database.core import (
     IA_ARCHIVE,
     NB_ARCHIVE,
     connect,
+    connect_archive,
     connect_archives,
 )
 
@@ -35,5 +38,6 @@ __all__ = [
     "IA_ARCHIVE",
     "NB_ARCHIVE",
     "connect",
+    "connect_archive",
     "connect_archives",
 ]

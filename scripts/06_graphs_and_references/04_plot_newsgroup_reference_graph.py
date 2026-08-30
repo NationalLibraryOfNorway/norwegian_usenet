@@ -1,11 +1,13 @@
 """Draw the reference edge lists as a directed graph of newsgroups.
 
-Reads an edge list written by 06_graphs_and_references and keeps the
-edges clearing the threshold, drawn as arrows from the referring newsgroup to
-the referenced one, with the width following the weight. The two directions
-between a pair are drawn as two curves, so both can be seen and hovered. Every
-newsgroup in the table is drawn, so one with no edge left shows as a loose
-point rather than vanishing.
+Reads an edge list written by 06_graphs_and_references and keeps the edges
+carrying at least a given share of the references leaving the referring
+newsgroup, so that the considerable size differences between the newsgroups do
+not decide which edges are drawn. They are drawn as arrows from the referring
+newsgroup to the referenced one, with the width following the number of
+references. The two directions between a pair are drawn as two curves, so both
+can be seen and hovered. Every newsgroup in the table is drawn, so one with no
+edge left shows as a loose point rather than vanishing.
 
 Vertices are sized by how many messages the newsgroup holds, read from the
 per-group count tables written by 03_statistics_per_archive and summed over
@@ -181,7 +183,10 @@ def add_references(network: Network, graph: nx.DiGraph) -> None:
         network.add_edge(
             source,
             target,
-            title=f"{source} → {target}\n{attributes['references']:,} references",
+            title=(
+                f"{source} → {target}\n{attributes['references']:,} references,"
+                f" {attributes['share']:.1%} of the references leaving {source}"
+            ),
             length=lengths[source, target],
             width=widths[source, target],
             color=EDGE_COLOR,
@@ -240,8 +245,7 @@ if __name__ == "__main__":
         "--edges-file",
         type=Path,
         default=Path(
-            "data/output/06_graphs_and_references/"
-            "newsgroup_reference_counts_nb_and_ia.csv"
+            "data/output/06_graphs_and_references/newsgroup_reference_counts_nb.csv"
         ),
         help="Path to a reference edge list CSV file",
     )
@@ -251,18 +255,17 @@ if __name__ == "__main__":
         nargs="+",
         default=[
             Path("data/output/03_statistics_per_archive/messages_per_group_nb.csv"),
-            Path(
-                "data/output/03_statistics_per_archive/"
-                "messages_per_group_ia_date_filtered.csv"
-            ),
         ],
         help="Per-group message count CSV files, summed to size the vertices",
     )
     parser.add_argument(
-        "--min-references",
-        type=int,
-        default=500,
-        help="Draw an edge only if at least this many references run along it",
+        "--min-reference-share",
+        type=float,
+        default=0.05,
+        help=(
+            "Draw an edge only if it carries at least this share of the"
+            " references leaving the referring newsgroup"
+        ),
     )
     parser.add_argument(
         "--exclude-unknown",
@@ -304,7 +307,7 @@ if __name__ == "__main__":
     general_tag = "_no_general" if args.exclude_general else ""
     figure_file = args.output_directory / (
         f"{args.edges_file.stem}{unknown_tag}{general_tag}"
-        f"_min{args.min_references}.html"
+        f"_share{args.min_reference_share:g}.html"
     )
     gephi_file = figure_file.with_suffix(".gexf")
     if figure_file.exists() and gephi_file.exists() and not args.overwrite:
@@ -318,7 +321,7 @@ if __name__ == "__main__":
     edges = pd.read_csv(args.edges_file)
     message_counts = load_message_counts(args.message_counts_files)
     graph = build_reference_graph(
-        edges, message_counts, min_references=args.min_references
+        edges, message_counts, min_reference_share=args.min_reference_share
     )
     if args.exclude_unknown and UNKNOWN_NEWSGROUP in graph:
         graph.remove_node(UNKNOWN_NEWSGROUP)
@@ -330,8 +333,8 @@ if __name__ == "__main__":
         graph,
         title="Newsgroups joined by the references between them",
         subtitle=(
-            f"{args.edges_file.stem}, "
-            f"at least {args.min_references} references per drawn edge"
+            f"{args.edges_file.stem}, each drawn edge carrying at least "
+            f"{args.min_reference_share:.1%} of the references leaving its newsgroup"
         ),
         output_file=figure_file,
     )
