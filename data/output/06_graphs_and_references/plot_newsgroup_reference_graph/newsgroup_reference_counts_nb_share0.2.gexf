@@ -1,0 +1,1136 @@
+<?xml version='1.0' encoding='utf-8'?>
+<gexf xmlns="http://www.gexf.net/1.2draft" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.gexf.net/1.2draft http://www.gexf.net/1.2draft/gexf.xsd" version="1.2">
+  <meta lastmodifieddate="2026-08-30">
+    <creator>NetworkX 3.6.1</creator>
+  </meta>
+  <graph defaultedgetype="directed" mode="static" name="">
+    <attributes mode="static" class="edge">
+      <attribute id="1" title="references" type="long" />
+      <attribute id="2" title="share" type="double" />
+    </attributes>
+    <attributes mode="static" class="node">
+      <attribute id="0" title="messages" type="long" />
+    </attributes>
+    <nodes>
+      <node id="no.ai" label="no.ai">
+        <attvalues>
+          <attvalue for="0" value="332" />
+        </attvalues>
+      </node>
+      <node id="no.alkohol" label="no.alkohol">
+        <attvalues>
+          <attvalue for="0" value="3470" />
+        </attvalues>
+      </node>
+      <node id="no.alt.amiga" label="no.alt.amiga">
+        <attvalues>
+          <attvalue for="0" value="783" />
+        </attvalues>
+      </node>
+      <node id="no.alt.arkiv" label="no.alt.arkiv">
+        <attvalues>
+          <attvalue for="0" value="1984" />
+        </attvalues>
+      </node>
+      <node id="no.alt.config" label="no.alt.config">
+        <attvalues>
+          <attvalue for="0" value="625" />
+        </attvalues>
+      </node>
+      <node id="no.alt.diskusjoner" label="no.alt.diskusjoner">
+        <attvalues>
+          <attvalue for="0" value="15900" />
+        </attvalues>
+      </node>
+      <node id="no.alt.fan.de-lillos" label="no.alt.fan.de-lillos">
+        <attvalues>
+          <attvalue for="0" value="244" />
+        </attvalues>
+      </node>
+      <node id="no.alt.flame" label="no.alt.flame">
+        <attvalues>
+          <attvalue for="0" value="19938" />
+        </attvalues>
+      </node>
+      <node id="no.alt.frustrasjoner" label="no.alt.frustrasjoner">
+        <attvalues>
+          <attvalue for="0" value="35433" />
+        </attvalues>
+      </node>
+      <node id="no.alt.gledesutbrudd" label="no.alt.gledesutbrudd">
+        <attvalues>
+          <attvalue for="0" value="11408" />
+        </attvalues>
+      </node>
+      <node id="no.alt.god.jul" label="no.alt.god.jul">
+        <attvalues>
+          <attvalue for="0" value="752" />
+        </attvalues>
+      </node>
+      <node id="no.alt.irc-treff" label="no.alt.irc-treff">
+        <attvalues>
+          <attvalue for="0" value="1017" />
+        </attvalues>
+      </node>
+      <node id="no.alt.irctreff" label="no.alt.irctreff">
+        <attvalues>
+          <attvalue for="0" value="493" />
+        </attvalues>
+      </node>
+      <node id="no.alt.katter" label="no.alt.katter">
+        <attvalues>
+          <attvalue for="0" value="1932" />
+        </attvalues>
+      </node>
+      <node id="no.alt.mat" label="no.alt.mat">
+        <attvalues>
+          <attvalue for="0" value="3915" />
+        </attvalues>
+      </node>
+      <node id="no.alt.mat.drikke" label="no.alt.mat.drikke">
+        <attvalues>
+          <attvalue for="0" value="758" />
+        </attvalues>
+      </node>
+      <node id="no.alt.motorsykler" label="no.alt.motorsykler">
+        <attvalues>
+          <attvalue for="0" value="42787" />
+        </attvalues>
+      </node>
+      <node id="no.alt.pompel-og-pilt" label="no.alt.pompel-og-pilt">
+        <attvalues>
+          <attvalue for="0" value="368" />
+        </attvalues>
+      </node>
+      <node id="no.alt.pompelog" label="no.alt.pompelog">
+        <attvalues>
+          <attvalue for="0" value="287" />
+        </attvalues>
+      </node>
+      <node id="no.alt.radio-tv.irma-1000" label="no.alt.radio-tv.irma-1000">
+        <attvalues>
+          <attvalue for="0" value="237" />
+        </attvalues>
+      </node>
+      <node id="no.alt.radio_tv.irma1000" label="no.alt.radio_tv.irma1000">
+        <attvalues>
+          <attvalue for="0" value="417" />
+        </attvalues>
+      </node>
+      <node id="no.alt.sjokolade" label="no.alt.sjokolade">
+        <attvalues>
+          <attvalue for="0" value="580" />
+        </attvalues>
+      </node>
+      <node id="no.alt.tegneserier" label="no.alt.tegneserier">
+        <attvalues>
+          <attvalue for="0" value="2249" />
+        </attvalues>
+      </node>
+      <node id="no.amiga" label="no.amiga">
+        <attvalues>
+          <attvalue for="0" value="3267" />
+        </attvalues>
+      </node>
+      <node id="no.audio" label="no.audio">
+        <attvalues>
+          <attvalue for="0" value="10350" />
+        </attvalues>
+      </node>
+      <node id="no.bibsys" label="no.bibsys">
+        <attvalues>
+          <attvalue for="0" value="98" />
+        </attvalues>
+      </node>
+      <node id="no.bil" label="no.bil">
+        <attvalues>
+          <attvalue for="0" value="6658" />
+        </attvalues>
+      </node>
+      <node id="no.biz.annonser" label="no.biz.annonser">
+        <attvalues>
+          <attvalue for="0" value="3661" />
+        </attvalues>
+      </node>
+      <node id="no.biz.annonser.data" label="no.biz.annonser.data">
+        <attvalues>
+          <attvalue for="0" value="1315" />
+        </attvalues>
+      </node>
+      <node id="no.biz.diskusjoner" label="no.biz.diskusjoner">
+        <attvalues>
+          <attvalue for="0" value="276" />
+        </attvalues>
+      </node>
+      <node id="no.biz.nettilbydere" label="no.biz.nettilbydere">
+        <attvalues>
+          <attvalue for="0" value="824" />
+        </attvalues>
+      </node>
+      <node id="no.bolig" label="no.bolig">
+        <attvalues>
+          <attvalue for="0" value="1148" />
+        </attvalues>
+      </node>
+      <node id="no.c" label="no.c">
+        <attvalues>
+          <attvalue for="0" value="2567" />
+        </attvalues>
+      </node>
+      <node id="no.ef" label="no.ef">
+        <attvalues>
+          <attvalue for="0" value="1369" />
+        </attvalues>
+      </node>
+      <node id="no.elektronikk" label="no.elektronikk">
+        <attvalues>
+          <attvalue for="0" value="3841" />
+        </attvalues>
+      </node>
+      <node id="no.embnet" label="no.embnet">
+        <attvalues>
+          <attvalue for="0" value="399" />
+        </attvalues>
+      </node>
+      <node id="no.eunet.diverse" label="no.eunet.diverse">
+        <attvalues>
+          <attvalue for="0" value="169" />
+        </attvalues>
+      </node>
+      <node id="no.eunet.drift" label="no.eunet.drift">
+        <attvalues>
+          <attvalue for="0" value="406" />
+        </attvalues>
+      </node>
+      <node id="no.eunet.hjelp" label="no.eunet.hjelp">
+        <attvalues>
+          <attvalue for="0" value="601" />
+        </attvalues>
+      </node>
+      <node id="no.film" label="no.film">
+        <attvalues>
+          <attvalue for="0" value="12514" />
+        </attvalues>
+      </node>
+      <node id="no.folklore.edb" label="no.folklore.edb">
+        <attvalues>
+          <attvalue for="0" value="153" />
+        </attvalues>
+      </node>
+      <node id="no.folklore.generelt" label="no.folklore.generelt">
+        <attvalues>
+          <attvalue for="0" value="15" />
+        </attvalues>
+      </node>
+      <node id="no.folklore.overtro" label="no.folklore.overtro">
+        <attvalues>
+          <attvalue for="0" value="11" />
+        </attvalues>
+      </node>
+      <node id="no.general" label="no.general">
+        <attvalues>
+          <attvalue for="0" value="76929" />
+        </attvalues>
+      </node>
+      <node id="no.havforskning" label="no.havforskning">
+        <attvalues>
+          <attvalue for="0" value="517" />
+        </attvalues>
+      </node>
+      <node id="no.hobby.diverse" label="no.hobby.diverse">
+        <attvalues>
+          <attvalue for="0" value="482" />
+        </attvalues>
+      </node>
+      <node id="no.irc" label="no.irc">
+        <attvalues>
+          <attvalue for="0" value="6516" />
+        </attvalues>
+      </node>
+      <node id="no.it.diverse" label="no.it.diverse">
+        <attvalues>
+          <attvalue for="0" value="527" />
+        </attvalues>
+      </node>
+      <node id="no.it.emacs" label="no.it.emacs">
+        <attvalues>
+          <attvalue for="0" value="1054" />
+        </attvalues>
+      </node>
+      <node id="no.it.os.os2" label="no.it.os.os2">
+        <attvalues>
+          <attvalue for="0" value="698" />
+        </attvalues>
+      </node>
+      <node id="no.jus" label="no.jus">
+        <attvalues>
+          <attvalue for="0" value="8009" />
+        </attvalues>
+      </node>
+      <node id="no.kjemi" label="no.kjemi">
+        <attvalues>
+          <attvalue for="0" value="1463" />
+        </attvalues>
+      </node>
+      <node id="no.kryptografi" label="no.kryptografi">
+        <attvalues>
+          <attvalue for="0" value="537" />
+        </attvalues>
+      </node>
+      <node id="no.linux" label="no.linux">
+        <attvalues>
+          <attvalue for="0" value="16333" />
+        </attvalues>
+      </node>
+      <node id="no.lisp" label="no.lisp">
+        <attvalues>
+          <attvalue for="0" value="504" />
+        </attvalues>
+      </node>
+      <node id="no.litteratur" label="no.litteratur">
+        <attvalues>
+          <attvalue for="0" value="3997" />
+        </attvalues>
+      </node>
+      <node id="no.mac" label="no.mac">
+        <attvalues>
+          <attvalue for="0" value="22118" />
+        </attvalues>
+      </node>
+      <node id="no.mail.diverse" label="no.mail.diverse">
+        <attvalues>
+          <attvalue for="0" value="1984" />
+        </attvalues>
+      </node>
+      <node id="no.mail.drift" label="no.mail.drift">
+        <attvalues>
+          <attvalue for="0" value="576" />
+        </attvalues>
+      </node>
+      <node id="no.marked" label="no.marked">
+        <attvalues>
+          <attvalue for="0" value="26922" />
+        </attvalues>
+      </node>
+      <node id="no.marked.bil" label="no.marked.bil">
+        <attvalues>
+          <attvalue for="0" value="1602" />
+        </attvalues>
+      </node>
+      <node id="no.marked.bolig" label="no.marked.bolig">
+        <attvalues>
+          <attvalue for="0" value="741" />
+        </attvalues>
+      </node>
+      <node id="no.marked.data" label="no.marked.data">
+        <attvalues>
+          <attvalue for="0" value="22686" />
+        </attvalues>
+      </node>
+      <node id="no.marked.diskusjon" label="no.marked.diskusjon">
+        <attvalues>
+          <attvalue for="0" value="76" />
+        </attvalues>
+      </node>
+      <node id="no.marked.jobb" label="no.marked.jobb">
+        <attvalues>
+          <attvalue for="0" value="3846" />
+        </attvalues>
+      </node>
+      <node id="no.media" label="no.media">
+        <attvalues>
+          <attvalue for="0" value="123" />
+        </attvalues>
+      </node>
+      <node id="no.medisin" label="no.medisin">
+        <attvalues>
+          <attvalue for="0" value="1490" />
+        </attvalues>
+      </node>
+      <node id="no.ms-windows" label="no.ms-windows">
+        <attvalues>
+          <attvalue for="0" value="8305" />
+        </attvalues>
+      </node>
+      <node id="no.mswindow" label="no.mswindow">
+        <attvalues>
+          <attvalue for="0" value="772" />
+        </attvalues>
+      </node>
+      <node id="no.multimedia" label="no.multimedia">
+        <attvalues>
+          <attvalue for="0" value="2274" />
+        </attvalues>
+      </node>
+      <node id="no.musikk" label="no.musikk">
+        <attvalues>
+          <attvalue for="0" value="27532" />
+        </attvalues>
+      </node>
+      <node id="no.musikk.gitar" label="no.musikk.gitar">
+        <attvalues>
+          <attvalue for="0" value="2392" />
+        </attvalues>
+      </node>
+      <node id="no.musikk.klassisk" label="no.musikk.klassisk">
+        <attvalues>
+          <attvalue for="0" value="288" />
+        </attvalues>
+      </node>
+      <node id="no.net" label="no.net">
+        <attvalues>
+          <attvalue for="0" value="2083" />
+        </attvalues>
+      </node>
+      <node id="no.news.diverse" label="no.news.diverse">
+        <attvalues>
+          <attvalue for="0" value="9292" />
+        </attvalues>
+      </node>
+      <node id="no.news.drift" label="no.news.drift">
+        <attvalues>
+          <attvalue for="0" value="571" />
+        </attvalues>
+      </node>
+      <node id="no.norsk" label="no.norsk">
+        <attvalues>
+          <attvalue for="0" value="17385" />
+        </attvalues>
+      </node>
+      <node id="no.norsk.fagord" label="no.norsk.fagord">
+        <attvalues>
+          <attvalue for="0" value="310" />
+        </attvalues>
+      </node>
+      <node id="no.nuug" label="no.nuug">
+        <attvalues>
+          <attvalue for="0" value="107" />
+        </attvalues>
+      </node>
+      <node id="no.org.decus" label="no.org.decus">
+        <attvalues>
+          <attvalue for="0" value="25" />
+        </attvalues>
+      </node>
+      <node id="no.org.dnd" label="no.org.dnd">
+        <attvalues>
+          <attvalue for="0" value="73" />
+        </attvalues>
+      </node>
+      <node id="no.org.efn.diskusjon" label="no.org.efn.diskusjon">
+        <attvalues>
+          <attvalue for="0" value="1341" />
+        </attvalues>
+      </node>
+      <node id="no.org.isoc-no" label="no.org.isoc-no">
+        <attvalues>
+          <attvalue for="0" value="46" />
+        </attvalues>
+      </node>
+      <node id="no.org.nobug.diverse" label="no.org.nobug.diverse">
+        <attvalues>
+          <attvalue for="0" value="119" />
+        </attvalues>
+      </node>
+      <node id="no.pc" label="no.pc">
+        <attvalues>
+          <attvalue for="0" value="25754" />
+        </attvalues>
+      </node>
+      <node id="no.perl" label="no.perl">
+        <attvalues>
+          <attvalue for="0" value="1087" />
+        </attvalues>
+      </node>
+      <node id="no.prat.aksjer" label="no.prat.aksjer">
+        <attvalues>
+          <attvalue for="0" value="938" />
+        </attvalues>
+      </node>
+      <node id="no.prat.narkotika" label="no.prat.narkotika">
+        <attvalues>
+          <attvalue for="0" value="2474" />
+        </attvalues>
+      </node>
+      <node id="no.prat.politikk" label="no.prat.politikk">
+        <attvalues>
+          <attvalue for="0" value="3672" />
+        </attvalues>
+      </node>
+      <node id="no.prat.seksualitet" label="no.prat.seksualitet">
+        <attvalues>
+          <attvalue for="0" value="3616" />
+        </attvalues>
+      </node>
+      <node id="no.prat.ufo" label="no.prat.ufo">
+        <attvalues>
+          <attvalue for="0" value="764" />
+        </attvalues>
+      </node>
+      <node id="no.pressemeldinger" label="no.pressemeldinger">
+        <attvalues>
+          <attvalue for="0" value="62" />
+        </attvalues>
+      </node>
+      <node id="no.pressemeldinger.diskusjon" label="no.pressemeldinger.diskusjon">
+        <attvalues>
+          <attvalue for="0" value="42" />
+        </attvalues>
+      </node>
+      <node id="no.psykologi" label="no.psykologi">
+        <attvalues>
+          <attvalue for="0" value="1758" />
+        </attvalues>
+      </node>
+      <node id="no.radio-tv" label="no.radio-tv">
+        <attvalues>
+          <attvalue for="0" value="4393" />
+        </attvalues>
+      </node>
+      <node id="no.radio_tv" label="no.radio_tv">
+        <attvalues>
+          <attvalue for="0" value="1683" />
+        </attvalues>
+      </node>
+      <node id="no.reiser" label="no.reiser">
+        <attvalues>
+          <attvalue for="0" value="1990" />
+        </attvalues>
+      </node>
+      <node id="no.religion" label="no.religion">
+        <attvalues>
+          <attvalue for="0" value="20433" />
+        </attvalues>
+      </node>
+      <node id="no.skole.diverse" label="no.skole.diverse">
+        <attvalues>
+          <attvalue for="0" value="568" />
+        </attvalues>
+      </node>
+      <node id="no.slekt" label="no.slekt">
+        <attvalues>
+          <attvalue for="0" value="8285" />
+        </attvalues>
+      </node>
+      <node id="no.slekt.etterlysning" label="no.slekt.etterlysning">
+        <attvalues>
+          <attvalue for="0" value="3115" />
+        </attvalues>
+      </node>
+      <node id="no.slekt.programmer" label="no.slekt.programmer">
+        <attvalues>
+          <attvalue for="0" value="459" />
+        </attvalues>
+      </node>
+      <node id="no.sources.list" label="no.sources.list">
+        <attvalues>
+          <attvalue for="0" value="77" />
+        </attvalues>
+      </node>
+      <node id="no.sources.wanted" label="no.sources.wanted">
+        <attvalues>
+          <attvalue for="0" value="152" />
+        </attvalues>
+      </node>
+      <node id="no.speider" label="no.speider">
+        <attvalues>
+          <attvalue for="0" value="1464" />
+        </attvalues>
+      </node>
+      <node id="no.spill" label="no.spill">
+        <attvalues>
+          <attvalue for="0" value="12334" />
+        </attvalues>
+      </node>
+      <node id="no.spill.rollespill" label="no.spill.rollespill">
+        <attvalues>
+          <attvalue for="0" value="1017" />
+        </attvalues>
+      </node>
+      <node id="no.spill.sjakk" label="no.spill.sjakk">
+        <attvalues>
+          <attvalue for="0" value="273" />
+        </attvalues>
+      </node>
+      <node id="no.sport.diverse" label="no.sport.diverse">
+        <attvalues>
+          <attvalue for="0" value="6332" />
+        </attvalues>
+      </node>
+      <node id="no.sport.fotball" label="no.sport.fotball">
+        <attvalues>
+          <attvalue for="0" value="2324" />
+        </attvalues>
+      </node>
+      <node id="no.sport.orientering" label="no.sport.orientering">
+        <attvalues>
+          <attvalue for="0" value="63" />
+        </attvalues>
+      </node>
+      <node id="no.sport.volleyball" label="no.sport.volleyball">
+        <attvalues>
+          <attvalue for="0" value="157" />
+        </attvalues>
+      </node>
+      <node id="no.standard" label="no.standard">
+        <attvalues>
+          <attvalue for="0" value="98" />
+        </attvalues>
+      </node>
+      <node id="no.stortinget" label="no.stortinget">
+        <attvalues>
+          <attvalue for="0" value="2566" />
+        </attvalues>
+      </node>
+      <node id="no.student.nett" label="no.student.nett">
+        <attvalues>
+          <attvalue for="0" value="420" />
+        </attvalues>
+      </node>
+      <node id="no.student.samfund" label="no.student.samfund">
+        <attvalues>
+          <attvalue for="0" value="237" />
+        </attvalues>
+      </node>
+      <node id="no.svar" label="no.svar">
+        <attvalues>
+          <attvalue for="0" value="207" />
+        </attvalues>
+      </node>
+      <node id="no.sykkel" label="no.sykkel">
+        <attvalues>
+          <attvalue for="0" value="4000" />
+        </attvalues>
+      </node>
+      <node id="no.tegnsett" label="no.tegnsett">
+        <attvalues>
+          <attvalue for="0" value="416" />
+        </attvalues>
+      </node>
+      <node id="no.tele" label="no.tele">
+        <attvalues>
+          <attvalue for="0" value="5702" />
+        </attvalues>
+      </node>
+      <node id="no.telepost" label="no.telepost">
+        <attvalues>
+          <attvalue for="0" value="950" />
+        </attvalues>
+      </node>
+      <node id="no.test" label="no.test">
+        <attvalues>
+          <attvalue for="0" value="3415" />
+        </attvalues>
+      </node>
+      <node id="no.tex" label="no.tex">
+        <attvalues>
+          <attvalue for="0" value="225" />
+        </attvalues>
+      </node>
+      <node id="no.tungregning" label="no.tungregning">
+        <attvalues>
+          <attvalue for="0" value="92" />
+        </attvalues>
+      </node>
+      <node id="no.typografi" label="no.typografi">
+        <attvalues>
+          <attvalue for="0" value="303" />
+        </attvalues>
+      </node>
+      <node id="no.uninett.diverse" label="no.uninett.diverse">
+        <attvalues>
+          <attvalue for="0" value="208" />
+        </attvalues>
+      </node>
+      <node id="no.uninett.drift" label="no.uninett.drift">
+        <attvalues>
+          <attvalue for="0" value="110" />
+        </attvalues>
+      </node>
+      <node id="no.uninett.fik" label="no.uninett.fik">
+        <attvalues>
+          <attvalue for="0" value="49" />
+        </attvalues>
+      </node>
+      <node id="no.uninett.hjelp" label="no.uninett.hjelp">
+        <attvalues>
+          <attvalue for="0" value="87" />
+        </attvalues>
+      </node>
+      <node id="no.uninett.katalog" label="no.uninett.katalog">
+        <attvalues>
+          <attvalue for="0" value="32" />
+        </attvalues>
+      </node>
+      <node id="no.uninett.skole" label="no.uninett.skole">
+        <attvalues>
+          <attvalue for="0" value="829" />
+        </attvalues>
+      </node>
+      <node id="no.unix" label="no.unix">
+        <attvalues>
+          <attvalue for="0" value="3936" />
+        </attvalues>
+      </node>
+      <node id="no.video" label="no.video">
+        <attvalues>
+          <attvalue for="0" value="510" />
+        </attvalues>
+      </node>
+      <node id="no.vit.diverse" label="no.vit.diverse">
+        <attvalues>
+          <attvalue for="0" value="622" />
+        </attvalues>
+      </node>
+      <node id="no.vitser" label="no.vitser">
+        <attvalues>
+          <attvalue for="0" value="10538" />
+        </attvalues>
+      </node>
+      <node id="no.vr" label="no.vr">
+        <attvalues>
+          <attvalue for="0" value="144" />
+        </attvalues>
+      </node>
+      <node id="no.www" label="no.www">
+        <attvalues>
+          <attvalue for="0" value="3437" />
+        </attvalues>
+      </node>
+      <node id="no.x" label="no.x">
+        <attvalues>
+          <attvalue for="0" value="394" />
+        </attvalues>
+      </node>
+      <node id="unknown" label="unknown" />
+    </nodes>
+    <edges>
+      <edge source="no.alkohol" target="no.prat.narkotika" id="0" weight="4123">
+        <attvalues>
+          <attvalue for="1" value="4123" />
+          <attvalue for="2" value="0.29909321726514326" />
+        </attvalues>
+      </edge>
+      <edge source="no.alt.diskusjoner" target="no.general" id="1" weight="24731">
+        <attvalues>
+          <attvalue for="1" value="24731" />
+          <attvalue for="2" value="0.3045427118351866" />
+        </attvalues>
+      </edge>
+      <edge source="no.alt.flame" target="unknown" id="2" weight="31500">
+        <attvalues>
+          <attvalue for="1" value="31500" />
+          <attvalue for="2" value="0.6343388779250071" />
+        </attvalues>
+      </edge>
+      <edge source="no.alt.frustrasjoner" target="no.general" id="3" weight="11234">
+        <attvalues>
+          <attvalue for="1" value="11234" />
+          <attvalue for="2" value="0.26963972829609006" />
+        </attvalues>
+      </edge>
+      <edge source="no.alt.gledesutbrudd" target="no.alt.frustrasjoner" id="4" weight="2060">
+        <attvalues>
+          <attvalue for="1" value="2060" />
+          <attvalue for="2" value="0.2128099173553719" />
+        </attvalues>
+      </edge>
+      <edge source="no.alt.irc-treff" target="unknown" id="5" weight="242">
+        <attvalues>
+          <attvalue for="1" value="242" />
+          <attvalue for="2" value="0.2563559322033898" />
+        </attvalues>
+      </edge>
+      <edge source="no.alt.irctreff" target="no.irc" id="6" weight="24">
+        <attvalues>
+          <attvalue for="1" value="24" />
+          <attvalue for="2" value="0.20689655172413793" />
+        </attvalues>
+      </edge>
+      <edge source="no.alt.katter" target="no.alt.motorsykler" id="7" weight="571">
+        <attvalues>
+          <attvalue for="1" value="571" />
+          <attvalue for="2" value="0.21313923105636431" />
+        </attvalues>
+      </edge>
+      <edge source="no.alt.mat" target="no.general" id="8" weight="1724">
+        <attvalues>
+          <attvalue for="1" value="1724" />
+          <attvalue for="2" value="0.2494212962962963" />
+        </attvalues>
+      </edge>
+      <edge source="no.alt.motorsykler" target="unknown" id="9" weight="7634">
+        <attvalues>
+          <attvalue for="1" value="7634" />
+          <attvalue for="2" value="0.42174465499143693" />
+        </attvalues>
+      </edge>
+      <edge source="no.amiga" target="unknown" id="10" weight="359">
+        <attvalues>
+          <attvalue for="1" value="359" />
+          <attvalue for="2" value="0.44707347447073476" />
+        </attvalues>
+      </edge>
+      <edge source="no.amiga" target="no.pc" id="11" weight="257">
+        <attvalues>
+          <attvalue for="1" value="257" />
+          <attvalue for="2" value="0.32004981320049813" />
+        </attvalues>
+      </edge>
+      <edge source="no.biz.annonser" target="no.marked.data" id="12" weight="1083">
+        <attvalues>
+          <attvalue for="1" value="1083" />
+          <attvalue for="2" value="0.21994313566206336" />
+        </attvalues>
+      </edge>
+      <edge source="no.biz.annonser.data" target="no.marked.data" id="13" weight="530">
+        <attvalues>
+          <attvalue for="1" value="530" />
+          <attvalue for="2" value="0.32960199004975127" />
+        </attvalues>
+      </edge>
+      <edge source="no.biz.annonser.data" target="no.biz.annonser" id="14" weight="324">
+        <attvalues>
+          <attvalue for="1" value="324" />
+          <attvalue for="2" value="0.20149253731343283" />
+        </attvalues>
+      </edge>
+      <edge source="no.biz.nettilbydere" target="no.tele" id="15" weight="837">
+        <attvalues>
+          <attvalue for="1" value="837" />
+          <attvalue for="2" value="0.3101148573545758" />
+        </attvalues>
+      </edge>
+      <edge source="no.biz.nettilbydere" target="no.general" id="16" weight="677">
+        <attvalues>
+          <attvalue for="1" value="677" />
+          <attvalue for="2" value="0.25083364208966286" />
+        </attvalues>
+      </edge>
+      <edge source="no.folklore.edb" target="no.unix" id="17" weight="509">
+        <attvalues>
+          <attvalue for="1" value="509" />
+          <attvalue for="2" value="0.30904675166970247" />
+        </attvalues>
+      </edge>
+      <edge source="no.folklore.edb" target="no.linux" id="18" weight="508">
+        <attvalues>
+          <attvalue for="1" value="508" />
+          <attvalue for="2" value="0.3084395871281117" />
+        </attvalues>
+      </edge>
+      <edge source="no.folklore.edb" target="no.pc" id="19" weight="487">
+        <attvalues>
+          <attvalue for="1" value="487" />
+          <attvalue for="2" value="0.2956891317547055" />
+        </attvalues>
+      </edge>
+      <edge source="no.irc" target="no.general" id="20" weight="6138">
+        <attvalues>
+          <attvalue for="1" value="6138" />
+          <attvalue for="2" value="0.210840890354493" />
+        </attvalues>
+      </edge>
+      <edge source="no.it.diverse" target="no.pc" id="21" weight="318">
+        <attvalues>
+          <attvalue for="1" value="318" />
+          <attvalue for="2" value="0.20730117340286833" />
+        </attvalues>
+      </edge>
+      <edge source="no.it.emacs" target="no.general" id="22" weight="192">
+        <attvalues>
+          <attvalue for="1" value="192" />
+          <attvalue for="2" value="0.20317460317460317" />
+        </attvalues>
+      </edge>
+      <edge source="no.it.os.os2" target="unknown" id="23" weight="75">
+        <attvalues>
+          <attvalue for="1" value="75" />
+          <attvalue for="2" value="0.78125" />
+        </attvalues>
+      </edge>
+      <edge source="no.marked.diskusjon" target="no.marked.data" id="24" weight="166">
+        <attvalues>
+          <attvalue for="1" value="166" />
+          <attvalue for="2" value="0.22802197802197802" />
+        </attvalues>
+      </edge>
+      <edge source="no.ms-windows" target="no.pc" id="25" weight="2580">
+        <attvalues>
+          <attvalue for="1" value="2580" />
+          <attvalue for="2" value="0.26377670994785807" />
+        </attvalues>
+      </edge>
+      <edge source="no.mswindow" target="no.pc" id="26" weight="141">
+        <attvalues>
+          <attvalue for="1" value="141" />
+          <attvalue for="2" value="0.4051724137931034" />
+        </attvalues>
+      </edge>
+      <edge source="no.musikk.klassisk" target="no.musikk" id="27" weight="224">
+        <attvalues>
+          <attvalue for="1" value="224" />
+          <attvalue for="2" value="0.8327137546468402" />
+        </attvalues>
+      </edge>
+      <edge source="no.norsk" target="no.general" id="28" weight="10950">
+        <attvalues>
+          <attvalue for="1" value="10950" />
+          <attvalue for="2" value="0.3777034252009244" />
+        </attvalues>
+      </edge>
+      <edge source="no.org.decus" target="unknown" id="29" weight="5">
+        <attvalues>
+          <attvalue for="1" value="5" />
+          <attvalue for="2" value="0.625" />
+        </attvalues>
+      </edge>
+      <edge source="no.org.dnd" target="unknown" id="30" weight="1">
+        <attvalues>
+          <attvalue for="1" value="1" />
+          <attvalue for="2" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="no.org.efn.diskusjon" target="no.general" id="31" weight="1957">
+        <attvalues>
+          <attvalue for="1" value="1957" />
+          <attvalue for="2" value="0.2793320011418784" />
+        </attvalues>
+      </edge>
+      <edge source="no.org.isoc-no" target="no.org.efn.diskusjon" id="32" weight="49">
+        <attvalues>
+          <attvalue for="1" value="49" />
+          <attvalue for="2" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="no.org.nobug.diverse" target="unknown" id="33" weight="3">
+        <attvalues>
+          <attvalue for="1" value="3" />
+          <attvalue for="2" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="no.perl" target="no.lisp" id="34" weight="214">
+        <attvalues>
+          <attvalue for="1" value="214" />
+          <attvalue for="2" value="0.22016460905349794" />
+        </attvalues>
+      </edge>
+      <edge source="no.prat.narkotika" target="no.alkohol" id="35" weight="4216">
+        <attvalues>
+          <attvalue for="1" value="4216" />
+          <attvalue for="2" value="0.5289173253042279" />
+        </attvalues>
+      </edge>
+      <edge source="no.prat.politikk" target="no.general" id="36" weight="15517">
+        <attvalues>
+          <attvalue for="1" value="15517" />
+          <attvalue for="2" value="0.5831485587583148" />
+        </attvalues>
+      </edge>
+      <edge source="no.prat.seksualitet" target="unknown" id="37" weight="3008">
+        <attvalues>
+          <attvalue for="1" value="3008" />
+          <attvalue for="2" value="0.7841501564129302" />
+        </attvalues>
+      </edge>
+      <edge source="no.psykologi" target="no.alt.diskusjoner" id="38" weight="2579">
+        <attvalues>
+          <attvalue for="1" value="2579" />
+          <attvalue for="2" value="0.27050555905181456" />
+        </attvalues>
+      </edge>
+      <edge source="no.reiser" target="unknown" id="39" weight="83">
+        <attvalues>
+          <attvalue for="1" value="83" />
+          <attvalue for="2" value="0.20243902439024392" />
+        </attvalues>
+      </edge>
+      <edge source="no.religion" target="unknown" id="40" weight="11692">
+        <attvalues>
+          <attvalue for="1" value="11692" />
+          <attvalue for="2" value="0.40097397030076476" />
+        </attvalues>
+      </edge>
+      <edge source="no.religion" target="no.general" id="41" weight="10863">
+        <attvalues>
+          <attvalue for="1" value="10863" />
+          <attvalue for="2" value="0.37254364004252544" />
+        </attvalues>
+      </edge>
+      <edge source="no.skole.diverse" target="no.norsk" id="42" weight="1941">
+        <attvalues>
+          <attvalue for="1" value="1941" />
+          <attvalue for="2" value="0.35348752504097614" />
+        </attvalues>
+      </edge>
+      <edge source="no.skole.diverse" target="no.general" id="43" weight="1532">
+        <attvalues>
+          <attvalue for="1" value="1532" />
+          <attvalue for="2" value="0.27900200327809144" />
+        </attvalues>
+      </edge>
+      <edge source="no.skole.diverse" target="no.prat.politikk" id="44" weight="1531">
+        <attvalues>
+          <attvalue for="1" value="1531" />
+          <attvalue for="2" value="0.2788198870879621" />
+        </attvalues>
+      </edge>
+      <edge source="no.slekt.etterlysning" target="no.slekt" id="45" weight="89">
+        <attvalues>
+          <attvalue for="1" value="89" />
+          <attvalue for="2" value="0.5973154362416108" />
+        </attvalues>
+      </edge>
+      <edge source="no.slekt.etterlysning" target="unknown" id="46" weight="60">
+        <attvalues>
+          <attvalue for="1" value="60" />
+          <attvalue for="2" value="0.40268456375838924" />
+        </attvalues>
+      </edge>
+      <edge source="no.slekt.programmer" target="unknown" id="47" weight="52">
+        <attvalues>
+          <attvalue for="1" value="52" />
+          <attvalue for="2" value="0.348993288590604" />
+        </attvalues>
+      </edge>
+      <edge source="no.slekt.programmer" target="no.pc" id="48" weight="48">
+        <attvalues>
+          <attvalue for="1" value="48" />
+          <attvalue for="2" value="0.3221476510067114" />
+        </attvalues>
+      </edge>
+      <edge source="no.slekt.programmer" target="no.slekt" id="49" weight="44">
+        <attvalues>
+          <attvalue for="1" value="44" />
+          <attvalue for="2" value="0.2953020134228188" />
+        </attvalues>
+      </edge>
+      <edge source="no.spill.rollespill" target="unknown" id="50" weight="90">
+        <attvalues>
+          <attvalue for="1" value="90" />
+          <attvalue for="2" value="0.5421686746987951" />
+        </attvalues>
+      </edge>
+      <edge source="no.spill.sjakk" target="unknown" id="51" weight="304">
+        <attvalues>
+          <attvalue for="1" value="304" />
+          <attvalue for="2" value="0.7152941176470589" />
+        </attvalues>
+      </edge>
+      <edge source="no.sport.fotball" target="unknown" id="52" weight="289">
+        <attvalues>
+          <attvalue for="1" value="289" />
+          <attvalue for="2" value="0.6947115384615384" />
+        </attvalues>
+      </edge>
+      <edge source="no.sport.orientering" target="unknown" id="53" weight="2">
+        <attvalues>
+          <attvalue for="1" value="2" />
+          <attvalue for="2" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="no.sport.volleyball" target="unknown" id="54" weight="13">
+        <attvalues>
+          <attvalue for="1" value="13" />
+          <attvalue for="2" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="no.stortinget" target="no.alt.diskusjoner" id="55" weight="4713">
+        <attvalues>
+          <attvalue for="1" value="4713" />
+          <attvalue for="2" value="0.31872590789206734" />
+        </attvalues>
+      </edge>
+      <edge source="no.stortinget" target="no.general" id="56" weight="3667">
+        <attvalues>
+          <attvalue for="1" value="3667" />
+          <attvalue for="2" value="0.24798809765334415" />
+        </attvalues>
+      </edge>
+      <edge source="no.student.nett" target="no.student.samfund" id="57" weight="142">
+        <attvalues>
+          <attvalue for="1" value="142" />
+          <attvalue for="2" value="0.269449715370019" />
+        </attvalues>
+      </edge>
+      <edge source="no.student.samfund" target="no.student.nett" id="58" weight="137">
+        <attvalues>
+          <attvalue for="1" value="137" />
+          <attvalue for="2" value="0.33171912832929784" />
+        </attvalues>
+      </edge>
+      <edge source="no.sykkel" target="no.alt.frustrasjoner" id="59" weight="1127">
+        <attvalues>
+          <attvalue for="1" value="1127" />
+          <attvalue for="2" value="0.6720333929636255" />
+        </attvalues>
+      </edge>
+      <edge source="no.sykkel" target="unknown" id="60" weight="339">
+        <attvalues>
+          <attvalue for="1" value="339" />
+          <attvalue for="2" value="0.20214669051878353" />
+        </attvalues>
+      </edge>
+      <edge source="no.tele" target="no.general" id="61" weight="2225">
+        <attvalues>
+          <attvalue for="1" value="2225" />
+          <attvalue for="2" value="0.31271960646521435" />
+        </attvalues>
+      </edge>
+      <edge source="no.telepost" target="no.general" id="62" weight="1346">
+        <attvalues>
+          <attvalue for="1" value="1346" />
+          <attvalue for="2" value="0.2631990614000782" />
+        </attvalues>
+      </edge>
+      <edge source="no.test" target="unknown" id="63" weight="152">
+        <attvalues>
+          <attvalue for="1" value="152" />
+          <attvalue for="2" value="0.495114006514658" />
+        </attvalues>
+      </edge>
+      <edge source="no.tex" target="unknown" id="64" weight="17">
+        <attvalues>
+          <attvalue for="1" value="17" />
+          <attvalue for="2" value="1.0" />
+        </attvalues>
+      </edge>
+      <edge source="no.uninett.skole" target="no.general" id="65" weight="564">
+        <attvalues>
+          <attvalue for="1" value="564" />
+          <attvalue for="2" value="0.32752613240418116" />
+        </attvalues>
+      </edge>
+      <edge source="no.unix" target="no.linux" id="66" weight="1889">
+        <attvalues>
+          <attvalue for="1" value="1889" />
+          <attvalue for="2" value="0.3779511804721889" />
+        </attvalues>
+      </edge>
+      <edge source="no.video" target="no.audio" id="67" weight="314">
+        <attvalues>
+          <attvalue for="1" value="314" />
+          <attvalue for="2" value="0.30544747081712065" />
+        </attvalues>
+      </edge>
+      <edge source="no.video" target="no.film" id="68" weight="242">
+        <attvalues>
+          <attvalue for="1" value="242" />
+          <attvalue for="2" value="0.23540856031128404" />
+        </attvalues>
+      </edge>
+      <edge source="no.vit.diverse" target="no.psykologi" id="69" weight="375">
+        <attvalues>
+          <attvalue for="1" value="375" />
+          <attvalue for="2" value="0.28430629264594387" />
+        </attvalues>
+      </edge>
+      <edge source="no.x" target="no.unix" id="70" weight="76">
+        <attvalues>
+          <attvalue for="1" value="76" />
+          <attvalue for="2" value="0.2714285714285714" />
+        </attvalues>
+      </edge>
+    </edges>
+  </graph>
+</gexf>
