@@ -97,7 +97,8 @@ if __name__ == "__main__":
         action="store_true",
         help="If flagged, will also save the figure as a .png next to the cache "
         "it is plotted from, holding the scatter alone and none of the message "
-        "texts the interactive figure shows on hover",
+        "texts the interactive figure shows on hover. The name gains a "
+        "_centroids suffix when --plot-centroids is flagged",
     )
     args = parser.parse_args()
     logger.info(args)
@@ -251,7 +252,10 @@ if __name__ == "__main__":
     )
 
     if args.save_fig:
-        figure_path = cache_path.with_suffix(".png")
+        # A figure holding the centroids is written beside the one without them,
+        # rather than over it.
+        centroid_suffix = "_centroids" if args.plot_centroids else ""
+        figure_path = cache_path.with_name(f"{cache_path.stem}{centroid_suffix}.png")
         static_fig = go.Figure(fig)
         # The centroid labels are drawn on the figure itself, so only the message
         # traces lose the text they carry for their hover labels alone.
