@@ -258,7 +258,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--min-reference-share",
         type=float,
-        default=0.05,
+        default=0.2,
         help=(
             "Draw an edge only if it carries at least this share of the"
             " references leaving the referring newsgroup"
