@@ -175,8 +175,7 @@ if __name__ == "__main__":
         "--overlap-file",
         type=Path,
         default=Path(
-            "data/output/06_graphs_and_references/"
-            "newsgroup_user_jaccard_overlap_nb_and_ia.csv"
+            "data/output/06_graphs_and_references/newsgroup_user_jaccard_overlap_nb.csv"
         ),
         help="Path to a newsgroup overlap CSV file",
     )
