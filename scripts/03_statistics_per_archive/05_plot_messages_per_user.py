@@ -12,9 +12,25 @@ import pandas as pd
 import plotly.graph_objects as go
 from matplotlib.ticker import FuncFormatter
 
+from usenet_no.plot_utils import format_count
+
+# The two shares are two identities, so they are drawn in two colours of their
+# own, and the text in the ink the other figures are lettered with. Nothing is
+# lettered on top of a fill, where the ink would have to hold its own against
+# the colour under it. The pair is muted as far as it can be: any softer and
+# the blue reads as grey rather than as a colour.
+TOP_COLOR = "#4a7fb5"
+REST_COLOR = "#cb7c52"
+TEXT_PRIMARY = "#0b0b0b"
+SURFACE = "#ffffff"
+
+# The two segments of the bar, and the two slices of the pie, are set apart by
+# a gap of this many points in the colour of the surface behind them.
+SEGMENT_GAP = 2
+
 
 def space_thousands(value, _):
-    return f"{int(value):,}".replace(",", " ")
+    return format_count(int(value))
 
 
 space_fmt = FuncFormatter(space_thousands)
@@ -28,31 +44,115 @@ def load_user_counts(path: Path) -> pd.DataFrame:
 def print_stats(df: pd.DataFrame, label: str) -> None:
     print(f"{label}")
     print(f"  Total unique users: {len(df):,}")
-    print(f"  Total posts:        {df['post_count'].sum():,}")
+    print(f"  Total messages:     {df['post_count'].sum():,}")
     print(f"  Users with name:    {df['hashed_name'].notna().sum():,}")
     print(f"  Users with email:   {df['hashed_email'].notna().sum():,}")
 
 
-def print_top_poster_counts(df_ia: pd.DataFrame, df_nb: pd.DataFrame, n: int) -> None:
-    print(f"\nTop {n} posters — IA date-filtered")
+def print_top_user_counts(df_ia: pd.DataFrame, df_nb: pd.DataFrame, n: int) -> None:
+    print(f"\nTop {n} users — IA date-filtered")
     print(df_ia.head(n).reset_index().post_count.apply(space_fmt))
-    print(f"Number of posts by top {n} posters in Norwegian Web Archive data")
+    print(f"Number of messages by top {n} users in Norwegian Web Archive data")
     print(df_nb.head(n).reset_index().post_count.apply(space_fmt))
 
 
-def plot_top_vs_rest(df: pd.DataFrame, n: int, title: str, out_path: Path) -> None:
-    top_sum = df.head(n)["post_count"].sum()
-    rest_sum = df.iloc[n:]["post_count"].sum()
-    rest_label = f"Rest ({len(df) - n:,} users)".replace(",", " ")
-    fig, ax = plt.subplots(figsize=(6, 6))
-    ax.bar([f"Top {n} users", rest_label], [top_sum, rest_sum])
-    ax.yaxis.set_major_formatter(space_fmt)
-    for i, v in enumerate([top_sum, rest_sum]):
-        ax.text(i, v, f"{v:,}".replace(",", " "), ha="center", va="bottom", fontsize=10)
-    ax.set_ylabel("Total Posts")
-    ax.set_title(title)
+def top_vs_rest_counts(df: pd.DataFrame, n: int) -> tuple[int, int]:
+    """Messages written by the n users who wrote most, and by all the rest."""
+    return df.head(n)["post_count"].sum(), df.iloc[n:]["post_count"].sum()
+
+
+def legend_labels(df: pd.DataFrame, n: int) -> tuple[str, str]:
+    """Name each of the two groups by whose messages it holds."""
+    return (
+        f"Messages by the top {n} users",
+        f"Messages by the remaining {format_count(len(df) - n)} users",
+    )
+
+
+def share_label(count: int, total: int) -> str:
+    """A group's messages, over what part of the archive they are."""
+    return f"{format_count(count)}\n{count / total * 100:.1f} %"
+
+
+def plot_top_vs_rest_bar(df: pd.DataFrame, n: int, title: str, out_path: Path) -> None:
+    """Draw the two groups' messages as one horizontal bar split in two."""
+    counts = top_vs_rest_counts(df, n)
+    total = sum(counts)
+
+    fig, ax = plt.subplots(figsize=(10, 2.4))
+    left = 0
+    for count, color, label in zip(
+        counts, (TOP_COLOR, REST_COLOR), legend_labels(df, n)
+    ):
+        ax.barh(
+            0,
+            count,
+            left=left,
+            height=0.4,
+            color=color,
+            label=label,
+            edgecolor=SURFACE,
+            linewidth=SEGMENT_GAP,
+        )
+        ax.text(
+            left + count / 2,
+            -0.28,
+            share_label(count, total),
+            ha="center",
+            multialignment="center",
+            va="top",
+            fontsize=11,
+            color=TEXT_PRIMARY,
+        )
+        left += count
+
+    ax.set_xlim(0, total)
+    ax.set_ylim(-0.75, 0.55)
+    ax.axis("off")
+    ax.legend(
+        loc="lower center",
+        bbox_to_anchor=(0.5, 0.8),
+        ncols=2,
+        frameon=False,
+        fontsize=11,
+        labelcolor=TEXT_PRIMARY,
+    )
+    ax.set_title(title, color=TEXT_PRIMARY, pad=28)
     fig.tight_layout()
-    fig.savefig(out_path)
+    fig.savefig(out_path, facecolor=SURFACE)
+    plt.close(fig)
+
+
+def plot_top_vs_rest_pie(df: pd.DataFrame, n: int, title: str, out_path: Path) -> None:
+    """Draw the two groups' messages as the two slices of a pie."""
+    counts = top_vs_rest_counts(df, n)
+    total = sum(counts)
+
+    fig, ax = plt.subplots(figsize=(7, 5.5))
+    wedges, _labels = ax.pie(
+        counts,
+        colors=(TOP_COLOR, REST_COLOR),
+        # Clockwise from twelve o'clock, so the smaller share is read first.
+        startangle=90,
+        counterclock=False,
+        labels=[share_label(count, total) for count in counts],
+        labeldistance=1.08,
+        wedgeprops={"edgecolor": SURFACE, "linewidth": SEGMENT_GAP},
+        textprops={"color": TEXT_PRIMARY, "fontsize": 11, "multialignment": "center"},
+    )
+    ax.legend(
+        wedges,
+        legend_labels(df, n),
+        loc="lower center",
+        bbox_to_anchor=(0.5, -0.08),
+        ncols=2,
+        frameon=False,
+        fontsize=11,
+        labelcolor=TEXT_PRIMARY,
+    )
+    ax.set_title(title, color=TEXT_PRIMARY)
+    fig.tight_layout()
+    fig.savefig(out_path, facecolor=SURFACE)
     plt.close(fig)
 
 
@@ -74,9 +174,9 @@ def plot_cumulative_distribution(dfs: list, out_path: Path) -> None:
     fig.add_hline(y=50, line_dash="dash", line_color="purple", annotation_text="50%")
     fig.add_hline(y=80, line_dash="dash", line_color="green", annotation_text="80%")
     fig.update_layout(
-        title="Cumulative post distribution by user",
+        title="Cumulative message distribution by user",
         xaxis_title="Number of top users",
-        yaxis_title="Cumulative % of all posts",
+        yaxis_title="Cumulative % of all messages",
     )
     fig.write_image(out_path)
 
@@ -91,10 +191,10 @@ def print_cumulative_stats(dfs: list) -> None:
         users_50 = (df_sorted["cumulative_pct"] >= 50).idxmax() + 1
         users_80 = (df_sorted["cumulative_pct"] >= 80).idxmax() + 1
         print(
-            f"{label}: top {users_50:,} users ({users_50 / n * 100:.2f}%) account for 50% of posts"
+            f"{label}: top {users_50:,} users ({users_50 / n * 100:.2f}%) account for 50% of messages"
         )
         print(
-            f"{label}: top {users_80:,} users ({users_80 / n * 100:.2f}%) account for 80% of posts"
+            f"{label}: top {users_80:,} users ({users_80 / n * 100:.2f}%) account for 80% of messages"
         )
         print()
 
@@ -131,7 +231,7 @@ def print_shared_users(df_ia: pd.DataFrame, df_nb: pd.DataFrame) -> None:
         f"  NB-only users: {len(nb_by_email[~nb_by_email['hashed_email'].isin(shared['hashed_email'])]):,}"
     )
     for sort_col, sort_label in [("post_count_ia", "IA"), ("post_count_nb", "NB")]:
-        print(f"Top {n} shared users by {sort_label} post count")
+        print(f"Top {n} shared users by {sort_label} message count")
         print(top_shared(shared, total_ia, total_nb, n, sort_col).to_string())
 
 
@@ -182,29 +282,26 @@ def main() -> None:
         print()
 
     nb_pct = df_nb["post_count"].sum() / ia_filtered["post_count"].sum() * 100
-    print(f"NB is {nb_pct:.1f}% the size of the date-filtered IA by post count")
+    print(f"NB is {nb_pct:.1f}% the size of the date-filtered IA by message count")
 
-    print_top_poster_counts(ia_filtered, df_nb, n=20)
+    print_top_user_counts(ia_filtered, df_nb, n=20)
 
     n = 100
-    plot_top_vs_rest(
-        df_nb,
-        n,
-        f"Posts by top {n} users vs rest (NB)",
-        args.out_dir / "top_100_users_vs_rest_nb.png",
-    )
-    plot_top_vs_rest(
-        ia_full,
-        n,
-        f"Posts by top {n} users vs rest (full period)",
-        args.out_dir / "top_100_users_vs_rest_ia_full.png",
-    )
-    plot_top_vs_rest(
-        ia_filtered,
-        n,
-        f"Posts by top {n} users vs rest (1994-1997)",
-        args.out_dir / "top_100_users_vs_rest_ia_date_filtered.png",
-    )
+    for df, title, suffix in [
+        (df_nb, "NB", "nb"),
+        (ia_full, "full period", "ia_full"),
+        (ia_filtered, "1994-1997", "ia_date_filtered"),
+    ]:
+        for plot, shape in [
+            (plot_top_vs_rest_bar, "bar"),
+            (plot_top_vs_rest_pie, "pie"),
+        ]:
+            plot(
+                df,
+                n,
+                f"Number of messages posted by the top {n} users ({title})",
+                args.out_dir / f"top_{n}_users_vs_rest_{shape}_{suffix}.png",
+            )
 
     cumulative_dfs = [
         (ia_filtered, "IA 1994-1997"),
