@@ -95,7 +95,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--reduction",
         choices=REDUCTION_CHOICES,
-        default="umap",
+        default="tsne",
         help="Plot a method that finds its topics in the embeddings as they are "
         "over the step 08 embeddings reduced with this algorithm, ignored by the "
         f"methods that reduce themselves ({', '.join(REDUCING_METHODS)}) "
