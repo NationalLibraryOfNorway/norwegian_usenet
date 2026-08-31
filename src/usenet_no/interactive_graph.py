@@ -83,8 +83,12 @@ def spring_lengths[Edge](
 
     The average edge comes out `average` pixels long and the rest are scaled
     around it. A graph where nearly everything is joined to everything needs
-    more room than that to be read.
+    more room than that to be read. A threshold can leave a graph with no edges
+    at all, which has no lengths to scale.
     """
+    if not distances:
+        return {}
+
     average_distance = sum(distances.values()) / len(distances)
     return {
         edge: average * distance / average_distance
