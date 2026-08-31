@@ -19,7 +19,9 @@ in each.
 
 The totals leave the newsgroup out altogether: a reference is a (referring
 message, referenced id) pair, counted once however many newsgroups hold either
-end of it, and split by where the referenced message is found.
+end of it, and split by where the referenced message is found. Those three
+groups are also read as a graph of the archives themselves, where an archive's
+references to its own messages are its self loop.
 """
 
 import logging
@@ -57,6 +59,35 @@ class ReferenceResolution(NamedTuple):
     resolved_in_archive: int
     resolved_in_other_archive: int
     unresolved: int
+
+
+class ArchiveReferenceEdge(NamedTuple):
+    """One directed edge between archives.
+
+    The field names are the edge list's CSV column names.
+    """
+
+    from_archive: str
+    to_archive: str
+    number_of_references: int
+
+
+def resolution_edges(
+    archive: str, other_archive: str, resolution: ReferenceResolution
+) -> list[ArchiveReferenceEdge]:
+    """Read one archive's split references as the three edges leaving it.
+
+    The references resolving in the archive itself weigh its self loop, the
+    ones only the other archive holds weigh the edge to that archive, and the
+    ones neither holds weigh the edge to the unknown placeholder.
+    """
+    return [
+        ArchiveReferenceEdge(archive, archive, resolution.resolved_in_archive),
+        ArchiveReferenceEdge(
+            archive, other_archive, resolution.resolved_in_other_archive
+        ),
+        ArchiveReferenceEdge(archive, UNKNOWN_NEWSGROUP, resolution.unresolved),
+    ]
 
 
 def _archive_scope(
