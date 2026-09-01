@@ -206,3 +206,9 @@ notes.md
 .claude
 
 *_old/
+
+# The user databases hold the hashed addresses that the archive databases refer
+# to by id alone. They are what turns an id back into a person, so they stay out
+# of the repository. Their fingerprint is kept: it hashes whole tables rather
+# than each row, so it is no use for looking an address up.
+data/output/02_build_database/*_users.db

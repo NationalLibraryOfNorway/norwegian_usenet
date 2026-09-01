@@ -11,6 +11,7 @@ Writes one JSON object per duplicated Message-ID, sorted by
 import argparse
 import json
 import logging
+import sys
 from pathlib import Path
 
 from usenet_no.database import connect_archives
@@ -59,7 +60,7 @@ if __name__ == "__main__":
             "Output file already exists: %s. Use --overwrite to regenerate.",
             args.output_file,
         )
-        exit(0)
+        sys.exit(0)
 
     connection = connect_archives(args.ia_database_file, args.nb_database_file)
     duplicates = find_true_duplicates(connection)

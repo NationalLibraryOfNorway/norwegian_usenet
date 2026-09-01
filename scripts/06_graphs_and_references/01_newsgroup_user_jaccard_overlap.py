@@ -4,8 +4,8 @@ Reads the NB database built in step 02 into a user x newsgroup matrix of
 who posted where, then reduces it to the Jaccard overlap between the user sets
 of every pair of newsgroups.
 
-A user is one hashed email address, so a person who spelled their name two ways
-counts once.
+A user is one email address, so a person who spelled their name two ways counts
+once.
 """
 
 import argparse
@@ -63,7 +63,7 @@ if __name__ == "__main__":
 
     connection = connect_archive(args.nb_database_file, NB_ARCHIVE)
 
-    newsgroups_per_user = find_newsgroups_per_user(connection, [(NB_ARCHIVE, None)])
+    newsgroups_per_user = find_newsgroups_per_user(connection, NB_ARCHIVE)
     matrix, users, newsgroups = build_user_newsgroup_matrix(newsgroups_per_user)
     overlaps = pairwise_jaccard(matrix, newsgroups)
 

@@ -1,12 +1,12 @@
 """Count messages per user for IA, date-filtered IA and NB.
 
-Counts come from the databases built in step 02, which already holds the hash of
-each sender's name and email, so no separate plain-text-to-hash mapping is
-needed. Only hashes are written out, so the results can be published as they
-are. The date-filtered variant is a WHERE clause restricting IA to the NB date
-span, not a separate copy of the archive.
+A user is one email address, named here by the `email_id` of the archive it was
+read from, so the counts of two archives cannot be laid over each other:
+user_overlap.py in step 05 is what compares the users of the two. The
+date-filtered variant is a WHERE clause restricting IA to the NB date span, not a
+separate copy of the archive.
 
-Messages that carry no From header have no user and are not counted here; they
+Messages whose sender gave no address have no user and are not counted here; they
 are reported separately, by the script counting messages without a sender.
 """
 
@@ -88,9 +88,9 @@ if __name__ == "__main__":
             connection, archive=archive, date_span=date_span
         )
 
-        pd.DataFrame(
-            user_post_counts, columns=["hashed_name", "hashed_email", "post_count"]
-        ).to_csv(output_file, index=False)
+        pd.DataFrame(user_post_counts, columns=["email_id", "post_count"]).to_csv(
+            output_file, index=False
+        )
 
         logger.info(
             "Total unique users in %s%s: %d. See counts per user in %s",

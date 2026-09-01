@@ -1,4 +1,4 @@
-"""Fingerprint each archive's database, to compare separate builds.
+"""Fingerprint the databases given on the command line, to compare separate builds.
 
 The .db files are not byte-reproducible, so this hashes the rows themselves,
 twice: once as they are with the row ids included, and once with the ids left
@@ -8,11 +8,16 @@ the ids the rows were given. The build hands out row ids per mbox file in the
 order the files are read, so a different order gives every table a different
 fingerprint from the same data.
 
-Both archives and both hashes go into one CSV, each label naming the archive it
-came from. Every label is written on every run, since a hash means nothing
-except against the one an earlier run wrote. When the file is already there, it
-is read first and every label that changed is printed before the file is
-rewritten.
+Each archive has two files, an archive database and the user database holding
+the addresses it refers to by id, and either kind can be fingerprinted: the
+tables a file holds are what say which it is. The two kinds go to two CSVs, so
+that a machine holding only the published files can check them on their own.
+A fingerprint is a hash over a whole table, not over each row, so it is no use
+for looking an address up and can be published either way.
+
+Every label is written on every run, since a hash means nothing except against
+the one an earlier run wrote. When a file is already there, it is read first and
+every label that changed is printed before the file is rewritten.
 """
 
 import argparse
@@ -22,27 +27,72 @@ import sqlite3
 from pathlib import Path
 
 # table -> the ORDER BY that makes the read deterministic
-TABLES = {
-    "users": "id",
+ARCHIVE_TABLES = {
     "messages": "id",
     "message_references": "message_row_id, referenced_id_hash",
 }
 
+USER_TABLES = {
+    "emails": "id",
+    "email_names": "email_id, name_hash",
+}
+
 # The same rows with the id columns left out, ordered by their contents instead,
 # so that renumbering the rows leaves the hash alone
-ID_FREE_QUERIES = {
+ARCHIVE_ID_FREE_QUERIES = {
     "messages per file": "SELECT newsgroup, COUNT(*) FROM messages"
     " GROUP BY newsgroup ORDER BY newsgroup",
     "messages, no ids": "SELECT newsgroup, message_id_hash, date, body_hash"
     " FROM messages ORDER BY newsgroup, message_id_hash, date, body_hash",
-    "users, no ids": "SELECT name_hash, email_hash FROM users"
-    " ORDER BY name_hash, email_hash",
+}
+
+USER_ID_FREE_QUERIES = {
+    "emails, no ids": "SELECT email_hash FROM emails ORDER BY email_hash",
+    "email names, no ids": "SELECT emails.email_hash, email_names.name_hash"
+    " FROM email_names JOIN emails ON email_names.email_id = emails.id"
+    " ORDER BY emails.email_hash, email_names.name_hash",
 }
 
 # The id-free hash a table is read against when the table itself has changed
-ID_FREE_COUNTERPART = {"messages": "messages, no ids", "users": "users, no ids"}
+ID_FREE_COUNTERPART = {
+    "messages": "messages, no ids",
+    "emails": "emails, no ids",
+    "email_names": "email names, no ids",
+}
+
+# What a file is read as, keyed by the table only that kind of file holds. Row
+# ids follow the order the mbox files were read in, which only an archive
+# database has, so only it is asked for its processing order.
+SCHEMAS = {
+    "messages": (ARCHIVE_TABLES, ARCHIVE_ID_FREE_QUERIES, True),
+    "emails": (USER_TABLES, USER_ID_FREE_QUERIES, False),
+}
+
+# Where each kind of file is fingerprinted to when --output-file is not given
+DEFAULT_OUTPUT_NAMES = {
+    "messages": "fingerprint_databases.csv",
+    "emails": "fingerprint_user_databases.csv",
+}
 
 LABEL_WIDTH = 24
+
+
+def connect_read_only(database_file: Path) -> sqlite3.Connection:
+    return sqlite3.connect(f"file:{database_file}?mode=ro", uri=True)
+
+
+def find_schema(database_file: Path) -> str:
+    """Which of SCHEMAS the file holds, read off the tables it has."""
+    connection = connect_read_only(database_file)
+    tables = {
+        name
+        for (name,) in connection.execute(
+            "SELECT name FROM sqlite_master WHERE type = 'table'"
+        )
+    }
+    connection.close()
+    (schema,) = tables & SCHEMAS.keys()
+    return schema
 
 
 def hash_rows(connection: sqlite3.Connection, query: str) -> tuple[int, str]:
@@ -153,21 +203,23 @@ def print_verdicts(
 
 def report(database_file: Path) -> list[tuple[str, str, str]]:
     """Print the fingerprint of every table, and return it with the id-free hashes."""
-    connection = sqlite3.connect(f"file:{database_file}?mode=ro", uri=True)
+    tables, id_free_queries, with_processing_order = SCHEMAS[find_schema(database_file)]
+    connection = connect_read_only(database_file)
     print(f"{database_file.name}  ({database_file.stat().st_size} bytes on disk)")
 
     schema_digest = fingerprint_schema(connection)
     print(f"  {'schema':<20} {schema_digest}")
     fingerprint = [("schema", schema_digest, "")]
 
-    for table, order in TABLES.items():
+    for table, order in tables.items():
         rows, digest = hash_rows(connection, f"SELECT * FROM {table} ORDER BY {order}")
         print(f"  {table:<20} {digest}  {rows} rows")
         fingerprint.append((table, digest, str(rows)))
 
     # Read only when a table above differs, so they are stored rather than printed
-    fingerprint.extend(fingerprint_processing_order(connection))
-    for label, query in ID_FREE_QUERIES.items():
+    if with_processing_order:
+        fingerprint.extend(fingerprint_processing_order(connection))
+    for label, query in id_free_queries.items():
         rows, digest = hash_rows(connection, query)
         fingerprint.append((label, digest, str(rows)))
 
@@ -177,41 +229,46 @@ def report(database_file: Path) -> list[tuple[str, str, str]]:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Print a content fingerprint of each archive's database",
+        description="Print a content fingerprint of each database given",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
-        "--ia-database-file",
+        "database_files",
         type=Path,
-        default=Path("data/output/02_build_database/ia.db"),
-        help="Path to the SQLite database file of the IA archive",
-    )
-    parser.add_argument(
-        "--nb-database-file",
-        type=Path,
-        default=Path("data/output/02_build_database/nb.db"),
-        help="Path to the SQLite database file of the NB archive",
+        nargs="*",
+        default=[
+            Path("data/output/02_build_database/ia.db"),
+            Path("data/output/02_build_database/nb.db"),
+        ],
+        help="SQLite databases to fingerprint, of one kind or the other",
     )
     parser.add_argument(
         "--output-file",
         type=Path,
-        default=Path("data/output/02_build_database/fingerprint_databases.csv"),
-        help="CSV to compare against and then write the fingerprint to",
+        default=None,
+        help="CSV to compare against and then write to."
+        " Defaults to fingerprint_databases.csv beside the first database given,"
+        " or fingerprint_user_databases.csv when the databases are user databases",
     )
     args = parser.parse_args()
 
-    previous = read_previous_fingerprint(args.output_file)
-    databases = {"ia": args.ia_database_file, "nb": args.nb_database_file}
+    output_file = (
+        args.output_file
+        or args.database_files[0].parent
+        / (DEFAULT_OUTPUT_NAMES[find_schema(args.database_files[0])])
+    )
+
+    previous = read_previous_fingerprint(output_file)
     fingerprint = [
-        (f"{archive} {label}", value, count)
-        for archive, database_file in databases.items()
+        (f"{database_file.stem} {label}", value, count)
+        for database_file in args.database_files
         for label, value, count in report(database_file)
     ]
 
     if previous:
-        print(f"\nAgainst the fingerprint already in {args.output_file}:")
+        print(f"\nAgainst the fingerprint already in {output_file}:")
         print_verdicts(print_changes(previous, fingerprint), previous, fingerprint)
 
-    args.output_file.parent.mkdir(parents=True, exist_ok=True)
-    export_fingerprint_to_csv(fingerprint, args.output_file)
-    print(f"\nWrote {args.output_file}")
+    output_file.parent.mkdir(parents=True, exist_ok=True)
+    export_fingerprint_to_csv(fingerprint, output_file)
+    print(f"\nWrote {output_file}")
