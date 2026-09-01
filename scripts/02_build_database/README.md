@@ -153,3 +153,12 @@ The rows go to `data/output/02_build_database/nb_source_file_message_ids.csv`, a
 `source_file` and `message_id_hash`: the directory below `unzipped_data` the message came off,
 its path below `unzipped_data`, and the hash of its Message-ID. It currently writes one row
 for each of the 613 016 messages.
+
+## Reading one row's message
+
+A row's position in its newsgroup's mbox file is its id minus the lowest id of that
+newsgroup, so a row id and its archive locate the message on their own.
+[05_show_message_by_database_id.py](05_show_message_by_database_id.py) takes those two and
+prints the message the row was built from, envelope line and all, as the mbox file holds it,
+followed by the text `get_message_body` reads it as. It works for either archive, and is how
+a row whose columns look odd is read back as a message.
