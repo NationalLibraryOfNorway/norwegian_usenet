@@ -247,14 +247,13 @@ def count_user_overlap(
 ) -> VennCounts:
     """Count the users held by NB alone, IA alone and both, identified by hashed email.
 
-    Senders with no email are left out, and the several (name, email) pairs an
-    address was posted under collapse to one user. When `ia_date_span` is given,
-    only IA is restricted to it.
+    Needs the user databases attached. Senders with no email are left out. When
+    `ia_date_span` is given, only IA is restricted to it.
     """
     clause, parameters = _ia_only_span_clause(ia_date_span)
     return _count_venn(
         connection,
-        "users.email_hash",
+        "emails.email_hash",
         source=MESSAGES_WITH_SENDER,
         conditions=clause,
         parameters=parameters,
@@ -324,9 +323,9 @@ def _create_shared_email_table(
     )
     connection.execute(
         f"INSERT INTO {SHARED_EMAILS}"
-        f" SELECT users.email_hash FROM {MESSAGES_WITH_SENDER}"
-        f" WHERE users.email_hash IS NOT NULL{clause}"
-        " GROUP BY users.email_hash"
+        f" SELECT emails.email_hash FROM {MESSAGES_WITH_SENDER}"
+        f" WHERE emails.email_hash IS NOT NULL{clause}"
+        " GROUP BY emails.email_hash"
         " HAVING MAX(messages.archive = ?) AND MAX(messages.archive = ?)",
         (*parameters, IA_ARCHIVE, NB_ARCHIVE),
     )
@@ -360,7 +359,8 @@ def count_message_id_overlap_for_shared_users(
 ) -> VennCounts:
     """Count message overlap over the users both archives hold, identified by hashed email.
 
-    Messages whose sender has no email are left out, and a message counts once
+    Needs the user databases attached. Messages whose sender has no email are
+    left out, and a message counts once
     however many newsgroups carry it. When `ia_date_span` is given, only IA is
     restricted to it, both when deciding which users are shared and when
     counting messages.
@@ -372,7 +372,7 @@ def count_message_id_overlap_for_shared_users(
         "messages.message_id_hash",
         source=MESSAGES_WITH_SENDER,
         conditions=clause
-        + f" AND users.email_hash IN (SELECT email_hash FROM {SHARED_EMAILS})",
+        + f" AND emails.email_hash IN (SELECT email_hash FROM {SHARED_EMAILS})",
         parameters=parameters,
     )
     connection.execute(f"DROP TABLE temp.{SHARED_EMAILS}")

@@ -1,0 +1,16 @@
+From sender@example.com
+Message-ID: <mixed.origin@example.no>
+
+an origin in this group
+
+From sender@example.com
+Message-ID: <mixed.reply@example.no>
+References: <mixed.origin@example.no>
+
+a reply within the group
+
+From sender@example.com
+Message-ID: <mixed.outward@example.no>
+References: <origin.one@example.no>
+
+a reply to a message in another group
