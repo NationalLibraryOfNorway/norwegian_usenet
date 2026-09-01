@@ -44,10 +44,10 @@ data/
 ### Sqlite databases
 `ia.db` and `nb.db` are built from the `utf_8_data` subdirectories, one file per archive, and are what the analysis scripts read.  
 They hold message ids and bodies only as hashes, and a message's sender only as an id, so the files can be shared.  
-The hashed addresses those ids stand for are in `ia_users.db` and `nb_users.db`, which are not in the repository: a hashed address can be looked up by anyone who has an address to test, and an id cannot. The two archives number their addresses separately, so an id in one file says nothing about the other, and comparing the users of the two archives takes both user databases. The scripts that need them say so.  
+A user is one email address, and the addresses those ids stand for are in `ia_users.db` and `nb_users.db`, which are not in the repository; [step 02's README](scripts/02_build_database/README.md) says why, and what it costs. Comparing the users of the two archives takes both files, and the scripts that need them say so.  
 `ia.db` and `nb.db` are stored here with [git-lfs](https://git-lfs.com): with git-lfs installed, `git clone` fetches the files themselves, and `git lfs pull` fetches them in a clone made without them.  
 The statistics in step 03, most of the comparisons in step 04, and most of the venn diagrams in step 05 and graph building scripts in 06 read the two database files and nothing else, so anyone with them can reproduce those.  
-The ones comparing the users of the two archives need the user databases as well, and are marked as needing them: [user_overlap.py](scripts/05_venn_diagrams/user_overlap.py), [message_overlap_for_shared_users.py](scripts/05_venn_diagrams/message_overlap_for_shared_users.py) and [merged_newsgroup_user_jaccard_overlap.py](scripts/06_graphs_and_references/merged_newsgroup_user_jaccard_overlap.py).  
+The ones comparing the users of the two archives need the user databases as well, and are marked as needing them: [user_overlap.py](scripts/05_venn_diagrams/user_overlap.py) and [message_overlap_for_shared_users.py](scripts/05_venn_diagrams/message_overlap_for_shared_users.py).  
 The two replacement character scripts in step 04 also read the message bodies from the mbox files, and so need the archives themselves.  
 A hash is connected back to its plain text through the mbox files: a message's position in its own file is its row id minus the lowest row id of its newsgroup, in the database of its archive.
 

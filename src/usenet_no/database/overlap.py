@@ -1,10 +1,6 @@
 """User overlap between newsgroups, from the message databases built in step 02.
 
-A user is one address. Within one archive that is `messages.email_id`, which the
-archive's own file carries, so `find_newsgroups_per_user` reads nothing private.
-Across the archives it has to be the hashed address, since the ids are handed out
-per archive, so `find_newsgroups_per_user_across_archives` needs both user
-databases attached.
+A user is one email address, which `messages.email_id` names.
 
 Who posted where is collected as a one-hot user x newsgroup matrix, which the
 Jaccard step reduces to one row per pair of newsgroups.
@@ -17,7 +13,7 @@ from typing import NamedTuple
 import numpy as np
 from scipy.sparse import coo_matrix, csr_matrix
 
-from usenet_no.database.core import MESSAGES_WITH_SENDER, date_span_clause
+from usenet_no.database.core import date_span_clause
 
 logger = logging.getLogger(__name__)
 
@@ -25,10 +21,6 @@ logger = logging.getLogger(__name__)
 # whole archive. A list of these is what lets an archive and another archive's
 # date-restricted slice be read as one body of messages.
 ArchiveDatespan = tuple[str, tuple[str, str] | None]
-
-# What a user is called in the matrix: an email id when one archive is read on
-# its own, a hashed address when the two are read together.
-UserKey = int | str
 
 
 class NewsgroupOverlap(NamedTuple):
@@ -43,19 +35,6 @@ class NewsgroupOverlap(NamedTuple):
     users_b: int
     shared_users: int
     jaccard: float
-
-
-def _archive_conditions(
-    archive_datespans: list[ArchiveDatespan],
-) -> tuple[str, list[str]]:
-    """The WHERE fragment matching any of the (archive, date span) pairs, and its parameters."""
-    conditions = []
-    parameters: list[str] = []
-    for archive, date_span in archive_datespans:
-        clause, span_parameters = date_span_clause(date_span, column="messages.date")
-        conditions.append(f"(messages.archive = ?{clause})")
-        parameters.extend((archive, *span_parameters))
-    return " OR ".join(conditions), parameters
 
 
 def find_newsgroups_per_user(
@@ -80,32 +59,9 @@ def find_newsgroups_per_user(
     )
 
 
-def find_newsgroups_per_user_across_archives(
-    connection: sqlite3.Connection, archive_datespans: list[ArchiveDatespan]
-) -> list[tuple[str, str]]:
-    """Find every newsgroup each user posted in, over several archives at once.
-
-    Returns one (email_hash, newsgroup) pair per newsgroup a user posted in, so
-    that a person who posted in both archives is one user. Needs both user
-    databases attached. Messages whose sender gave no address are left out, and a
-    newsgroup of the same name in two archives is one newsgroup here. Sorted by
-    (email_hash, newsgroup).
-    """
-    conditions, parameters = _archive_conditions(archive_datespans)
-    return list(
-        connection.execute(
-            "SELECT DISTINCT emails.email_hash, messages.newsgroup"
-            f" FROM {MESSAGES_WITH_SENDER}"
-            f" WHERE ({conditions})"
-            " ORDER BY emails.email_hash, messages.newsgroup",
-            parameters,
-        )
-    )
-
-
 def build_user_newsgroup_matrix(
-    newsgroups_per_user: list[tuple[UserKey, str]],
-) -> tuple[csr_matrix, list[UserKey], list[str]]:
+    newsgroups_per_user: list[tuple[int, str]],
+) -> tuple[csr_matrix, list[int], list[str]]:
     """Lay (user, newsgroup) pairs out as a sparse users x newsgroups matrix.
 
     Cells are one where the user posted in the newsgroup. Returns the matrix

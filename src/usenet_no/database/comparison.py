@@ -247,9 +247,8 @@ def count_user_overlap(
 ) -> VennCounts:
     """Count the users held by NB alone, IA alone and both, identified by hashed email.
 
-    The ids are handed out per archive, so the hash is what matches a user across
-    the two, and both user databases have to be attached. Senders with no email
-    are left out. When `ia_date_span` is given, only IA is restricted to it.
+    Needs the user databases attached. Senders with no email are left out. When
+    `ia_date_span` is given, only IA is restricted to it.
     """
     clause, parameters = _ia_only_span_clause(ia_date_span)
     return _count_venn(
@@ -360,8 +359,8 @@ def count_message_id_overlap_for_shared_users(
 ) -> VennCounts:
     """Count message overlap over the users both archives hold, identified by hashed email.
 
-    Needs both user databases attached, since the ids are handed out per archive.
-    Messages whose sender has no email are left out, and a message counts once
+    Needs the user databases attached. Messages whose sender has no email are
+    left out, and a message counts once
     however many newsgroups carry it. When `ia_date_span` is given, only IA is
     restricted to it, both when deciding which users are shared and when
     counting messages.

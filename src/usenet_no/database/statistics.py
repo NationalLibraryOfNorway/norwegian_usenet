@@ -26,9 +26,8 @@ def count_messages_per_user(
 ) -> list[tuple[int, int]]:
     """Count messages per user in one archive, as (email_id, count), most posts first.
 
-    Reads the archive's own file alone: an email id is the sender, and the names
-    it posted under are not part of the count. Messages whose sender gave no
-    address are left out; count_messages_without_sender covers those.
+    Messages whose sender gave no address are left out;
+    count_messages_without_sender covers those.
     """
     clause, span_parameters = date_span_clause(date_span)
     return list(
@@ -49,9 +48,8 @@ def count_messages_per_email_hash(
 ) -> list[tuple[str, int]]:
     """Count messages per hashed email in one archive, most posts first.
 
-    Needs the archive's user database attached, and is only for comparing users
-    across the archives; count_messages_per_user is the same count within one.
-    Senders with no email are left out.
+    Needs the user databases attached; count_messages_per_user is the same count
+    within one archive. Senders with no email are left out.
     """
     clause, span_parameters = date_span_clause(date_span)
     return list(
@@ -89,9 +87,8 @@ def count_messages_without_sender(
     """Count messages with no sender, per archive and newsgroup.
 
     A message has no sender when no address could be read from its From header,
-    which includes the headers giving a display name and nothing else. Returns
-    (archive, newsgroup, count) for newsgroups with at least one such message,
-    sorted by (archive, newsgroup).
+    a display name and nothing else included. Returns (archive, newsgroup, count)
+    for newsgroups with at least one such message, sorted by (archive, newsgroup).
     """
     return list(
         connection.execute(

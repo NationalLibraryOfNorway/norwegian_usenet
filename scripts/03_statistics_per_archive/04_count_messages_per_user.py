@@ -1,11 +1,10 @@
 """Count messages per user for IA, date-filtered IA and NB.
 
-A user is one address, and it is named by the email id the archive database
-carries, which means nothing outside the archive it was read from. Nothing here
-reads a user database, so the counts of one archive can be published as they are,
-and two archives' counts cannot be laid over each other: user_overlap.py in step
-05 is what compares the users of the two. The date-filtered variant is a WHERE
-clause restricting IA to the NB date span, not a separate copy of the archive.
+A user is one email address, named here by the `email_id` of the archive it was
+read from, so the counts of two archives cannot be laid over each other:
+user_overlap.py in step 05 is what compares the users of the two. The
+date-filtered variant is a WHERE clause restricting IA to the NB date span, not a
+separate copy of the archive.
 
 Messages whose sender gave no address have no user and are not counted here; they
 are reported separately, by the script counting messages without a sender.

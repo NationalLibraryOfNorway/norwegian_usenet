@@ -1,3 +1,5 @@
+"""connect_archives_and_users attaches the user databases connect_archives leaves out."""
+
 import sqlite3
 
 import pytest

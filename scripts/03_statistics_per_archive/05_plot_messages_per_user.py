@@ -1,9 +1,8 @@
 """Plot message counts per user, for full IA data and IA filtered to the NB date span.
 
-A user is an email id, which means nothing outside the archive it was read from,
-so each archive is counted on its own and no user is followed from one to the
-other. Anything held up against NB is read off the date filtered IA counts, since
-the full IA runs past the NB archive at both ends.
+A user is one email address, counted per archive, so no user is followed from one
+archive to the other. Anything held up against NB is read off the date filtered
+IA counts, since the full IA runs past the NB archive at both ends.
 """
 
 import argparse

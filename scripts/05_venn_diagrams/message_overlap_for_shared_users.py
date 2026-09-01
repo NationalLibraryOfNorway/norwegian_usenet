@@ -1,10 +1,9 @@
 """Draw the message overlap between the date filtered IA archive and NB, over the users both hold.
 
-Needs both user databases: the email ids of the two archives are unrelated, so
-the hashed address is the only thing that says a user of one is a user of the
-other. Dropping a user drops the messages behind them on both sides, so a
-Message-ID both archives hold can move into an archive's own region when the
-other archive's copy was posted by a dropped user.
+Needs the user databases, which is where a user's email is. Dropping a user drops
+the messages behind them on both sides, so a Message-ID both archives hold can
+move into an archive's own region when the other archive's copy was posted by a
+dropped user.
 """
 
 import argparse

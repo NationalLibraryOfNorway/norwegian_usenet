@@ -1,9 +1,7 @@
 """Draw the user overlap between the date filtered IA archive and NB, by hashed email.
 
-Needs both user databases: the email ids of the two archives are unrelated, so
-the hashed address is the only thing that says a user of one is a user of the
-other. Nothing read here is written out; the figures and counts are of users, not
-users themselves.
+Needs the user databases, which is where a user's email is. Nothing read from
+them is written out: the figures and counts are of users, not of any one user.
 """
 
 import argparse
