@@ -1,5 +1,6 @@
 {
   "total_messages": 613016,
   "unique_message_ids": 515774,
-  "duplicate_message_ids": 38134
+  "duplicate_messages": 97242,
+  "message_IDs_that_appear_more_than_once": 38134
 }
