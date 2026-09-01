@@ -1,35 +1,13 @@
-# Step 02: loading each archive into a database of its own
+# Step 02: loading each archive into an SQLite database
 
-- [01_build_databases.py](01_build_databases.py) reads the .mbox files of one archive at a time and writes two files per archive: `ia.db` and `nb.db`, which hold one row per message, and `ia_users.db` and `nb_users.db`, which hold the addresses those messages were sent from. All four go in `data/output/02_build_database/`. Run with `--overwrite` to delete existing database files and build them again; without the flag an archive whose files are already there is skipped.
+- [01_build_databases.py](01_build_databases.py) reads the .mbox files of each archive and writes two files per archive: `ia.db` and `nb.db`, which hold one row per message, and `ia_users.db` and `nb_users.db`, which hold the addresses those messages were sent from. All four go in `data/output/02_build_database/`. Run with `--overwrite` to delete existing database files and build them again; without the flag an archive whose files are already there is skipped.
 
-## Two files per archive
+## The archive databases: `ia.db` and `nb.db`
 
-A message's sender is `messages.email_id`, an integer and nothing else: a row of
-`emails` in that archive's user database. Only the user database holds a hashed
-address, and it is not published with the archive database, because a hash is no
-protection against someone who already has an address to test — they hash it
-themselves and look it up. An id gives them nothing to look up.
-
-The two archives are built independently, so an address is numbered separately in
-each and `email_id` 5 in `ia.db` has nothing to do with `email_id` 5 in `nb.db`.
-That is deliberate: the IA archive is public, so anyone can rebuild `ia.db` and
-learn which id there stands for which address, and unrelated numbering is what
-stops that from reading across into NB. It also means the two archives' users can
-only be compared through the user databases, which is why the scripts that do
-that are marked as needing them.
-
-A user is an address. The names one address posted under are rows of
-`email_names` beside it, so a person who spelled their name two ways is one user.
-A sender who gave a display name and no address is no user at all: their message
-has no `email_id`, and the name is not stored anywhere.
-
-## The tables
-
-Both databases have the same schema, and the archive a row belongs to is the
-file it is in. Every hash column holds a 16 character hex digest, from `blake2b`
-with an 8 byte digest, of the UTF-8 plain text. A hash is traced back to its
-plain text through the mbox files, by the position `messages.id` gives. The
-schema is in [`src/usenet_no/database/build.py`](../../src/usenet_no/database/build.py).
+These are the two files kept in the repository. Both have the same schema.
+Every hash column holds a 16 character hex digest, from `blake2b` with an 8 byte digest, of the UTF-8 plain text.
+A hash is traced back to its plain text through the mbox files, by the position `messages.id` gives.
+The schema is in [`src/usenet_no/database/build.py`](../../src/usenet_no/database/build.py).
 
 ```sql
 CREATE TABLE messages (
@@ -55,26 +33,6 @@ CREATE INDEX idx_references_row_id ON message_references(message_row_id);
 CREATE INDEX idx_references_hash ON message_references(referenced_id_hash);
 ```
 
-And the user database beside it, `ia_users.db` or `nb_users.db`:
-
-```sql
-CREATE TABLE emails (
-    id         INTEGER PRIMARY KEY,
-    email_hash TEXT NOT NULL
-);
-
-CREATE TABLE email_names (
-    email_id  INTEGER NOT NULL REFERENCES emails(id),
-    name_hash TEXT NOT NULL
-);
-
-CREATE INDEX idx_emails_email_hash ON emails(email_hash);
-CREATE INDEX idx_email_names_email_id ON email_names(email_id);
-```
-
-`messages.email_id` is not declared a foreign key, because SQLite cannot declare
-one into another file.
-
 `messages`, one row per message read from an mbox file:
 
 | Column            | Type    | Null | Description                                                                          |
@@ -85,25 +43,6 @@ one into another file.
 | `email_id`        | INTEGER | yes  | `emails.id` of the sender in the archive's user database; NULL when the From field gave no address |
 | `date`            | TEXT    | yes  | `YYYY-MM-DD`; NULL when the Date header could not be parsed                          |
 | `body_hash`       | TEXT    | yes  | Hash of the message body; NULL when the body is empty. The body itself is not stored  |
-
-`emails`, in the user database, one row per address:
-
-| Column       | Type    | Null | Description                                    |
-| ------------ | ------- | ---- | ---------------------------------------------- |
-| `id`         | INTEGER | no   | Row id, referred to by `messages.email_id`      |
-| `email_hash` | TEXT    | no   | Hash of the lowercased address                  |
-
-`email_names`, in the user database, one row per name an address posted under:
-
-| Column      | Type    | Null | Description                        |
-| ----------- | ------- | ---- | ---------------------------------- |
-| `email_id`  | INTEGER | no   | `emails.id` of the address          |
-| `name_hash` | TEXT    | no   | Hash of the display name            |
-
-A sender who posted in both archives is a row in each user database, under a
-different id, so an id only means anything together with the archive it was read
-from. The two rows carry the same hash, which is what the comparisons match a
-user on.
 
 `message_references`, one row per (message, referenced id) pair from the References header:
 
@@ -121,14 +60,56 @@ Built from both archives in full:
 | `messages`           | 5 981 974  | 613 016   |
 | `message_references` | 25 230 944 | 2 151 810 |
 
+6 822 IA messages and 1 222 NB messages have no `email_id`: the ones whose From
+header gave no address at all, and the 746 and 7 whose From header gave a display
+name and nothing else.
+
+## The user databases: `ia_users.db` and `nb_users.db`
+
+One is built beside each archive database, holding the addresses its `email_id`
+column stands for. They are the only files carrying a hashed address, and
+`.gitignore` keeps them out of the repository.
+
+```sql
+CREATE TABLE emails (
+    id         INTEGER PRIMARY KEY,
+    email_hash TEXT NOT NULL
+);
+
+CREATE TABLE email_names (
+    email_id  INTEGER NOT NULL REFERENCES emails(id),
+    name_hash TEXT NOT NULL
+);
+
+CREATE INDEX idx_emails_email_hash ON emails(email_hash);
+CREATE INDEX idx_email_names_email_id ON email_names(email_id);
+```
+
+`emails`, one row per address:
+
+| Column       | Type    | Null | Description                                    |
+| ------------ | ------- | ---- | ---------------------------------------------- |
+| `id`         | INTEGER | no   | Row id, referred to by `messages.email_id`      |
+| `email_hash` | TEXT    | no   | Hash of the lowercased address                  |
+
+`email_names`, one row per name an address posted under:
+
+| Column      | Type    | Null | Description                        |
+| ----------- | ------- | ---- | ---------------------------------- |
+| `email_id`  | INTEGER | no   | `emails.id` of the address          |
+| `name_hash` | TEXT    | no   | Hash of the display name            |
+
+A sender who posted in both archives is a row in each user database, under a
+different id, so an id only means anything together with the archive it was read
+from. The two rows carry the same hash, which is what the comparisons match a
+user on.
+
+### Row counts
+
 | Table         | `ia_users.db` | `nb_users.db` |
 | ------------- | ------------- | ------------- |
 | `emails`      | 190 136       | 42 745        |
 | `email_names` | 187 598       | 27 605        |
-
-6 822 IA messages and 1 222 NB messages have no `email_id`: the ones whose From
-header gave no address at all, and the 746 and 7 whose From header gave a display
-name and nothing else.
 
 ## Reading the two together
 
