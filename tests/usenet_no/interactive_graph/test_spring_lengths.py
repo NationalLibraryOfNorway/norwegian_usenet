@@ -13,3 +13,7 @@ def test_the_edges_keep_their_distances_relative_to_each_other():
 
 def test_distances_on_another_scale_come_out_the_same_length():
     assert spring_lengths({"a": 1, "b": 3}) == spring_lengths({"a": 100, "b": 300})
+
+
+def test_a_graph_with_no_edges_has_no_lengths():
+    assert spring_lengths({}) == {}

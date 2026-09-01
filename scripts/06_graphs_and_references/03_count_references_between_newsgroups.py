@@ -1,33 +1,39 @@
 """Count the references running from each newsgroup to each other newsgroup.
 
-Reads the databases built in step 02 and writes directed edge lists: one row per
-(from_newsgroup, to_newsgroup) pair, weighted two ways. The reference counts
-weigh a pair by the references messages in the first newsgroup make to messages
-held by the second, and the referenced message counts by how many distinct
-messages of the second are referenced at all, so a message cited by five hundred
-messages weighs five hundred in the first and one in the second. References to
-messages outside the read body of messages point to the placeholder newsgroup
-`unknown`, and references within a newsgroup are left out.
+Reads the NB database built in step 02 and writes directed edge lists: one row
+per (from_newsgroup, to_newsgroup) pair, weighted two ways:
 
-Three bodies of messages are covered: NB, IA restricted to the NB date span,
-and the two together, so six edge lists in all.
+newsgroup_reference_counts weigh a newgroup pair by the number of references
+messages in the from_newsgroup make to messages in to_newsgroup.
+
+newsgroup_referenced_message_counts weight a newsgroup pair by how many distinct messages
+in to_newsgroup are referenced.
+
+So a message in to_newsgroup that is referenced by hundred messages in from_newsgroup, will count as
+100 in newsgroup_reference_counts, and 1 in newsgroup_referenced_message_counts.
+
+References to messages the NB archive does not hold point to the placeholder
+newsgroup `unknown`, whether or not the IA archive holds them. References
+within a newsgroup are left out.
+
+Each row also carries the from_newsgroup's own total under the same weighting:
+references_from_newsgroup over every reference its messages make, the ones
+within the newsgroup included, and references_out_of_newsgroup over those
+reaching another newsgroup or `unknown`.
 """
 
 import argparse
 import logging
-from itertools import product
 from pathlib import Path
 
 import pandas as pd
 
-from usenet_no.database import IA_ARCHIVE, NB_ARCHIVE, connect_archives
-from usenet_no.database.overlap import ArchiveDatespan
+from usenet_no.database import NB_ARCHIVE, connect_archive
 from usenet_no.database.reference_graph import (
     ReferenceEdge,
     count_referenced_messages,
     count_references,
 )
-from usenet_no.database.statistics import get_date_span
 
 logger = logging.getLogger(__name__)
 
@@ -43,12 +49,6 @@ if __name__ == "__main__":
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
-        "--ia-database-file",
-        type=Path,
-        default=Path("data/output/02_build_database/ia.db"),
-        help="Path to the SQLite database file of the IA archive",
-    )
-    parser.add_argument(
         "--nb-database-file",
         type=Path,
         default=Path("data/output/02_build_database/nb.db"),
@@ -58,7 +58,7 @@ if __name__ == "__main__":
         "--output-directory",
         type=Path,
         default=Path("data/output/06_graphs_and_references"),
-        help="Directory to save the edge list of each body of messages",
+        help="Directory to save the edge lists",
     )
     parser.add_argument(
         "--overwrite",
@@ -70,26 +70,10 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     logger.info("Args: %s", args)
 
-    connection = connect_archives(args.ia_database_file, args.nb_database_file)
-    nb_date_span = get_date_span(connection, NB_ARCHIVE)
-    logger.info("NB date span: %s to %s", *nb_date_span)
+    connection = connect_archive(args.nb_database_file, NB_ARCHIVE)
 
-    nb: ArchiveDatespan = (NB_ARCHIVE, None)
-    ia_date_filtered: ArchiveDatespan = (IA_ARCHIVE, nb_date_span)
-
-    for (file_stem, count_edges), (name, archive_datespans, suffix) in product(
-        COUNTS.items(),
-        [
-            ("nb", [nb], "nb"),
-            ("ia (date filtered)", [ia_date_filtered], "ia"),
-            (
-                "nb and ia (date filtered)",
-                [nb, ia_date_filtered],
-                "nb_and_ia",
-            ),
-        ],
-    ):
-        output_file = args.output_directory / f"{file_stem}_{suffix}.csv"
+    for file_stem, count_edges in COUNTS.items():
+        output_file = args.output_directory / f"{file_stem}_{NB_ARCHIVE}.csv"
 
         if output_file.exists() and not args.overwrite:
             logger.info(
@@ -98,7 +82,7 @@ if __name__ == "__main__":
             )
             continue
 
-        edges = count_edges(connection, archive_datespans)
+        edges = count_edges(connection, [(NB_ARCHIVE, None)])
 
         output_file.parent.mkdir(parents=True, exist_ok=True)
         pd.DataFrame(edges, columns=ReferenceEdge._fields).to_csv(
@@ -106,8 +90,7 @@ if __name__ == "__main__":
         )
 
         logger.info(
-            "%s: %d directed edges between %d newsgroups. See the edge list in %s",
-            name,
+            "%d directed edges between %d newsgroups. See the edge list in %s",
             len(edges),
             len({group for edge in edges for group in (edge[0], edge[1])}),
             output_file,

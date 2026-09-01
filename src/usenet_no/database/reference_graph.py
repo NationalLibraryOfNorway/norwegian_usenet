@@ -4,7 +4,10 @@ Every message carries a References header naming the messages it replies to.
 When a message in one newsgroup references a message held by another newsgroup,
 that is an edge from the first newsgroup to the second, and the edges
 are weighted in one of two ways: by how many references run between the pair,
-or by how many distinct messages in the target the source references.
+or by how many distinct messages in the target the source references. Every
+edge carries that same weighting summed over the referring newsgroup twice,
+over all of its references and over the ones leaving it, so an edge can be read
+as a share of what the newsgroup refers to.
 
 A referenced id whose message is not in the read body of messages points to the
 placeholder newsgroup `unknown`, and one whose message sits in several
@@ -17,7 +20,7 @@ distinct (message id, newsgroup, referenced ids) rows: a message held by both
 archives counts once, and a message crossposted to two newsgroups is a source
 in each.
 
-The totals leave the newsgroup out altogether: a reference is a (referring
+The resolution counts leave the newsgroup out altogether: a reference is a (referring
 message, referenced id) pair, counted once however many newsgroups hold either
 end of it, and split by where the referenced message is found. Those three
 groups are also read as a graph of the archives themselves, where an archive's
@@ -44,12 +47,18 @@ REFERENCE_TARGETS = "reference_targets"
 class ReferenceEdge(NamedTuple):
     """One directed edge, under whichever weighting produced it.
 
-    The field names are the edge list's CSV column names.
+    The two totals weigh the referring newsgroup the same way the edge is
+    weighed: `references_from_newsgroup` over every reference its messages
+    make, the ones within the newsgroup included, and
+    `references_out_of_newsgroup` over those reaching another newsgroup or
+    `unknown`. The field names are the edge list's CSV column names.
     """
 
     from_newsgroup: str
     to_newsgroup: str
     number_of_references: int
+    references_from_newsgroup: int
+    references_out_of_newsgroup: int
 
 
 class ReferenceResolution(NamedTuple):
@@ -120,7 +129,8 @@ def _count_edges(
     to a message outside the scope is unknown, not resolved.
 
     `aggregate` is what an edge's weight counts, over the resolved rows of its
-    (from, to) pair.
+    (from, to) pair, and what the two totals count over all the referring
+    newsgroup's rows and over the rows leaving it.
     """
     source_scope, source_parameters = _archive_scope(archive_datespans, "messages")
     target_scope, target_parameters = _archive_scope(archive_datespans, "targets")
@@ -136,22 +146,39 @@ def _count_edges(
                 ON targets.message_id_hash = message_references.referenced_id_hash
                 AND {target_scope}
             WHERE {source_scope}
+        ),
+        named_references AS (
+            SELECT
+                from_newsgroup,
+                referenced_id_hash,
+                COALESCE(target_newsgroup, ?) AS to_newsgroup
+            FROM resolved_references
+        ),
+        totals_from AS (
+            SELECT from_newsgroup, {aggregate} AS references_from_newsgroup
+            FROM named_references
+            GROUP BY from_newsgroup
+        ),
+        totals_out AS (
+            SELECT from_newsgroup, {aggregate} AS references_out_of_newsgroup
+            FROM named_references
+            WHERE to_newsgroup != from_newsgroup
+            GROUP BY from_newsgroup
         )
         SELECT
             from_newsgroup,
-            COALESCE(target_newsgroup, ?) AS to_newsgroup,
-            {aggregate} AS number_of_references
-        FROM resolved_references
-        WHERE COALESCE(target_newsgroup, ?) != from_newsgroup
+            to_newsgroup,
+            {aggregate} AS number_of_references,
+            references_from_newsgroup,
+            references_out_of_newsgroup
+        FROM named_references
+        JOIN totals_from USING (from_newsgroup)
+        JOIN totals_out USING (from_newsgroup)
+        WHERE to_newsgroup != from_newsgroup
         GROUP BY from_newsgroup, to_newsgroup
         ORDER BY number_of_references DESC, from_newsgroup, to_newsgroup
     """
-    parameters = [
-        *target_parameters,
-        *source_parameters,
-        UNKNOWN_NEWSGROUP,
-        UNKNOWN_NEWSGROUP,
-    ]
+    parameters = [*target_parameters, *source_parameters, UNKNOWN_NEWSGROUP]
 
     edges = [ReferenceEdge(*row) for row in connection.execute(query, parameters)]
     logger.info(

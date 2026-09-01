@@ -16,7 +16,7 @@ def test_many_references_to_one_message_count_once(mbox_data, load_archives):
 
     edges = count_referenced_messages(connection, [(IA_ARCHIVE, None)])
 
-    assert edges == [("no.graph.replies", "no.graph.origins", 1)]
+    assert edges == [("no.graph.replies", "no.graph.origins", 1, 1, 1)]
 
 
 def test_distinct_targets_count_separately(mbox_data, load_archives):
@@ -30,7 +30,7 @@ def test_distinct_targets_count_separately(mbox_data, load_archives):
 
     edges = count_referenced_messages(connection, [(IA_ARCHIVE, None)])
 
-    assert edges == [("no.graph.two.targets", "no.graph.origins", 2)]
+    assert edges == [("no.graph.two.targets", "no.graph.origins", 2, 2, 2)]
 
 
 def test_each_unknown_id_counts_once(mbox_data, load_archives):
@@ -41,7 +41,7 @@ def test_each_unknown_id_counts_once(mbox_data, load_archives):
 
     edges = count_referenced_messages(connection, [(IA_ARCHIVE, None)])
 
-    assert edges == [("no.graph.cites.ghosts", UNKNOWN_NEWSGROUP, 2)]
+    assert edges == [("no.graph.cites.ghosts", UNKNOWN_NEWSGROUP, 2, 2, 2)]
 
 
 def test_references_within_a_newsgroup_make_no_edge(mbox_data, load_archives):

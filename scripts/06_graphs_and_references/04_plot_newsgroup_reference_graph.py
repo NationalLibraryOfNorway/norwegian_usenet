@@ -1,18 +1,19 @@
 """Draw the reference edge lists as a directed graph of newsgroups.
 
-Reads an edge list written by 06_graphs_and_references and keeps the
-edges clearing the threshold, drawn as arrows from the referring newsgroup to
-the referenced one, with the width following the weight. The two directions
-between a pair are drawn as two curves, so both can be seen and hovered. Every
-newsgroup in the table is drawn, so one with no edge left shows as a loose
-point rather than vanishing.
+Reads an edge list written by 06_graphs_and_references and keeps the edges
+carrying at least a given share of the references leaving the referring
+newsgroup, so that the considerable size differences between the newsgroups do
+not decide which edges are drawn. They are drawn as arrows from the referring
+newsgroup to the referenced one, with the width following the number of
+references. The two directions between a pair are drawn as two curves, so both
+can be seen and hovered. Every newsgroup in the table is drawn, so one with no
+edge left shows as a loose point rather than vanishing.
 
 Vertices are sized by how many messages the newsgroup holds, read from the
 per-group count tables written by 03_statistics_per_archive and summed over
 the given files. The placeholder unknown newsgroup holds no messages and is
 drawn as an orange diamond instead; pass --exclude-unknown to leave it and
-its edges out. Nearly every newsgroup references no.general, which joins the
-graph up into one crowd, so --exclude-general leaves that one out the same way.
+its edges out.
 
 Where the newsgroups start out is decided by a Kamada-Kawai layout over the two
 directions added together, which reads each pair's edge as a distance: the
@@ -46,8 +47,6 @@ from usenet_no.interactive_graph import (
 from usenet_no.newsgroup_graph import build_reference_graph, load_message_counts
 
 logger = logging.getLogger(__name__)
-
-GENERAL_NEWSGROUP = "no.general"
 
 NODE_COLOR = "#2a78d6"
 UNKNOWN_COLOR = "#d97706"
@@ -110,8 +109,14 @@ def layout_positions(graph: nx.DiGraph) -> dict[str, tuple[float, float]]:
 
 
 def edge_widths(graph: nx.DiGraph) -> dict[tuple[str, str], float]:
-    """Scale each edge's reference count into a line width, on a log scale."""
+    """Scale each edge's reference count into a line width, on a log scale.
+
+    A threshold can leave a graph with no edges at all, which has no widths.
+    """
     weights = {edge: graph.edges[edge]["references"] for edge in graph.edges}
+    if not weights:
+        return {}
+
     lightest = math.log10(min(weights.values()))
     heaviest = math.log10(max(weights.values()))
     span = (heaviest - lightest) or 1
@@ -181,7 +186,10 @@ def add_references(network: Network, graph: nx.DiGraph) -> None:
         network.add_edge(
             source,
             target,
-            title=f"{source} → {target}\n{attributes['references']:,} references",
+            title=(
+                f"{source} → {target}\n{attributes['references']:,} references,"
+                f" {attributes['share']:.1%} of the references leaving {source}"
+            ),
             length=lengths[source, target],
             width=widths[source, target],
             color=EDGE_COLOR,
@@ -224,8 +232,7 @@ def plot_reference_graph(
     add_newsgroups(network, graph, positions)
     add_references(network, graph)
 
-    # The reference graph is one crowd of newsgroups referencing each other, so
-    # a vertex pulled out of it to be read is left where it is put.
+    # A vertex pulled out of the crowd to be read is left where it is put.
     write_graph_html(
         network, title, subtitle, graph_notes(graph), output_file, pin_on_drop=True
     )
@@ -240,8 +247,7 @@ if __name__ == "__main__":
         "--edges-file",
         type=Path,
         default=Path(
-            "data/output/06_graphs_and_references/"
-            "newsgroup_reference_counts_nb_and_ia.csv"
+            "data/output/06_graphs_and_references/newsgroup_reference_counts_nb.csv"
         ),
         help="Path to a reference edge list CSV file",
     )
@@ -251,18 +257,17 @@ if __name__ == "__main__":
         nargs="+",
         default=[
             Path("data/output/03_statistics_per_archive/messages_per_group_nb.csv"),
-            Path(
-                "data/output/03_statistics_per_archive/"
-                "messages_per_group_ia_date_filtered.csv"
-            ),
         ],
         help="Per-group message count CSV files, summed to size the vertices",
     )
     parser.add_argument(
-        "--min-references",
-        type=int,
-        default=500,
-        help="Draw an edge only if at least this many references run along it",
+        "--min-reference-share",
+        type=float,
+        default=0.2,
+        help=(
+            "Draw an edge only if it carries at least this share of the"
+            " references leaving the referring newsgroup"
+        ),
     )
     parser.add_argument(
         "--exclude-unknown",
@@ -270,14 +275,6 @@ if __name__ == "__main__":
         help=(
             "If flagged, leave out the unknown placeholder for references"
             " to messages nobody kept, and every edge reaching it"
-        ),
-    )
-    parser.add_argument(
-        "--exclude-general",
-        action="store_true",
-        help=(
-            f"If flagged, leave out {GENERAL_NEWSGROUP}, which nearly every"
-            " newsgroup references, and every edge reaching it"
         ),
     )
     parser.add_argument(
@@ -298,13 +295,11 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     logger.info("Args: %s", args)
 
-    # The threshold and the flags are in the file name, so a run at one setting
+    # The threshold and the flag are in the file name, so a run at one setting
     # does not overwrite the picture drawn at another.
     unknown_tag = "_no_unknown" if args.exclude_unknown else ""
-    general_tag = "_no_general" if args.exclude_general else ""
     figure_file = args.output_directory / (
-        f"{args.edges_file.stem}{unknown_tag}{general_tag}"
-        f"_min{args.min_references}.html"
+        f"{args.edges_file.stem}{unknown_tag}_share{args.min_reference_share:g}.html"
     )
     gephi_file = figure_file.with_suffix(".gexf")
     if figure_file.exists() and gephi_file.exists() and not args.overwrite:
@@ -318,20 +313,18 @@ if __name__ == "__main__":
     edges = pd.read_csv(args.edges_file)
     message_counts = load_message_counts(args.message_counts_files)
     graph = build_reference_graph(
-        edges, message_counts, min_references=args.min_references
+        edges, message_counts, min_reference_share=args.min_reference_share
     )
     if args.exclude_unknown and UNKNOWN_NEWSGROUP in graph:
         graph.remove_node(UNKNOWN_NEWSGROUP)
-    if args.exclude_general and GENERAL_NEWSGROUP in graph:
-        graph.remove_node(GENERAL_NEWSGROUP)
 
     args.output_directory.mkdir(parents=True, exist_ok=True)
     plot_reference_graph(
         graph,
         title="Newsgroups joined by the references between them",
         subtitle=(
-            f"{args.edges_file.stem}, "
-            f"at least {args.min_references} references per drawn edge"
+            f"{args.edges_file.stem}, each drawn edge carrying at least "
+            f"{args.min_reference_share:.1%} of the references leaving its newsgroup"
         ),
         output_file=figure_file,
     )

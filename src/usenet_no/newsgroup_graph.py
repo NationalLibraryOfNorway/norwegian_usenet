@@ -2,8 +2,9 @@
 
 Newsgroups are the vertices. In the overlap graph an edge joins two of them
 when enough of their users overlap; in the reference graph a directed edge
-runs from one to another weighted by the references between them. The
-thresholds are inclusive, so a pair on the boundary is kept.
+runs from one to another when enough of the first's references reach the
+second, weighted by how many of them there are. The thresholds are inclusive,
+so a pair on the boundary is kept.
 """
 
 import logging
@@ -74,7 +75,7 @@ def load_message_counts(count_files: list[Path]) -> dict[str, int]:
 
 
 def build_reference_graph(
-    edges: pd.DataFrame, message_counts: dict[str, int], min_references: int
+    edges: pd.DataFrame, message_counts: dict[str, int], min_reference_share: float
 ) -> nx.DiGraph:
     """Build a directed graph of newsgroups joined by their references.
 
@@ -84,10 +85,12 @@ def build_reference_graph(
     carries None. A newsgroup the counts do not cover raises, since a naming
     mismatch would otherwise quietly size its vertex wrong.
 
-    An edge is created where at least `min_references` references run from one
-    newsgroup to the other, carrying that number as `references`. The two
-    directions between a pair are two edges, each kept or dropped on its own
-    weight.
+    An edge is created where the references running from one newsgroup to the
+    other are at least `min_reference_share` of every reference leaving the
+    first, so newsgroups of very different sizes are held to the same
+    threshold. It carries the count as `references` and the share as `share`.
+    The two directions between a pair are two edges, each kept or dropped on
+    its own share.
     """
     newsgroups = sorted(set(edges.from_newsgroup) | set(edges.to_newsgroup))
     missing = [
@@ -102,12 +105,16 @@ def build_reference_graph(
     for newsgroup in newsgroups:
         graph.add_node(newsgroup, messages=message_counts.get(newsgroup))
 
-    joined = edges[edges.number_of_references >= min_references]
+    shared = edges.assign(
+        share=edges.number_of_references / edges.references_out_of_newsgroup
+    )
+    joined = shared[shared.share >= min_reference_share]
     for row in joined.itertuples():
         graph.add_edge(
             row.from_newsgroup,
             row.to_newsgroup,
             references=int(row.number_of_references),
+            share=float(row.share),
         )
 
     logger.info(
