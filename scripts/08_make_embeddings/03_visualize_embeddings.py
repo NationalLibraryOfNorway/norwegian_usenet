@@ -75,7 +75,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--reduction",
         choices=REDUCTION_CHOICES,
-        default="umap",
+        default="tsne",
         help="Plot the embeddings 02 reduced with this algorithm "
         "(default: %(default)s)",
     )
@@ -87,11 +87,18 @@ if __name__ == "__main__":
         "one entry per newsgroup either way",
     )
     parser.add_argument(
+        "--plot-centroids",
+        action="store_true",
+        help="If flagged, will also plot the mean position of the messages of each "
+        "newsgroup, as a marker with a black outline and a black label",
+    )
+    parser.add_argument(
         "--save-fig",
         action="store_true",
         help="If flagged, will also save the figure as a .png next to the cache "
         "it is plotted from, holding the scatter alone and none of the message "
-        "texts the interactive figure shows on hover",
+        "texts the interactive figure shows on hover. The name gains a "
+        "_centroids suffix when --plot-centroids is flagged",
     )
     args = parser.parse_args()
     logger.info(args)
@@ -194,6 +201,36 @@ if __name__ == "__main__":
             )
         )
 
+    # One centroid per newsgroup, averaged over every message plotted of it, so a
+    # figure of both archives holds one marker rather than one per archive. They
+    # go in a trace of their own, kept out of the legend the newsgroup colours
+    # already cover, and drawn with Scattergl like the messages, since a trace of
+    # another kind lands on a layer of its own rather than over them.
+    if args.plot_centroids:
+        centroids = np.array(
+            [
+                embeddings_2d[newsgroups_indexer == ng].mean(axis=0)
+                for ng in unique_newsgroups
+            ]
+        )
+        fig.add_trace(
+            go.Scattergl(
+                x=centroids[:, 0],
+                y=centroids[:, 1],
+                mode="markers+text",
+                marker={
+                    "size": 8,
+                    "color": [color_map[ng] for ng in unique_newsgroups],
+                    "line": {"width": 1.5, "color": "black"},
+                },
+                text=unique_newsgroups,
+                textposition="top center",
+                textfont={"size": 13, "color": "black"},
+                showlegend=False,
+                hovertemplate="<b>%{text}</b> centroid<extra></extra>",
+            )
+        )
+
     marker_key = "color=newsgroup"
     if shapes_differ:
         marker_key += ", shape=source"
@@ -215,9 +252,19 @@ if __name__ == "__main__":
     )
 
     if args.save_fig:
-        figure_path = cache_path.with_suffix(".png")
+        # A figure holding the centroids is written beside the one without them,
+        # rather than over it.
+        centroid_suffix = "_centroids" if args.plot_centroids else ""
+        figure_path = cache_path.with_name(f"{cache_path.stem}{centroid_suffix}.png")
         static_fig = go.Figure(fig)
-        static_fig.update_traces(text=None, hovertemplate=None, hoverinfo="skip")
+        # The centroid labels are drawn on the figure itself, so only the message
+        # traces lose the text they carry for their hover labels alone.
+        static_fig.update_traces(
+            text=None,
+            hovertemplate=None,
+            hoverinfo="skip",
+            selector={"mode": "markers"},
+        )
         static_fig.write_image(figure_path, scale=2)
         logger.info("Saved the figure to %s", figure_path)
 

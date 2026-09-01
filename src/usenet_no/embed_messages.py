@@ -171,3 +171,33 @@ def load_embeddings_and_docs(
         logger.info("Loaded %d documents from %s", len(docs), emb_file.name)
 
     return np.vstack(all_embeddings), all_stems, all_docs
+
+
+def load_newsgroup_centroids(
+    embeddings_dir: Path, sources: Collection[str]
+) -> tuple[np.ndarray, list[str], list[int]]:
+    """Average the message embeddings of every newsgroup file of `sources`.
+
+    Returns one centroid per file, the stems they were read from, and how many
+    messages each was averaged over.
+    """
+    embedding_files = sorted(
+        f for f in embeddings_dir.glob("*.npy") if not f.stem.endswith("_index")
+    )
+
+    centroids = []
+    stems = []
+    message_counts = []
+
+    for emb_file in embedding_files:
+        _mbox_stem, source = emb_file.stem.rsplit("_", 1)
+        if source not in sources:
+            continue
+
+        embeddings = np.load(emb_file)
+        centroids.append(embeddings.mean(axis=0))
+        stems.append(emb_file.stem)
+        message_counts.append(len(embeddings))
+        logger.info("Averaged %d messages from %s", len(embeddings), emb_file.name)
+
+    return np.vstack(centroids), stems, message_counts
