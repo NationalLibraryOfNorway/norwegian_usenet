@@ -1,6 +1,19 @@
 # Step 02: loading each archive into an SQLite database
 
 - [01_build_databases.py](01_build_databases.py) reads the .mbox files of each archive and writes two files per archive: `ia.db` and `nb.db`, which hold one row per message, and `ia_users.db` and `nb_users.db`, which hold the addresses those messages were sent from. All four go in `data/output/02_build_database/`. Run with `--overwrite` to delete existing database files and build them again; without the flag an archive whose files are already there is skipped.
+- [02_fingerprint_databases.py](02_fingerprint_databases.py) prints a fingerprint of the rows themselves rather than of the .db files, which are not byte-reproducible between builds, so that a build made elsewhere can be held up against this one. The row ids are not just labels: a message's position in its mbox file is its row id minus the lowest row id of its newsgroup, and the replacement-character pairs and the embeddings both use that to find bodies, so two databases holding the same messages under different ids read the wrong bodies without reporting anything wrong, because the message counts still agree. It reads the databases read-only and uses nothing outside the standard library, so it can be copied to a machine that has neither this repository nor its dependencies. The databases to fingerprint are given as arguments, and each is read as whichever kind its tables say it is, so a machine holding only the published files can check those on their own; with no arguments it fingerprints the two archive databases.
+
+  ```
+  python 02_fingerprint_databases.py data/output/02_build_database/{ia,nb}.db
+  python 02_fingerprint_databases.py data/output/02_build_database/{ia,nb}_users.db
+  ```
+
+  - Every table is hashed as it stands, with its row ids, and if each of those matches, the two sets of databases are interchangeable. `messages`, `emails` and `email_names` are hashed a second time with the ids left out, ordered by their contents instead; `message_references` is not, holding nothing but a row id and a hash. That second hash is what a difference is read against: matching there while the first differs means the same rows under different ids.
+  - An archive database also stores the order its mbox files were read in, as `processing order` with the first and last three newsgroup names beside it, and a message count per newsgroup as `messages per file`. The build hands out row ids one mbox file at a time in that order, so a build that read the files in another order holds the same messages under different ids. A user database gets no processing order of its own, though its ids follow the same reading order: an address is numbered when the build first meets it.
+  - The archive databases' hashes go into `data/output/02_build_database/fingerprint_databases.csv` and the user databases' into `fingerprint_user_databases.csv` beside it, which is where each kind is written when `--output-file` is not given. Both are CSVs of `label`, `value` and `count`, with every label naming the file it came from, and both are kept in the repository: a fingerprint is a hash over a whole table rather than over each row, so testing an address against one would mean already holding every address in the archive. Every label is written on every run, since a hash means nothing except against the one an earlier run wrote. When the file is already there it is read before it is rewritten, and every label whose value or count changed is printed as `before -> after`, followed by one line per changed table saying whether its rows differ or only their ids.
+- [03_compare_nb_database_against_source_files.py](03_compare_nb_database_against_source_files.py) checks that `nb.db` holds one row per NB source file. The NB sources hold one message per file, so counting those files gives a message count that owes nothing to the database or to the mbox files it was built from; the IA sources are mbox files themselves, so they have no equivalent count to check against. It walks `data/input/nb/unzipped_data` the way [02_parse_nb_archive.py](../01_extract_and_parse_usenet_data/02_parse_nb_archive.py) does, counting the source files behind each mbox file stem, and compares that against `SELECT newsgroup, COUNT(*) FROM messages` in `nb.db`. Cut-off newsgroup names are corrected from `cut_off_newsgroup_names.csv` first, so a stem is counted under the name the mbox file, and thus the `newsgroup` column, carries. Both counts per newsgroup go to `data/output/02_build_database/nb_source_file_counts.csv`, a CSV of `newsgroup`, `source_files` and `rows`. Every newsgroup whose two counts differ is printed, and the script exits non-zero when any of them does. Both counts are currently 613 016 messages, and every one of the 139 newsgroups matches. [05_sanity_check_nb_message_count.py](../01_extract_and_parse_usenet_data/05_sanity_check_nb_message_count.py) makes the same comparison against the mbox files rather than the database.
+- [04_list_nb_source_files_with_message_id_hashes.py](04_list_nb_source_files_with_message_id_hashes.py) walks `data/input/nb/unzipped_data` the same way, and pairs each source file with the row it was read into: the files behind an mbox file stem come back in the order the parse appended them, so the file at a position holds the message the row at that position in `nb.db` was built from. The hash is read out of the database rather than made again, so it is the value the analyses join on. The rows go to `data/output/02_build_database/nb_source_file_message_ids.csv`, a CSV of `cd`, `source_file` and `message_id_hash`: the directory below `unzipped_data` the message came off, its path below `unzipped_data`, and the hash of its Message-ID. It currently writes one row for each of the 613 016 messages.
+- [05_show_message_by_database_id.py](05_show_message_by_database_id.py) prints the message one database row was built from, envelope line and all, as the mbox file holds it, followed by the text `get_message_body` reads it as. A row's position in its newsgroup's mbox file is its id minus the lowest id of that newsgroup, so the archive and the row id locate the message on their own. It works for either archive, and is how a row whose columns look odd is read back as a message.
 
 ## The archive databases: `ia.db` and `nb.db`
 
@@ -124,90 +137,3 @@ A script that has to recognise a user across the two archives uses
 and adds an `emails` view over them, again carrying the `archive`. Anything
 counting users within one archive needs none of that and groups on
 `messages.email_id`, so most of the analysis runs on the published files alone.
-
-## Checking a database built somewhere else
-
-A message's position in its mbox file is its row id minus the lowest row id of its
-newsgroup, so the ids are not just labels: the replacement-character pairs
-and the embeddings both use them to find bodies. Two databases holding the same messages
-under different ids will read the wrong bodies without reporting anything wrong, because
-the message counts still agree.
-
-[02_fingerprint_databases.py](02_fingerprint_databases.py) prints a fingerprint of the rows
-themselves rather than of the .db files, which are not byte-reproducible between builds. Run
-it on each machine and compare the output. It reads the databases read-only, and uses nothing
-outside the standard library, so it can be copied to a machine that has neither this
-repository nor its dependencies.
-
-It takes the databases to fingerprint as arguments, and reads each as whichever kind its
-tables say it is, so a machine holding only the published files can check those on their own:
-
-```
-python 02_fingerprint_databases.py data/output/02_build_database/{ia,nb}.db
-python 02_fingerprint_databases.py data/output/02_build_database/{ia,nb}_users.db
-```
-
-With no arguments it fingerprints the two archive databases.
-
-It hashes the rows of each database twice: once as they are with the row ids included, and
-once with the ids left out, ordered by their contents instead. If every line of the first
-matches, the two sets of databases are interchangeable. The second is what a difference is
-read against: the build hands out row ids per mbox file in the order the files are read, so
-a build that read them in another order holds the same messages under different ids, and
-says so by matching there while the first differs.
-
-The archive databases' hashes go into `data/output/02_build_database/fingerprint_databases.csv`
-and the user databases' into `fingerprint_user_databases.csv` beside it, which is where each
-kind is written when `--output-file` is not given. Both are CSVs of `label`, `value` and
-`count`, with every label naming the file it came from, and both are kept in the repository:
-a fingerprint is a hash over a whole table rather than over each row, so testing an address
-against one would mean already holding every address in the archive. Every label
-is written on every run, since a hash means nothing except against the one an earlier run
-wrote. When the file is already there it is read before it is rewritten, and every label
-whose value or count changed is printed as `before -> after`, followed by one line per
-changed table saying whether its rows differ or only their ids.
-
-## Checking the NB database against the source files
-
-The NB sources hold one message per file, so counting those files gives a message count that
-owes nothing to the database or to the mbox files it was built from. The IA sources are mbox
-files themselves, so they have no equivalent count to check against.
-
-[03_compare_nb_database_against_source_files.py](03_compare_nb_database_against_source_files.py)
-walks `data/input/nb/unzipped_data` the way
-[02_parse_nb_archive.py](../01_extract_and_parse_usenet_data/02_parse_nb_archive.py) does,
-counting the source files behind each mbox file stem, and compares that against
-`SELECT newsgroup, COUNT(*) FROM messages` in `nb.db`. Cut-off newsgroup names are corrected
-from `cut_off_newsgroup_names.csv` first, so a stem is counted under the name the mbox file,
-and thus the `newsgroup` column, carries.
-
-Both counts per newsgroup go to `data/output/02_build_database/nb_source_file_counts.csv`, a
-CSV of `newsgroup`, `source_files` and `rows`. Every newsgroup whose two counts differ is
-printed, and the script exits non-zero when any of them does. Both counts are currently
-613 016 messages, and every one of the 139 newsgroups matches.
-
-[05_sanity_check_nb_message_count.py](../01_extract_and_parse_usenet_data/05_sanity_check_nb_message_count.py)
-makes the same comparison against the mbox files rather than the database.
-
-## The message id hash of each source file
-
-[04_list_nb_source_files_with_message_id_hashes.py](04_list_nb_source_files_with_message_id_hashes.py)
-walks `data/input/nb/unzipped_data` the same way, and pairs each source file with the row it
-was read into: the files behind an mbox file stem come back in the order the parse appended
-them, so the file at a position holds the message the row at that position in `nb.db` was
-built from. The hash is read out of the database rather than made again, so it is the value
-the analyses join on.
-
-The rows go to `data/output/02_build_database/nb_source_file_message_ids.csv`, a CSV of `cd`,
-`source_file` and `message_id_hash`: the directory below `unzipped_data` the message came off,
-its path below `unzipped_data`, and the hash of its Message-ID. It currently writes one row
-for each of the 613 016 messages.
-
-## Reading one row's message
-
-A row's position in its newsgroup's mbox file is its id minus the lowest id of that
-newsgroup, so a row id and its archive locate the message on their own.
-[05_show_message_by_database_id.py](05_show_message_by_database_id.py) takes those two and
-prints the message the row was built from, envelope line and all, as the mbox file holds it,
-followed by the text `get_message_body` reads it as. It works for either archive, and is how
-a row whose columns look odd is read back as a message.

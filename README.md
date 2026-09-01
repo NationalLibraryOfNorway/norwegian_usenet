@@ -24,8 +24,8 @@ data/
 └── output/                     # Script outputs, one subdirectory per script group
     ├── 01_extract_and_parse_usenet_data/
     ├── 02_build_database/
-    │   ├── ia.db                              # SQLite database of the IA archive, hashes only (scripts/02_build_database/01_build_databases.py)
-    │   ├── nb.db                              # SQLite database of the NB archive, hashes only (scripts/02_build_database/01_build_databases.py)
+    │   ├── ia.db                              # SQLite database of the IA archive, hashes and sender ids only (scripts/02_build_database/01_build_databases.py)
+    │   ├── nb.db                              # SQLite database of the NB archive, hashes and sender ids only (scripts/02_build_database/01_build_databases.py)
     │   ├── ia_users.db                        # Hashed addresses ia.db refers to by id; not in the repository (scripts/02_build_database/01_build_databases.py)
     │   ├── nb_users.db                        # Hashed addresses nb.db refers to by id; not in the repository (scripts/02_build_database/01_build_databases.py)
     │   ├── fingerprint_databases.csv          # Hash of every table of each archive, with and without the row ids (scripts/02_build_database/02_fingerprint_databases.py)
@@ -45,8 +45,9 @@ data/
 `ia.db` and `nb.db` are built from the `utf_8_data` subdirectories, one file per archive, and are what the analysis scripts read.  
 They hold message ids and bodies only as hashes, and a message's sender only as an id, so the files can be shared.  
 The hashed addresses those ids stand for are in `ia_users.db` and `nb_users.db`, which are not in the repository: a hashed address can be looked up by anyone who has an address to test, and an id cannot. The two archives number their addresses separately, so an id in one file says nothing about the other, and comparing the users of the two archives takes both user databases. The scripts that need them say so.  
-They are stored here with [git-lfs](https://git-lfs.com): with git-lfs installed, `git clone` fetches the files themselves, and `git lfs pull` fetches them in a clone made without them.  
-The statistics in step 03, most of the comparisons in step 04, the venn diagrams in step 05, and the graph building scripts in 06 read the two database files and nothing else, so anyone with them can reproduce them.  
+`ia.db` and `nb.db` are stored here with [git-lfs](https://git-lfs.com): with git-lfs installed, `git clone` fetches the files themselves, and `git lfs pull` fetches them in a clone made without them.  
+The statistics in step 03, most of the comparisons in step 04, and most of the venn diagrams in step 05 and graph building scripts in 06 read the two database files and nothing else, so anyone with them can reproduce those.  
+The ones comparing the users of the two archives need the user databases as well, and are marked as needing them: [user_overlap.py](scripts/05_venn_diagrams/user_overlap.py), [message_overlap_for_shared_users.py](scripts/05_venn_diagrams/message_overlap_for_shared_users.py) and [merged_newsgroup_user_jaccard_overlap.py](scripts/06_graphs_and_references/merged_newsgroup_user_jaccard_overlap.py).  
 The two replacement character scripts in step 04 also read the message bodies from the mbox files, and so need the archives themselves.  
 A hash is connected back to its plain text through the mbox files: a message's position in its own file is its row id minus the lowest row id of its newsgroup, in the database of its archive.
 
