@@ -1,10 +1,10 @@
 """User overlap between newsgroups, from the message databases built in step 02.
 
-A user is one `users.email_hash`. The `users` table holds one row per (name,
-email) pair, so a person who spelled their name two ways has several ids there,
-and a person who posted in both archives has one in each database; grouping on
-the hashed email instead keeps them a single user. The plain address is never
-read, so everything here can be published as it is.
+A user is one address. Within one archive that is `messages.email_id`, which the
+archive's own file carries, so `find_newsgroups_per_user` reads nothing private.
+Across the archives it has to be the hashed address, since the ids are handed out
+per archive, so `find_newsgroups_per_user_across_archives` needs both user
+databases attached.
 
 Who posted where is collected as a one-hot user x newsgroup matrix, which the
 Jaccard step reduces to one row per pair of newsgroups.
@@ -26,6 +26,10 @@ logger = logging.getLogger(__name__)
 # date-restricted slice be read as one body of messages.
 ArchiveDatespan = tuple[str, tuple[str, str] | None]
 
+# What a user is called in the matrix: an email id when one archive is read on
+# its own, a hashed address when the two are read together.
+UserKey = int | str
+
 
 class NewsgroupOverlap(NamedTuple):
     """One pair of newsgroups and how many users they have in common.
@@ -41,46 +45,75 @@ class NewsgroupOverlap(NamedTuple):
     jaccard: float
 
 
-def find_newsgroups_per_user(
-    connection: sqlite3.Connection, archive_datespans: list[ArchiveDatespan]
-) -> list[tuple[str, str]]:
-    """Find every newsgroup each user posted in, over one or more archives.
-
-    Returns one (email_hash, newsgroup) pair per newsgroup a user posted in.
-    Senders with no email_hash (no sender at all, or a From header carrying no
-    address) are left out. A newsgroup of the same name in two archives is one
-    newsgroup here. Sorted by (email_hash, newsgroup).
-    """
+def _archive_conditions(
+    archive_datespans: list[ArchiveDatespan],
+) -> tuple[str, list[str]]:
+    """The WHERE fragment matching any of the (archive, date span) pairs, and its parameters."""
     conditions = []
     parameters: list[str] = []
     for archive, date_span in archive_datespans:
         clause, span_parameters = date_span_clause(date_span, column="messages.date")
         conditions.append(f"(messages.archive = ?{clause})")
         parameters.extend((archive, *span_parameters))
+    return " OR ".join(conditions), parameters
 
+
+def find_newsgroups_per_user(
+    connection: sqlite3.Connection,
+    archive: str,
+    date_span: tuple[str, str] | None = None,
+) -> list[tuple[int, str]]:
+    """Find every newsgroup each user posted in, within one archive.
+
+    Returns one (email_id, newsgroup) pair per newsgroup a user posted in, read
+    from the archive's own file. Messages whose sender gave no address are left
+    out. Sorted by (email_id, newsgroup).
+    """
+    clause, span_parameters = date_span_clause(date_span)
     return list(
         connection.execute(
-            "SELECT DISTINCT users.email_hash, messages.newsgroup"
+            "SELECT DISTINCT email_id, newsgroup FROM messages"
+            f" WHERE archive = ? AND email_id IS NOT NULL{clause}"
+            " ORDER BY email_id, newsgroup",
+            (archive, *span_parameters),
+        )
+    )
+
+
+def find_newsgroups_per_user_across_archives(
+    connection: sqlite3.Connection, archive_datespans: list[ArchiveDatespan]
+) -> list[tuple[str, str]]:
+    """Find every newsgroup each user posted in, over several archives at once.
+
+    Returns one (email_hash, newsgroup) pair per newsgroup a user posted in, so
+    that a person who posted in both archives is one user. Needs both user
+    databases attached. Messages whose sender gave no address are left out, and a
+    newsgroup of the same name in two archives is one newsgroup here. Sorted by
+    (email_hash, newsgroup).
+    """
+    conditions, parameters = _archive_conditions(archive_datespans)
+    return list(
+        connection.execute(
+            "SELECT DISTINCT emails.email_hash, messages.newsgroup"
             f" FROM {MESSAGES_WITH_SENDER}"
-            f" WHERE ({' OR '.join(conditions)}) AND users.email_hash IS NOT NULL"
-            " ORDER BY users.email_hash, messages.newsgroup",
+            f" WHERE ({conditions})"
+            " ORDER BY emails.email_hash, messages.newsgroup",
             parameters,
         )
     )
 
 
 def build_user_newsgroup_matrix(
-    newsgroups_per_user: list[tuple[str, str]],
-) -> tuple[csr_matrix, list[str], list[str]]:
+    newsgroups_per_user: list[tuple[UserKey, str]],
+) -> tuple[csr_matrix, list[UserKey], list[str]]:
     """Lay (user, newsgroup) pairs out as a sparse users x newsgroups matrix.
 
     Cells are one where the user posted in the newsgroup. Returns the matrix
-    with its row and column labels: hashed emails and newsgroup names, both
-    sorted.
+    with its row and column labels: users and newsgroup names, both sorted.
     """
-    users = sorted({email_hash for email_hash, _group in newsgroups_per_user})
-    newsgroups = sorted({group for _email_hash, group in newsgroups_per_user})
-    user_indices = {email_hash: index for index, email_hash in enumerate(users)}
+    users = sorted({user for user, _group in newsgroups_per_user})
+    newsgroups = sorted({group for _user, group in newsgroups_per_user})
+    user_indices = {user: index for index, user in enumerate(users)}
     group_indices = {group: index for index, group in enumerate(newsgroups)}
 
     # coo_matrix adds up any values landing on the same cell, so a cell stays a
@@ -90,11 +123,8 @@ def build_user_newsgroup_matrix(
         (
             np.ones(len(newsgroups_per_user), dtype=np.int64),
             (
-                [
-                    user_indices[email_hash]
-                    for email_hash, _group in newsgroups_per_user
-                ],
-                [group_indices[group] for _email_hash, group in newsgroups_per_user],
+                [user_indices[user] for user, _group in newsgroups_per_user],
+                [group_indices[group] for _user, group in newsgroups_per_user],
             ),
         ),
         shape=(len(users), len(newsgroups)),

@@ -1,14 +1,16 @@
-"""Measure how much pairs of newsgroups share users.
+"""Measure how much pairs of newsgroups share users, within one archive.
 
 Reads the databases built in step 02 into a user x newsgroup matrix of
 who posted where, then reduces it to the Jaccard overlap between the user sets
 of every pair of newsgroups.
 
-A user is one hashed email address, so a person who spelled their name two ways
-counts once.
+A user is one address, named by the email id the archive database carries, so a
+person who spelled their name two ways counts once. That id means nothing outside
+the archive it was read from, so each archive is measured on its own here and no
+user is followed from one to the other; merged_newsgroup_user_jaccard_overlap.py
+is what reads the two together.
 
-Three bodies of messages are covered: NB, IA restricted to the NB date span, and
-the two together.
+Two bodies of messages are covered: NB, and IA restricted to the NB date span.
 """
 
 import argparse
@@ -19,7 +21,6 @@ import pandas as pd
 
 from usenet_no.database import IA_ARCHIVE, NB_ARCHIVE, connect_archives
 from usenet_no.database.overlap import (
-    ArchiveDatespan,
     NewsgroupOverlap,
     build_user_newsgroup_matrix,
     find_newsgroups_per_user,
@@ -32,7 +33,7 @@ logger = logging.getLogger(__name__)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Compute the user overlap between pairs of newsgroups",
+        description="Compute the user overlap between pairs of newsgroups in one archive",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
@@ -64,15 +65,6 @@ if __name__ == "__main__":
         help="Path to CSV output file for IA restricted to the NB date span",
     )
     parser.add_argument(
-        "--merged-output-file",
-        type=Path,
-        default=Path(
-            "data/output/06_graphs_and_references/"
-            "newsgroup_user_jaccard_overlap_nb_and_ia.csv"
-        ),
-        help="Path to CSV output file for NB and the date-filtered IA together",
-    )
-    parser.add_argument(
         "--overwrite",
         action="store_true",
         help="If flagged, will overwrite existing files instead of skipping",
@@ -86,20 +78,13 @@ if __name__ == "__main__":
     nb_date_span = get_date_span(connection, NB_ARCHIVE)
     logger.info("NB date span: %s to %s", *nb_date_span)
 
-    nb: ArchiveDatespan = (NB_ARCHIVE, None)
-    ia_date_filtered: ArchiveDatespan = (IA_ARCHIVE, nb_date_span)
-
-    for name, archive_datespans, output_file in [
-        ("nb", [nb], args.nb_output_file),
+    for name, archive, date_span, output_file in [
+        ("nb", NB_ARCHIVE, None, args.nb_output_file),
         (
             "ia (date filtered)",
-            [ia_date_filtered],
+            IA_ARCHIVE,
+            nb_date_span,
             args.ia_date_filtered_output_file,
-        ),
-        (
-            "nb and ia (date filtered)",
-            [nb, ia_date_filtered],
-            args.merged_output_file,
         ),
     ]:
         if output_file.exists() and not args.overwrite:
@@ -109,7 +94,7 @@ if __name__ == "__main__":
             )
             continue
 
-        newsgroups_per_user = find_newsgroups_per_user(connection, archive_datespans)
+        newsgroups_per_user = find_newsgroups_per_user(connection, archive, date_span)
         matrix, users, newsgroups = build_user_newsgroup_matrix(newsgroups_per_user)
         overlaps = pairwise_jaccard(matrix, newsgroups)
 

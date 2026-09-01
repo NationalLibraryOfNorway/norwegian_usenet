@@ -12,16 +12,11 @@ NB_ARCHIVE = "nb"
 # puts it back, as the value that says which file a row came from.
 ARCHIVE_VIEWS = f"""
 CREATE TEMP VIEW messages AS
-    SELECT '{IA_ARCHIVE}' AS archive, id, newsgroup, message_id_hash, user_id, date, body_hash
+    SELECT '{IA_ARCHIVE}' AS archive, id, newsgroup, message_id_hash, email_id, date, body_hash
     FROM {IA_ARCHIVE}.messages
     UNION ALL
-    SELECT '{NB_ARCHIVE}', id, newsgroup, message_id_hash, user_id, date, body_hash
+    SELECT '{NB_ARCHIVE}', id, newsgroup, message_id_hash, email_id, date, body_hash
     FROM {NB_ARCHIVE}.messages;
-
-CREATE TEMP VIEW users AS
-    SELECT '{IA_ARCHIVE}' AS archive, id, name_hash, email_hash FROM {IA_ARCHIVE}.users
-    UNION ALL
-    SELECT '{NB_ARCHIVE}', id, name_hash, email_hash FROM {NB_ARCHIVE}.users;
 
 CREATE TEMP VIEW message_references AS
     SELECT '{IA_ARCHIVE}' AS archive, message_row_id, referenced_id_hash
@@ -31,12 +26,22 @@ CREATE TEMP VIEW message_references AS
     FROM {NB_ARCHIVE}.message_references;
 """
 
-# Joining the sender in, for the counts that identify a user by email. Row ids
-# are handed out per archive, so a user id only means anything together with the
-# archive it was read from.
+# The user databases, attached under the archive they belong to. A hashed
+# address lives only there, so a comparison between the archives' users needs
+# both files, while a count within one archive gets by on `messages.email_id`.
+USER_VIEW = f"""
+CREATE TEMP VIEW emails AS
+    SELECT '{IA_ARCHIVE}' AS archive, id, email_hash FROM {IA_ARCHIVE}_users.emails
+    UNION ALL
+    SELECT '{NB_ARCHIVE}', id, email_hash FROM {NB_ARCHIVE}_users.emails;
+"""
+
+# Joining the sender in, for the comparisons that identify a user by email. Ids
+# are handed out per archive, so an email id only means anything together with
+# the archive it was read from.
 MESSAGES_WITH_SENDER = (
-    "messages JOIN users"
-    " ON messages.user_id = users.id AND messages.archive = users.archive"
+    "messages JOIN emails"
+    " ON messages.email_id = emails.id AND messages.archive = emails.archive"
 )
 
 # The same, for the references of a message: both tables are per archive.
@@ -54,19 +59,57 @@ def connect(database_file: Path) -> sqlite3.Connection:
     return connection
 
 
+def connect_archive_and_users(
+    database_file: Path, users_database_file: Path
+) -> sqlite3.Connection:
+    """Open one archive's database with its user database attached as `users`.
+
+    What the build writes to: the archive's own tables in the main schema, and
+    the hashed addresses they refer to by id in the attached one.
+    """
+    connection = connect(database_file)
+    connection.execute("ATTACH DATABASE ? AS users", (str(users_database_file),))
+    return connection
+
+
 def connect_archives(
     ia_database_file: Path, nb_database_file: Path
 ) -> sqlite3.Connection:
     """Open both archives' databases as one connection, read through the archive views.
 
-    The two files are attached under their archive names, and `messages`,
-    `users` and `message_references` are views over both, each row carrying the
-    `archive` it came from.
+    The two files are attached under their archive names, and `messages` and
+    `message_references` are views over both, each row carrying the `archive` it
+    came from. A sender is `messages.email_id`, which means nothing outside the
+    archive it was read from, so comparing the two archives' users is what
+    `connect_archives_and_users` is for.
     """
     connection = sqlite3.connect(":memory:")
     connection.execute(f"ATTACH DATABASE ? AS {IA_ARCHIVE}", (str(ia_database_file),))
     connection.execute(f"ATTACH DATABASE ? AS {NB_ARCHIVE}", (str(nb_database_file),))
     connection.executescript(ARCHIVE_VIEWS)
+    return connection
+
+
+def connect_archives_and_users(
+    ia_database_file: Path,
+    nb_database_file: Path,
+    ia_users_database_file: Path,
+    nb_users_database_file: Path,
+) -> sqlite3.Connection:
+    """Open both archives and both user databases as one connection.
+
+    As `connect_archives`, with `emails` a view over the two user databases, each
+    row carrying the `archive` it came from. Joining it in is what lets a user be
+    matched across the archives, on the hash rather than the id.
+    """
+    connection = connect_archives(ia_database_file, nb_database_file)
+    connection.execute(
+        f"ATTACH DATABASE ? AS {IA_ARCHIVE}_users", (str(ia_users_database_file),)
+    )
+    connection.execute(
+        f"ATTACH DATABASE ? AS {NB_ARCHIVE}_users", (str(nb_users_database_file),)
+    )
+    connection.executescript(USER_VIEW)
     return connection
 
 

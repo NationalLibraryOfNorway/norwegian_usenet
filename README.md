@@ -26,7 +26,10 @@ data/
     ├── 02_build_database/
     │   ├── ia.db                              # SQLite database of the IA archive, hashes only (scripts/02_build_database/01_build_databases.py)
     │   ├── nb.db                              # SQLite database of the NB archive, hashes only (scripts/02_build_database/01_build_databases.py)
+    │   ├── ia_users.db                        # Hashed addresses ia.db refers to by id; not in the repository (scripts/02_build_database/01_build_databases.py)
+    │   ├── nb_users.db                        # Hashed addresses nb.db refers to by id; not in the repository (scripts/02_build_database/01_build_databases.py)
     │   ├── fingerprint_databases.csv          # Hash of every table of each archive, with and without the row ids (scripts/02_build_database/02_fingerprint_databases.py)
+    │   ├── fingerprint_user_databases.csv     # The same for the two user databases (scripts/02_build_database/02_fingerprint_databases.py)
     │   ├── nb_source_file_counts.csv          # NB source files and nb.db rows per newsgroup (scripts/02_build_database/03_compare_nb_database_against_source_files.py)
     │   └── nb_source_file_message_ids.csv     # CD, source file path and message id hash per NB message (scripts/02_build_database/04_list_nb_source_files_with_message_id_hashes.py)
     ├── 03_statistics_per_archive/
@@ -40,7 +43,8 @@ data/
 
 ### Sqlite databases
 `ia.db` and `nb.db` are built from the `utf_8_data` subdirectories, one file per archive, and are what the analysis scripts read.  
-They hold names, emails, message ids and bodies only as hashes, so the files can be shared.  
+They hold message ids and bodies only as hashes, and a message's sender only as an id, so the files can be shared.  
+The hashed addresses those ids stand for are in `ia_users.db` and `nb_users.db`, which are not in the repository: a hashed address can be looked up by anyone who has an address to test, and an id cannot. The two archives number their addresses separately, so an id in one file says nothing about the other, and comparing the users of the two archives takes both user databases. The scripts that need them say so.  
 They are stored here with [git-lfs](https://git-lfs.com): with git-lfs installed, `git clone` fetches the files themselves, and `git lfs pull` fetches them in a clone made without them.  
 The statistics in step 03, most of the comparisons in step 04, the venn diagrams in step 05, and the graph building scripts in 06 read the two database files and nothing else, so anyone with them can reproduce them.  
 The two replacement character scripts in step 04 also read the message bodies from the mbox files, and so need the archives themselves.  
@@ -64,7 +68,7 @@ The scripts are grouped into subdirectories of the script folder, and are number
 Extracts the NB tar archives and the IA zip files, and writes both archives as utf-8-encoded .mbox files, one per newsgroup. See [scripts/01_extract_and_parse_usenet_data/README.md](scripts/01_extract_and_parse_usenet_data/README.md) for details.
 
 #### Step 02: building the databases
-[01_build_databases.py](scripts/02_build_database/01_build_databases.py) reads every message of an archive into a SQLite database of its own, so that later analyses are SQL queries over the two datasets instead of repeated parses of the archive directories. The databases at `data/output/02_build_database/ia.db` and `data/output/02_build_database/nb.db` store names, emails, message ids and bodies only as hashes, and no free text at all. The scripts that compare the archives read both files at once, through views that name the archive each row came from.
+[01_build_databases.py](scripts/02_build_database/01_build_databases.py) reads every message of an archive into a SQLite database of its own, so that later analyses are SQL queries over the two datasets instead of repeated parses of the archive directories. The databases at `data/output/02_build_database/ia.db` and `data/output/02_build_database/nb.db` store message ids and bodies only as hashes, a sender as an id into the archive's own user database, and no free text at all. The scripts that compare the archives read both files at once, through views that name the archive each row came from.
 
 Messages are stored one row per message per newsgroup, with nothing dropped or merged, so the databases are a faithful transcription of the mbox files.
 
