@@ -37,3 +37,18 @@ dev = [
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.pytest.ini_options]
+# pytest's default norecursedirs holds "build", which would skip the tests of
+# database.build, whose directory is named after the module it covers. This is
+# that default with "build" taken out.
+norecursedirs = [
+    "*.egg",
+    ".*",
+    "_darcs",
+    "CVS",
+    "dist",
+    "node_modules",
+    "venv",
+    "{arch}",
+]
