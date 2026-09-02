@@ -5,10 +5,25 @@ import logging
 from pathlib import Path
 
 from usenet_no.database import IA_ARCHIVE, NB_ARCHIVE, connect_archives
-from usenet_no.database.duplicates import summarize_duplicates
+from usenet_no.database.duplicates import DuplicateSummary, summarize_duplicates
 from usenet_no.database.statistics import get_date_span
 
 logger = logging.getLogger(__name__)
+
+# The counts written as a percentage of total_messages beside themselves.
+COUNTS_AS_PERCENTAGES = ("unique_message_ids", "duplicate_messages")
+
+
+def summary_with_percentages(summary: DuplicateSummary) -> dict[str, float]:
+    """Lay the summary out for writing, with the percentages each count is of the total."""
+    counts = dataclasses.asdict(summary)
+    total = counts["total_messages"]
+    record = {}
+    for field, count in counts.items():
+        record[field] = count
+        if field in COUNTS_AS_PERCENTAGES:
+            record[f"{field}_percent"] = round(count / total * 100, 2)
+    return record
 
 
 if __name__ == "__main__":
@@ -67,11 +82,13 @@ if __name__ == "__main__":
             )
             continue
 
-        summary = summarize_duplicates(connection, archive, date_span)
+        summary = summary_with_percentages(
+            summarize_duplicates(connection, archive, date_span)
+        )
 
         output_file.parent.mkdir(parents=True, exist_ok=True)
         with output_file.open("w", encoding="utf-8") as file:
-            json.dump(dataclasses.asdict(summary), file, indent=2)
+            json.dump(summary, file, indent=2)
             file.write("\n")
 
         logger.info(
