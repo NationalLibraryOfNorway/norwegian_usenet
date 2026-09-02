@@ -56,6 +56,9 @@ A hash is connected back to its plain text through the mbox files: a message's p
 With [uv](https://docs.astral.sh/uv/#installation):  
 `uv sync`
 
+The `--save-fig` flag of [04_plot_newsgroup_reference_graph.py](scripts/06_graphs_and_references/04_plot_newsgroup_reference_graph.py) screenshots the figure in a headless browser, which is installed with:  
+`uv run playwright install chromium`
+
 
 ## Code
 `src/usenet_no/` contains core library modules for working with the data. Everything that creates or queries the SQLite databases lives in the `usenet_no.database` submodule.  

@@ -10,6 +10,7 @@ from pathlib import Path
 
 import pyvis
 from jinja2 import Environment, FileSystemLoader, select_autoescape
+from playwright.sync_api import sync_playwright
 from pyvis.network import Network
 
 SURFACE = "#fcfcfb"
@@ -54,6 +55,17 @@ STABILIZATION_ROUNDS = 400
 LOOSE_COLUMN_SPACING = 130
 LOOSE_ROW_SPACING = 60
 LOOSE_LEAST_PER_ROW = 15
+
+# A screenshot is taken in a window this wide, which holds the figure and the
+# air around it, and at this many pixels to the pixel the page is drawn in.
+SCREENSHOT_WIDTH = 1240
+SCREENSHOT_SCALE = 2
+
+# The page sets a flag when the physics has settled and the box is taken in,
+# which the screenshot waits this many milliseconds for. The graph is still
+# drifting a little then, so it is given another moment to come to rest.
+SETTLE_TIMEOUT = 120_000
+SETTLE_MILLISECONDS = 2_000
 
 TEMPLATE_DIRECTORY = Path(__file__).parent / "templates"
 TEMPLATE = "newsgroup_graph.html"
@@ -202,3 +214,18 @@ def write_graph_html(
         ),
         encoding="utf-8",
     )
+
+
+def save_graph_png(html_file: Path, output_file: Path) -> None:
+    """Screenshot a written figure with a headless browser, once it has settled."""
+    with sync_playwright() as playwright:
+        browser = playwright.chromium.launch()
+        page = browser.new_page(
+            viewport={"width": SCREENSHOT_WIDTH, "height": 1000},
+            device_scale_factor=SCREENSHOT_SCALE,
+        )
+        page.goto(html_file.resolve().as_uri())
+        page.wait_for_function("window.graphSettled === true", timeout=SETTLE_TIMEOUT)
+        page.wait_for_timeout(SETTLE_MILLISECONDS)
+        page.screenshot(path=output_file, full_page=True)
+        browser.close()

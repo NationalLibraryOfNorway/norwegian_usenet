@@ -40,6 +40,7 @@ from usenet_no.interactive_graph import (
     SURFACE,
     build_network,
     canvas_position,
+    save_graph_png,
     spring_lengths,
     vertex_sizes,
     write_graph_html,
@@ -286,6 +287,14 @@ if __name__ == "__main__":
         help="Directory to write the HTML figure and the .gexf file to",
     )
     parser.add_argument(
+        "--save-fig",
+        action="store_true",
+        help=(
+            "If flagged, will also save the settled figure as a .png beside it,"
+            " screenshot in a headless browser"
+        ),
+    )
+    parser.add_argument(
         "--overwrite",
         action="store_true",
         help="If flagged, will overwrite an existing figure instead of skipping",
@@ -302,11 +311,12 @@ if __name__ == "__main__":
         f"{args.edges_file.stem}{unknown_tag}_share{args.min_reference_share:g}.html"
     )
     gephi_file = figure_file.with_suffix(".gexf")
-    if figure_file.exists() and gephi_file.exists() and not args.overwrite:
+    png_file = figure_file.with_suffix(".png")
+    written = [figure_file, gephi_file] + ([png_file] if args.save_fig else [])
+    if all(file.exists() for file in written) and not args.overwrite:
         logger.info(
-            "Existing files found at %s and %s; use --overwrite to regenerate",
-            figure_file,
-            gephi_file,
+            "Existing files found at %s; use --overwrite to regenerate",
+            ", ".join(str(file) for file in written),
         )
         raise SystemExit(0)
 
@@ -330,3 +340,7 @@ if __name__ == "__main__":
     )
     write_graph_gexf(graph, gephi_file, weight_attribute="references")
     logger.info("See the graph in %s, and in Gephi from %s", figure_file, gephi_file)
+
+    if args.save_fig:
+        save_graph_png(figure_file, png_file)
+        logger.info("Saved the settled figure to %s", png_file)
