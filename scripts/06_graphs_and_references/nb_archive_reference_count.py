@@ -5,8 +5,7 @@ reference is a (referring message, referenced id) pair with the newsgroup left
 out, counted once however many newsgroups or archives hold either end of it: the
 total, the ones pointing at a message NB holds, the ones NB has lost but IA
 still holds, and the ones neither archive holds. The three groups add up to the
-total. Messages with no message id of their own are left out. Both archives are
-read whole, without a date filter.
+total. Both archives are read whole, without a date filter.
 """
 
 import argparse
