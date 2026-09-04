@@ -26,6 +26,7 @@ dependencies = [
     "networkx>=3.6.1",
     "plotly>=6.6.0",
     "pyvis>=0.3.2",
+    "playwright>=1.62.0",
 ]
 
 [dependency-groups]

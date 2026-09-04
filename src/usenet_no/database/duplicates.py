@@ -1,57 +1,47 @@
-"""Counting true duplicate messages in the database.
+"""Query functions for duplicate message analysis."""
 
-A *true duplicate* is the same message stored more than once in the same mbox
-file: same Message-ID and identical body. These are redundant copies. Since
-the database stores every copy as its own row and `newsgroup` names the mbox
-file a copy came from, true duplicates are rows sharing (archive, newsgroup,
-message_id_hash, body_hash). Message ids that carry *different* bodies are a
-separate question, in `usenet_no.database.conflicts`.
-"""
-
-import logging
 import sqlite3
 from dataclasses import dataclass
 
-logger = logging.getLogger(__name__)
+from usenet_no.database.core import date_span_clause
 
 
 @dataclass
-class DuplicateMessage:
-    """A message stored more than once in the same mbox file."""
-
-    archive: str
-    newsgroup: str
-    message_id_hash: str
-    count: int  # how many copies are present, counting the first
+class DuplicateSummary:
+    total_messages: int
+    unique_message_ids: int
+    duplicate_messages: int
+    message_IDs_that_appear_more_than_once: int
 
 
-def find_true_duplicates(connection: sqlite3.Connection) -> list[DuplicateMessage]:
-    """Find message ids stored more than once with the same body in one mbox file.
-
-    Messages without a Message-ID are skipped: without an id we cannot tell a
-    redundant copy from two genuinely identical postings. Copies are grouped by
-    (message_id_hash, body_hash), so two versions of a posting are not mistaken
-    for duplicates of each other; where an id does have several bodies, `count`
-    covers every copy belonging to a repeated body. Sorted by (archive,
-    newsgroup, message_id_hash).
-    """
-    rows = connection.execute(
-        "SELECT archive, newsgroup, message_id_hash, SUM(copies)"
-        " FROM ("
-        "     SELECT archive, newsgroup, message_id_hash, COUNT(*) AS copies"
-        "     FROM messages"
-        "     GROUP BY archive, newsgroup, message_id_hash, body_hash"
-        "     HAVING COUNT(*) > 1"
-        " )"
-        " GROUP BY archive, newsgroup, message_id_hash"
-        " ORDER BY archive, newsgroup, message_id_hash"
+def summarize_duplicates(
+    connection: sqlite3.Connection,
+    archive: str,
+    date_span: tuple[str, str] | None = None,
+) -> DuplicateSummary:
+    """Count messages, unique and duplicated message-IDs, and messages holding a duplicated id, in one archive."""
+    clause, span_parameters = date_span_clause(date_span)
+    parameters = (archive, *span_parameters)
+    total = connection.execute(
+        f"SELECT COUNT(*) FROM messages WHERE archive = ?{clause}", parameters
+    ).fetchone()[0]
+    unique = connection.execute(
+        "SELECT COUNT(*) FROM ("
+        f"  SELECT message_id_hash FROM messages WHERE archive = ?{clause}"
+        "  GROUP BY message_id_hash HAVING COUNT(*) = 1"
+        ")",
+        parameters,
+    ).fetchone()[0]
+    duplicated = connection.execute(
+        "SELECT COUNT(*) FROM ("
+        f"  SELECT message_id_hash FROM messages WHERE archive = ?{clause}"
+        "  GROUP BY message_id_hash HAVING COUNT(*) > 1"
+        ")",
+        parameters,
+    ).fetchone()[0]
+    return DuplicateSummary(
+        total_messages=total,
+        unique_message_ids=unique,
+        duplicate_messages=total - unique,
+        message_IDs_that_appear_more_than_once=duplicated,
     )
-    return [
-        DuplicateMessage(
-            archive=archive,
-            newsgroup=newsgroup,
-            message_id_hash=message_id_hash,
-            count=count,
-        )
-        for archive, newsgroup, message_id_hash, count in rows
-    ]

@@ -1,0 +1,8 @@
+{
+  "total_messages": 572529,
+  "unique_message_ids": 462956,
+  "unique_message_ids_percent": 80.86,
+  "duplicate_messages": 109573,
+  "duplicate_messages_percent": 19.14,
+  "message_IDs_that_appear_more_than_once": 42875
+}
