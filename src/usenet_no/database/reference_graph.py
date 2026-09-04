@@ -120,8 +120,7 @@ def _count_edges(
     """Aggregate the (source newsgroup, target newsgroup) pairs into edges.
 
     `resolved_references` is one row per distinct (message id, newsgroup,
-    referenced id, target newsgroup); messages with no id fall back to their
-    row id so they stay apart. The LEFT JOIN looks each referenced id up
+    referenced id, target newsgroup). The LEFT JOIN looks each referenced id up
     through the message id index and keeps the references that resolve
     nowhere, which COALESCE points at the unknown newsgroup. The join's scope
     condition sits in the ON clause: in a WHERE it would drop the unresolved

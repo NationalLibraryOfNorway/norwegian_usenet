@@ -1,10 +1,11 @@
-"""The newsgroup overlap and reference tables read as graphs.
+"""The newsgroup overlap, reference and centroid similarity tables read as graphs.
 
 Newsgroups are the vertices. In the overlap graph an edge joins two of them
 when enough of their users overlap; in the reference graph a directed edge
 runs from one to another when enough of the first's references reach the
-second, weighted by how many of them there are. The thresholds are inclusive,
-so a pair on the boundary is kept.
+second, weighted by how many of them there are; in the similarity graph an
+edge joins two whose message embeddings average out close enough to each
+other. The thresholds are inclusive, so a pair on the boundary is kept.
 """
 
 import logging
@@ -74,6 +75,48 @@ def load_message_counts(count_files: list[Path]) -> dict[str, int]:
     return counts
 
 
+def _reference_graph(
+    edges: pd.DataFrame, message_counts: dict[str, int], joined: pd.DataFrame
+) -> nx.DiGraph:
+    """Lay the newsgroups of `edges` out as vertices and `joined` as the edges between them."""
+    newsgroups = sorted(set(edges.from_newsgroup) | set(edges.to_newsgroup))
+    missing = [
+        newsgroup
+        for newsgroup in newsgroups
+        if newsgroup != UNKNOWN_NEWSGROUP and newsgroup not in message_counts
+    ]
+    if missing:
+        raise ValueError(f"Newsgroups without a message count: {', '.join(missing)}")
+
+    graph = nx.DiGraph()
+    for newsgroup in newsgroups:
+        graph.add_node(newsgroup, messages=message_counts.get(newsgroup))
+
+    for row in joined.itertuples():
+        graph.add_edge(
+            row.from_newsgroup,
+            row.to_newsgroup,
+            references=int(row.number_of_references),
+            share=float(row.share),
+        )
+
+    logger.info(
+        "Built a directed graph of %d newsgroups and %d edges,"
+        " %d newsgroups with no edge",
+        graph.number_of_nodes(),
+        graph.number_of_edges(),
+        sum(1 for _node, degree in graph.degree() if degree == 0),
+    )
+    return graph
+
+
+def _with_share(edges: pd.DataFrame) -> pd.DataFrame:
+    """The edge table with each edge's share of the references leaving its newsgroup."""
+    return edges.assign(
+        share=edges.number_of_references / edges.references_out_of_newsgroup
+    )
+
+
 def build_reference_graph(
     edges: pd.DataFrame, message_counts: dict[str, int], min_reference_share: float
 ) -> nx.DiGraph:
@@ -92,34 +135,56 @@ def build_reference_graph(
     The two directions between a pair are two edges, each kept or dropped on
     its own share.
     """
-    newsgroups = sorted(set(edges.from_newsgroup) | set(edges.to_newsgroup))
-    missing = [
-        newsgroup
-        for newsgroup in newsgroups
-        if newsgroup != UNKNOWN_NEWSGROUP and newsgroup not in message_counts
-    ]
-    if missing:
-        raise ValueError(f"Newsgroups without a message count: {', '.join(missing)}")
-
-    graph = nx.DiGraph()
-    for newsgroup in newsgroups:
-        graph.add_node(newsgroup, messages=message_counts.get(newsgroup))
-
-    shared = edges.assign(
-        share=edges.number_of_references / edges.references_out_of_newsgroup
+    shared = _with_share(edges)
+    return _reference_graph(
+        edges, message_counts, shared[shared.share >= min_reference_share]
     )
-    joined = shared[shared.share >= min_reference_share]
+
+
+def build_reference_graph_by_count(
+    edges: pd.DataFrame, message_counts: dict[str, int], min_references: int
+) -> nx.DiGraph:
+    """Build a directed graph of newsgroups joined by their references, counted.
+
+    As build_reference_graph, but an edge is created where at least
+    `min_references` references run along it, whatever share of the referring
+    newsgroup's references that is, so the busiest newsgroups keep the most
+    edges.
+    """
+    shared = _with_share(edges)
+    return _reference_graph(
+        edges, message_counts, shared[shared.number_of_references >= min_references]
+    )
+
+
+def build_similarity_graph(
+    similarities: pd.DataFrame, min_similarity: float
+) -> nx.Graph:
+    """Build a graph of newsgroups joined by how alike their centroids are.
+
+    `similarities` is a table of newsgroup pairs with the cosine similarity
+    between their centroids and the number of messages each was averaged over.
+    Every newsgroup becomes a vertex carrying its message count; an edge joins
+    a pair whose similarity is at least `min_similarity`, carrying it as an
+    edge attribute.
+    """
+    graph = nx.Graph()
+    for newsgroup, messages in [
+        *zip(similarities.newsgroup_a, similarities.messages_a),
+        *zip(similarities.newsgroup_b, similarities.messages_b),
+    ]:
+        graph.add_node(newsgroup, messages=int(messages))
+
+    joined = similarities[similarities.cosine_similarity >= min_similarity]
     for row in joined.itertuples():
         graph.add_edge(
-            row.from_newsgroup,
-            row.to_newsgroup,
-            references=int(row.number_of_references),
-            share=float(row.share),
+            row.newsgroup_a,
+            row.newsgroup_b,
+            cosine_similarity=float(row.cosine_similarity),
         )
 
     logger.info(
-        "Built a directed graph of %d newsgroups and %d edges,"
-        " %d newsgroups with no edge",
+        "Built a graph of %d newsgroups and %d edges, %d newsgroups with no edge",
         graph.number_of_nodes(),
         graph.number_of_edges(),
         sum(1 for _node, degree in graph.degree() if degree == 0),

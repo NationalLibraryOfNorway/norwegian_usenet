@@ -9,8 +9,7 @@ still holds, and an edge to `unknown` for the rest.
 
 A reference is a distinct (referring message id, referenced message id) pair
 with the newsgroup left out, so the same reply held by several newsgroups or by
-both archives counts once. Messages with no message id of their own are left
-out.
+both archives counts once.
 
 Both archives are read over the NB date span, so the two rows are counted
 against the same body of messages.

@@ -1,18 +1,16 @@
-"""Draw the newsgroup overlap table as a graph of newsgroups joined by users.
+"""Draw the centroid similarity table as a graph of newsgroups joined by what they read like.
 
-Reads the pair table written by 06_graphs_and_references and keeps the
-pairs clearing both thresholds as edges. Every newsgroup in the table is drawn,
-so a newsgroup with no edge left shows as a loose point rather than vanishing.
+Reads the pair table written by 05_newsgroup_centroid_similarity.py and keeps
+the pairs clearing the threshold as edges. Every newsgroup in the table is
+drawn, so one with no edge left shows as a loose point rather than vanishing.
 
 Where the newsgroups start out is decided by a Kamada-Kawai layout, which reads
-each edge as a distance and looks for the arrangement whose drawn distances come
-closest to those. The distance an edge asks for is 1 - jaccard, so the more two
-newsgroups overlap the closer together they are drawn, and a cluster in the
-picture is a set of newsgroups sharing users with each other. The same distance
-is the length each edge pulls towards under the physics the figure is drawn
-with, so a newsgroup dragged aside takes the ones it shares users with along.
-It is left where it is dropped, until a double-click hands it back to the
-physics and the graph settles around it again.
+each edge as a distance and looks for the arrangement whose drawn distances
+come closest to those. The distance an edge asks for is 1 - cosine similarity,
+so the more alike two newsgroups read the closer together they are drawn, and a
+cluster in the picture is a set of newsgroups whose messages average out near
+each other. The same distance is the length each edge pulls towards under the
+physics the figure is drawn with.
 """
 
 import argparse
@@ -33,7 +31,7 @@ from usenet_no.interactive_graph import (
     vertex_sizes,
     write_graph_html,
 )
-from usenet_no.newsgroup_graph import build_overlap_graph
+from usenet_no.newsgroup_graph import build_similarity_graph
 
 logger = logging.getLogger(__name__)
 
@@ -46,11 +44,16 @@ HOW_TO_READ = (
 )
 
 
+def similarity_distance(similarity: float) -> float:
+    """The distance an edge between centroids this alike wants to be drawn at."""
+    return 1 - similarity
+
+
 def layout_positions(graph: nx.Graph) -> dict[str, tuple[float, float]]:
     """Where the physics starts the joined newsgroups off from.
 
-    Only the newsgroups that have an edge are laid out. A newsgroup sharing too
-    few users to be joined to anything has nothing to pull it into place, so it
+    Only the newsgroups that have an edge are laid out. A newsgroup too unlike
+    the rest to be joined to anything has nothing to pull it into place, so it
     is left out of the physics and set out in a row under the graph instead.
     """
     # Sorted, because the layout starts the vertices off on a circle in the
@@ -61,10 +64,10 @@ def layout_positions(graph: nx.Graph) -> dict[str, tuple[float, float]]:
     joined.add_nodes_from(joined_nodes)
     joined.add_edges_from(graph.subgraph(joined_nodes).edges(data=True))
 
-    # The layout reads the weight as the distance an edge would like to be
-    # drawn at, which is the opposite of what jaccard says: the more two
-    # newsgroups overlap, the nearer they belong.
-    distances = {edge: 1 - joined.edges[edge]["jaccard"] for edge in joined.edges}
+    distances = {
+        edge: similarity_distance(joined.edges[edge]["cosine_similarity"])
+        for edge in joined.edges
+    }
     nx.set_edge_attributes(joined, distances, "distance")
 
     return {
@@ -78,7 +81,7 @@ def add_newsgroups(
     graph: nx.Graph,
     positions: dict[str, tuple[float, float]],
 ) -> None:
-    sizes = vertex_sizes(nx.get_node_attributes(graph, "users"))
+    sizes = vertex_sizes(nx.get_node_attributes(graph, "messages"))
     for node, degree in graph.degree():
         # A newsgroup joined to nothing has no edge to hold it, so it is left
         # out of the physics and set out in a row under the graph by the page.
@@ -89,7 +92,7 @@ def add_newsgroups(
             label=node,
             title=(
                 f"{node}\n"
-                f"{graph.nodes[node]['users']:,} users\n"
+                f"{graph.nodes[node]['messages']:,} messages embedded\n"
                 f"joined to {degree} newsgroup(s)"
             ),
             x=x,
@@ -100,9 +103,12 @@ def add_newsgroups(
         )
 
 
-def add_overlaps(network: Network, graph: nx.Graph) -> None:
+def add_similarities(network: Network, graph: nx.Graph) -> None:
     lengths = spring_lengths(
-        {edge: 1 - graph.edges[edge]["jaccard"] for edge in graph.edges}
+        {
+            edge: similarity_distance(graph.edges[edge]["cosine_similarity"])
+            for edge in graph.edges
+        }
     )
     for first, second, attributes in graph.edges(data=True):
         network.add_edge(
@@ -110,8 +116,7 @@ def add_overlaps(network: Network, graph: nx.Graph) -> None:
             second,
             title=(
                 f"{first} — {second}\n"
-                f"jaccard {attributes['jaccard']:.3f}\n"
-                f"{attributes['shared_users']:,} shared users"
+                f"cosine similarity {attributes['cosine_similarity']:.4f}"
             ),
             length=lengths[first, second],
             width=1,
@@ -134,13 +139,13 @@ def graph_notes(graph: nx.Graph) -> list[str]:
     ]
     if loose:
         notes.append(
-            f"The {loose} newsgroups joined to nothing at these thresholds"
+            f"The {loose} newsgroups joined to nothing at this threshold"
             " are set out in rows below the graph."
         )
     return notes
 
 
-def plot_overlap_graph(
+def plot_similarity_graph(
     graph: nx.Graph,
     title: str,
     subtitle: str,
@@ -149,7 +154,7 @@ def plot_overlap_graph(
     positions = layout_positions(graph)
     network = build_network(directed=False)
     add_newsgroups(network, graph, positions)
-    add_overlaps(network, graph)
+    add_similarities(network, graph)
 
     # A vertex pulled out of the crowd to be read is left where it is put.
     write_graph_html(
@@ -162,44 +167,30 @@ def plot_overlap_graph(
     )
 
 
-def convert_and_validate_cli_arg_jaccard_threshold(value: str) -> float:
-    threshold = float(value)
-    if not 0 <= threshold <= 1:
-        raise argparse.ArgumentTypeError(f"must be between 0 and 1, was {threshold}")
-    return threshold
-
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Draw newsgroups joined by the users they share",
+        description="Draw newsgroups joined by how alike their centroids are",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
-        "--overlap-file",
+        "--similarity-file",
         type=Path,
         default=Path(
-            "data/output/06_graphs_and_references/newsgroup_user_jaccard_overlap_nb.csv"
+            "data/output/08_make_embeddings/newsgroup_centroid_similarity"
+            "/codefuse-ai/F2LLM-v2-0.6B/centroid_similarity_nb.csv"
         ),
-        help="Path to a newsgroup overlap CSV file",
+        help="Path to a centroid similarity CSV file",
     )
     parser.add_argument(
-        "--jaccard-threshold",
-        type=convert_and_validate_cli_arg_jaccard_threshold,
-        default=0.15,
-        help="Join two newsgroups only if their jaccard overlap is at least this",
-    )
-    parser.add_argument(
-        "--min-shared-users",
-        type=int,
-        default=0,
-        help="Join two newsgroups only if they share at least this many users",
+        "--min-similarity",
+        type=float,
+        default=0.9,
+        help="Join two newsgroups only if their centroids are at least this alike",
     )
     parser.add_argument(
         "--output-directory",
         type=Path,
-        default=Path(
-            "data/output/06_graphs_and_references/plot_newsgroup_overlap_graph"
-        ),
+        default=Path("data/output/08_make_embeddings/plot_newsgroup_centroid_graph"),
         help="Directory to write the HTML figure and the .gexf file to",
     )
     parser.add_argument(
@@ -220,12 +211,10 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     logger.info("Args: %s", args)
 
-    # The thresholds are in the file name, so a run at one setting does not
+    # The threshold is in the file name, so a run at one setting does not
     # overwrite the picture drawn at another.
     figure_file = args.output_directory / (
-        f"{args.overlap_file.stem}"
-        f"_jaccard{args.jaccard_threshold}"
-        f"_shared{args.min_shared_users}.html"
+        f"{args.similarity_file.stem}_similarity{args.min_similarity:g}.html"
     )
     gephi_file = figure_file.with_suffix(".gexf")
     png_file = figure_file.with_suffix(".png")
@@ -237,24 +226,20 @@ if __name__ == "__main__":
         )
         raise SystemExit(0)
 
-    overlaps = pd.read_csv(args.overlap_file)
-    graph = build_overlap_graph(
-        overlaps,
-        jaccard_threshold=args.jaccard_threshold,
-        min_shared_users=args.min_shared_users,
-    )
+    similarities = pd.read_csv(args.similarity_file)
+    graph = build_similarity_graph(similarities, min_similarity=args.min_similarity)
+
     args.output_directory.mkdir(parents=True, exist_ok=True)
-    plot_overlap_graph(
+    plot_similarity_graph(
         graph,
-        title="Newsgroups joined by the users they share",
+        title="Newsgroups joined by how alike their messages read",
         subtitle=(
-            f"{args.overlap_file.stem}, "
-            f"jaccard at least {args.jaccard_threshold}, "
-            f"at least {args.min_shared_users} shared users"
+            f"{args.similarity_file.stem}, each edge joining centroids at least "
+            f"{args.min_similarity:g} alike"
         ),
         output_file=figure_file,
     )
-    write_graph_gexf(graph, gephi_file, weight_attribute="jaccard")
+    write_graph_gexf(graph, gephi_file, weight_attribute="cosine_similarity")
     logger.info("See the graph in %s, and in Gephi from %s", figure_file, gephi_file)
 
     if args.save_fig:

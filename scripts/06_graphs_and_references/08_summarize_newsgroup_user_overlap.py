@@ -1,20 +1,20 @@
-"""Print the newsgroup pairs sharing no users at all, and the pairs whose userbases overlap most."""
+"""Print how much the newsgroups overlap in users, and the pairs whose userbases overlap most."""
 
 import argparse
 import logging
-from itertools import combinations
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
 logger = logging.getLogger(__name__)
 
 
-def find_pairs_without_shared_users(overlaps: pd.DataFrame) -> list[tuple[str, str]]:
-    """Take the newsgroup pairs missing from the overlap table, which are the pairs sharing no user."""
-    newsgroups = sorted(set(overlaps.newsgroup_a) | set(overlaps.newsgroup_b))
-    sharing = set(zip(overlaps.newsgroup_a, overlaps.newsgroup_b))
-    return [pair for pair in combinations(newsgroups, 2) if pair not in sharing]
+def jaccard_of_every_pair(overlaps: pd.DataFrame, pairs: int) -> np.ndarray:
+    """Take the overlap of every pair, the ones the table leaves out counted as 0."""
+    return np.concatenate(
+        [overlaps.jaccard.to_numpy(), np.zeros(pairs - len(overlaps))]
+    )
 
 
 def most_overlapping_pairs(overlaps: pd.DataFrame, top_n: int) -> pd.DataFrame:
@@ -52,16 +52,17 @@ if __name__ == "__main__":
 
     overlaps = pd.read_csv(args.overlap_file)
     newsgroups = set(overlaps.newsgroup_a) | set(overlaps.newsgroup_b)
-    pairs_without_shared_users = find_pairs_without_shared_users(overlaps)
+    pairs = len(newsgroups) * (len(newsgroups) - 1) // 2
+    jaccard = jaccard_of_every_pair(overlaps, pairs)
 
     print(args.overlap_file)
-    print(f"{len(newsgroups):,} newsgroups")
+    print(f"{len(newsgroups):,} newsgroups, {pairs:,} pairs")
     print(f"{len(overlaps):,} pairs sharing at least one user")
-    print(f"{len(pairs_without_shared_users):,} pairs sharing no user")
+    print(f"{pairs - len(overlaps):,} pairs sharing no user")
+    print(
+        f"Jaccard overlap over every pair: median {np.median(jaccard):.4f},"
+        f" mean {jaccard.mean():.4f}, standard deviation {jaccard.std(ddof=1):.4f}"
+    )
 
     print(f"\nThe {args.top_n} pairs with the most overlapping userbases")
     print(most_overlapping_pairs(overlaps, args.top_n).to_string(index=False))
-
-    print(f"\nThe {len(pairs_without_shared_users):,} pairs sharing no user")
-    for newsgroup_a, newsgroup_b in pairs_without_shared_users:
-        print(f"{newsgroup_a} {newsgroup_b}")
