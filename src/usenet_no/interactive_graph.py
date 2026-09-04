@@ -13,7 +13,7 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 from playwright.sync_api import sync_playwright
 from pyvis.network import Network
 
-SURFACE = "#fcfcfb"
+SURFACE = "#ffffff"
 TEXT_PRIMARY = "#0b0b0b"
 TEXT_SECONDARY = "#52514e"
 BORDER = "#e2e1dc"
@@ -59,7 +59,7 @@ LOOSE_LEAST_PER_ROW = 15
 # A screenshot is taken in a window this wide, which holds the figure and the
 # air around it, and at this many pixels to the pixel the page is drawn in.
 SCREENSHOT_WIDTH = 1240
-SCREENSHOT_SCALE = 2
+SCREENSHOT_SCALE = 4
 
 # The page sets a flag when the physics has settled and the box is taken in,
 # which the screenshot waits this many milliseconds for. The graph is still
