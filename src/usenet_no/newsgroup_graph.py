@@ -75,6 +75,48 @@ def load_message_counts(count_files: list[Path]) -> dict[str, int]:
     return counts
 
 
+def _reference_graph(
+    edges: pd.DataFrame, message_counts: dict[str, int], joined: pd.DataFrame
+) -> nx.DiGraph:
+    """Lay the newsgroups of `edges` out as vertices and `joined` as the edges between them."""
+    newsgroups = sorted(set(edges.from_newsgroup) | set(edges.to_newsgroup))
+    missing = [
+        newsgroup
+        for newsgroup in newsgroups
+        if newsgroup != UNKNOWN_NEWSGROUP and newsgroup not in message_counts
+    ]
+    if missing:
+        raise ValueError(f"Newsgroups without a message count: {', '.join(missing)}")
+
+    graph = nx.DiGraph()
+    for newsgroup in newsgroups:
+        graph.add_node(newsgroup, messages=message_counts.get(newsgroup))
+
+    for row in joined.itertuples():
+        graph.add_edge(
+            row.from_newsgroup,
+            row.to_newsgroup,
+            references=int(row.number_of_references),
+            share=float(row.share),
+        )
+
+    logger.info(
+        "Built a directed graph of %d newsgroups and %d edges,"
+        " %d newsgroups with no edge",
+        graph.number_of_nodes(),
+        graph.number_of_edges(),
+        sum(1 for _node, degree in graph.degree() if degree == 0),
+    )
+    return graph
+
+
+def _with_share(edges: pd.DataFrame) -> pd.DataFrame:
+    """The edge table with each edge's share of the references leaving its newsgroup."""
+    return edges.assign(
+        share=edges.number_of_references / edges.references_out_of_newsgroup
+    )
+
+
 def build_reference_graph(
     edges: pd.DataFrame, message_counts: dict[str, int], min_reference_share: float
 ) -> nx.DiGraph:
@@ -93,39 +135,26 @@ def build_reference_graph(
     The two directions between a pair are two edges, each kept or dropped on
     its own share.
     """
-    newsgroups = sorted(set(edges.from_newsgroup) | set(edges.to_newsgroup))
-    missing = [
-        newsgroup
-        for newsgroup in newsgroups
-        if newsgroup != UNKNOWN_NEWSGROUP and newsgroup not in message_counts
-    ]
-    if missing:
-        raise ValueError(f"Newsgroups without a message count: {', '.join(missing)}")
-
-    graph = nx.DiGraph()
-    for newsgroup in newsgroups:
-        graph.add_node(newsgroup, messages=message_counts.get(newsgroup))
-
-    shared = edges.assign(
-        share=edges.number_of_references / edges.references_out_of_newsgroup
+    shared = _with_share(edges)
+    return _reference_graph(
+        edges, message_counts, shared[shared.share >= min_reference_share]
     )
-    joined = shared[shared.share >= min_reference_share]
-    for row in joined.itertuples():
-        graph.add_edge(
-            row.from_newsgroup,
-            row.to_newsgroup,
-            references=int(row.number_of_references),
-            share=float(row.share),
-        )
 
-    logger.info(
-        "Built a directed graph of %d newsgroups and %d edges,"
-        " %d newsgroups with no edge",
-        graph.number_of_nodes(),
-        graph.number_of_edges(),
-        sum(1 for _node, degree in graph.degree() if degree == 0),
+
+def build_reference_graph_by_count(
+    edges: pd.DataFrame, message_counts: dict[str, int], min_references: int
+) -> nx.DiGraph:
+    """Build a directed graph of newsgroups joined by their references, counted.
+
+    As build_reference_graph, but an edge is created where at least
+    `min_references` references run along it, whatever share of the referring
+    newsgroup's references that is, so the busiest newsgroups keep the most
+    edges.
+    """
+    shared = _with_share(edges)
+    return _reference_graph(
+        edges, message_counts, shared[shared.number_of_references >= min_references]
     )
-    return graph
 
 
 def build_similarity_graph(
