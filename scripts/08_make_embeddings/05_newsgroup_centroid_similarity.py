@@ -1,4 +1,4 @@
-"""Print the newsgroup pairs whose averaged message embeddings are most and least alike."""
+"""Write the cosine similarity between every pair of newsgroup centroids, and print both ends of it."""
 
 import argparse
 import logging
@@ -23,7 +23,7 @@ def centroid_pairs(
     """Every pair of centroids, with the cosine similarity between them."""
     similarities = cosine_similarity(centroids)
     index_a, index_b = np.triu_indices(len(labels), k=1)
-    return pd.DataFrame(
+    pairs = pd.DataFrame(
         {
             "newsgroup_a": [labels[i] for i in index_a],
             "newsgroup_b": [labels[i] for i in index_b],
@@ -31,6 +31,11 @@ def centroid_pairs(
             "messages_b": [message_counts[i] for i in index_b],
             "cosine_similarity": similarities[index_a, index_b],
         }
+    )
+    return pairs.sort_values(
+        ["cosine_similarity", "newsgroup_a", "newsgroup_b"],
+        ascending=[False, True, True],
+        ignore_index=True,
     )
 
 
@@ -43,7 +48,7 @@ def as_table(pairs: pd.DataFrame) -> str:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Print the newsgroup pairs with the most and least similar centroids",
+        description="Write the similarity between every pair of newsgroup centroids",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
@@ -65,6 +70,12 @@ if __name__ == "__main__":
         help="Average the messages of this archive (default: %(default)s)",
     )
     parser.add_argument(
+        "--output-directory",
+        type=Path,
+        default=Path("data/output/08_make_embeddings/newsgroup_centroid_similarity"),
+        help="Directory to write the pair table to, under a subdirectory per model",
+    )
+    parser.add_argument(
         "--top-n",
         type=int,
         default=20,
@@ -84,6 +95,13 @@ if __name__ == "__main__":
     labels = [stem if len(sources) > 1 else stem.rsplit("_", 1)[0] for stem in stems]
 
     pairs = centroid_pairs(centroids, labels, message_counts)
+
+    output_file = (
+        args.output_directory / args.model / f"centroid_similarity_{args.archive}.csv"
+    )
+    output_file.parent.mkdir(parents=True, exist_ok=True)
+    pairs.to_csv(output_file, index=False)
+    logger.info("Wrote %d pairs to %s", len(pairs), output_file)
 
     print(f"{args.embeddings_directory / args.model}, {args.archive}")
     print(f"{len(labels):,} newsgroup centroids")
